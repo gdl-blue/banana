@@ -1,5 +1,3 @@
-// 바나나 엔진 버전 1.1
-
 const perms = [
 	'admin', 'ban_user', 'developer', 'update_thread_document',
 	'update_thread_status', 'update_thread_topic', 'hide_thread_comment', 'grant',
@@ -13,6 +11,8 @@ function beep(cnt = 1) { // 경고음 재생
 	for(var i=1; i<=cnt; i++)
 		prt("");
 }
+
+const path = require('path');
 
 // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function rndval(chars, length) {
@@ -138,13 +138,11 @@ wiki.use(session({
 }));
 
 var bodyParser = require('body-parser');
-var multer = require('multer');
-var upload = multer();
 
 wiki.use(bodyParser.json());
 wiki.use(bodyParser.urlencoded({ extended: true }));
-wiki.use(upload.array()); 
 wiki.use(express.static('public'));
+wiki.use(require('express-fileupload')({}));
 
 const fs = require('fs');
 
@@ -154,9 +152,8 @@ var permlist = {};
 var hostconfig;
 try { hostconfig = require('./config.json'); }
 catch(e) {
-	print("병아리 엔진: the seed 모방 프로젝트에 오신것을 환영합니다.");
-	print("버전 4.5.5 [디버그] - 테스트 목적으로만 사용됩니다.");
-	print("고의적으로 배포하지 마십시오.");
+	print("바나나 위키엔진에 오신것을 환영합니다.");
+	print("버전 1.2.0 [디버그 전용]");
 	
 	prt('\n');
 	
@@ -599,59 +596,14 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						
 					</div>
 					
-					<div class="tab-pane active" id="delete" role="tabpanel">
+					<div class="tab-pane" id="delete" role="tabpanel">
 						<label><input type=checkbox> 문서 제목을 변경하는 것이 아님에 동의합니다.</label>
 					</div>
 					
-					<div class="tab-pane active" id="move" role="tabpanel">
+					<div class="tab-pane" id="move" role="tabpanel">
 						<div class=form-group>
 							<label>새 문서 제목: </label><br>
 							<input type=text class=form-control name=newtitle>
-						</div>
-					</div>
-					
-					<div class="tab-pane active" id="move" role="tabpanel">
-						<div class=form-group>
-							<label>화일 선택: </label><br>
-							<input class=form-control type=file name=file>
-						</div>
-						
-						<div class=form-group>
-							<label>사용할 화일 이름: </label><br>
-							<input class=form-control type=text name=document>
-						</div>
-						
-						<div class=form-group>
-							<label>화일 정보 및 메모: </label><br>
-							<textarea class=form-control name=text rows=20></textarea>
-						</div>
-						
-						<div class=form-group>
-							<span style="width: 48%;">
-								<label>분류:</label><br>
-								<input class=form-control type=text name=category>
-								<select class=form-control size=8 placeholder="직접 입력">
-									<option>동물</option>
-									<option>게임</option>
-									<option>컴퓨터</option>
-									<option>요리</option>
-								</select>
-							</span>
-							
-							<span style="width: 48%;">
-								<label>저작권:</label><br>
-								<input class=form-control type=text name=license>
-								<select class=form-control size=8 placeholder="직접 입력">
-									<option>CC-0</option>
-									<option>CC BY</option>
-									<option>CC BY-NC</option>
-									<option>CC BY-NC-ND</option>
-									<option>CC BY-NC-SA</option>
-									<option>CC BY-ND</option>
-									<option>CC BY-SA</option>
-									<option>제한적 이용</option>
-								</select>
-							</span>
 						</div>
 					</div>
 				</div>
@@ -2184,6 +2136,153 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent']]);
 	
 	res.redirect(desturl);
+});
+
+wiki.get('/Upload', function uploadFilePage(req, res) {
+	var content = `
+		<script>
+			$(function() {
+				document.getElementById('usingScript').style.display = '';
+				document.getElementById('noscriptFallback').remove();
+			});
+		</script>
+	
+		<form method=post id=usingScript enctype="multipart/form-data" style="display: none;">
+			<div class=form-group>
+				<label>화일 선택: </label><br>
+				<input class=form-control type=file name=file>
+			</div>
+
+			<div class=form-group>
+				<label>사용할 화일 이름: </label><br>
+				<input class=form-control type=text name=document>
+			</div>
+
+			<div class=form-group>
+				<label>화일 정보: </label><br>
+				<div style="width: 120px; display: inline-block; float: left;">
+					<select id=propertySelect class=form-control size=5 placeholder="직접 입력" style="height: 400px;">
+						<option value=1 selected>출처</option>
+						<option value=2>저작자</option>
+						<option value=3>만든 이</option>
+						<option value=4>날짜</option>
+						<option value=5>메모</option>
+					</select>
+				</div>
+				
+				<div style="width: calc(100% - 120px); display: inline-block; float: right;">
+					<textarea data-id=1 class="form-control property-content" style="height: 400px;"></textarea>
+					<textarea data-id=2 class="form-control property-content" style="display: none; height: 400px;"></textarea>
+					<textarea data-id=3 class="form-control property-content" style="display: none; height: 400px;"></textarea>
+					<textarea data-id=4 class="form-control property-content" style="display: none; height: 400px;"></textarea>
+					<textarea data-id=5 class="form-control property-content" style="display: none; height: 400px;"></textarea>
+				</div>
+				
+				<textarea style="display: none;" name=text class=form-control></textarea>
+			</div>
+
+			<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+			<div class=form-group>
+				<div style="width: 48%; display: inline-block; float: left;">
+					<label>분류:</label><br>
+					<input data-datalist=categorySelect class="form-control dropdown-search" type=text name=category placeholder="목록에 없으면 이곳에 입력하십시오">
+					<select id=categorySelect class="form-control input-examples" size=8>
+						<option>동물</option>
+						<option>게임</option>
+						<option>컴퓨터</option>
+						<option>요리</option>
+					</select>
+				</div>
+				
+				<div style="width: 48%; display: inline-block; float: right;">
+					<label>저작권:</label><br>
+					<input data-datalist=licenseSelect class="form-control dropdown-search" type=text name=license placeholder="목록에 없으면 이곳에 입력하십시오">
+					<select id=licenseSelect class="form-control input-examples" size=8>
+						<option>CC-0</option>
+						<option>CC BY</option>
+						<option>CC BY-NC</option>
+						<option>CC BY-NC-ND</option>
+						<option>CC BY-NC-SA</option>
+						<option>CC BY-ND</option>
+						<option>CC BY-SA</option>
+						<option>제한적 이용</option>
+					</select>
+				</div>
+			</div>
+
+			<br><br><br><br><br><br><br><br><br><br>
+
+			<div class=form-group>
+				<label>메모: </label><br>
+				<input type=text class=form-control name=log>
+			</div>
+
+			<div class=btns>
+				<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
+			</div>
+		</form>
+
+		<form method=post enctype="multipart/form-data" id=noscriptFallback>
+			<div class=form-group>
+				<label>화일 선택: </label><br>
+				<input class=form-control type=file name=file>
+			</div>
+
+			<div class=form-group>
+				<label>사용할 화일 이름: </label><br>
+				<input class=form-control type=text name=document>
+			</div>
+
+			<div class=form-group>
+				<label>화일 정보: </label><br>
+				<textarea style="display: none;" name=text class=form-control></textarea>
+			</div>
+
+			<div class=form-group>
+				<label>분류:</label><br>
+				<select name=category id=categorySelect class="form-control input-examples" size=8 placeholder="직접 입력">
+					<option>동물</option>
+					<option>게임</option>
+					<option>컴퓨터</option>
+					<option>요리</option>
+				</select>
+			</div>
+
+			<div class=form-group>
+				<label>저작권:</label><br>
+				<select name=license id=licenseSelect class="form-control input-examples" size=8 placeholder="직접 입력">
+					<option>CC-0</option>
+					<option>CC BY</option>
+					<option>CC BY-NC</option>
+					<option>CC BY-NC-ND</option>
+					<option>CC BY-NC-SA</option>
+					<option>CC BY-ND</option>
+					<option>CC BY-SA</option>
+					<option>제한적 이용</option>
+				</select>
+			</div>
+
+			<div class=form-group>
+				<label>메모: </label><br>
+				<input type=text class=form-control name=log>
+			</div>
+
+			<div class=btns>
+				<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
+			</div>
+		</form>
+	`;
+	
+	res.send(render(req, '화일 올리기', content, {}));
+});
+
+wiki.post('/Upload', function saveFile(req, res) {
+	const file = req.files['file'];
+	
+	file.mv('./images/' + sha3(file.name) + path.extname(file.name), function moveToServer(err) {
+		res.redirect('/w/파일:' + encodeURI(req.body['document']));
+	});
 });
 
 wiki.use(function(req, res, next) {
