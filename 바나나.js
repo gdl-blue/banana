@@ -1,4 +1,4 @@
-﻿// 바나나 엔진 버전 1.1
+// 바나나 엔진 버전 1.1
 
 const perms = [
 	'admin', 'ban_user', 'developer', 'update_thread_document',
@@ -2207,7 +2207,9 @@ wiki.use(function(req, res, next) {
 		else
 			permlist[prm['username']].push(prm['perm']);
 	}
+	
+	const server = wiki.listen(hostconfig['port']); // 서버실행
+	print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
 })();
 
-const server = wiki.listen(hostconfig['port']); // 서버실행
-print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
+
