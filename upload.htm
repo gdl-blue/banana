@@ -1,0 +1,93 @@
+<meta charset=euc-kr>
+<title>화일 올리기</title>
+
+<style>
+	.form-group {
+		margin-bottom: 40px;
+	}
+	
+	.form-control {
+		padding: 5px;
+		border-radius: 5px;
+		width: 100%;
+	}
+</style>
+
+<script src="https://code.jquery.com/jquery-1.8.0.min.js"></script>
+
+<script>
+	$(function() {
+		$('.input-examples').change(function() {
+			$(this).prev().val($(this).val());
+		});
+		
+		$('#propertySelect').change(function() {
+			const id = $(this).val();
+			$('textarea.property-content').hide();
+			$('textarea[data-id="' + id + '"]').show();
+		});
+	});
+</script>
+
+<div class=form-group>
+	<label>화일 선택: </label><br>
+	<input class=form-control type=file name=file>
+</div>
+
+<div class=form-group>
+	<label>사용할 화일 이름: </label><br>
+	<input class=form-control type=text name=document>
+</div>
+
+<div class=form-group>
+	<label>화일 정보: </label><br>
+	<div style="width: 140px; display: inline-block; float: left;">
+		<select id=propertySelect class=form-control size=19 placeholder="직접 입력">
+			<option value=1 selected>출처</option>
+			<option value=2>저작자</option>
+			<option value=3>만든 이</option>
+			<option value=4>날짜</option>
+			<option value=5>메모</option>
+		</select>
+	</div>
+	
+	<div style="width: calc(100% - 140px); display: inline-block; float: right;">
+		<textarea data-id=1 class="form-control property-content" rows=16></textarea>
+		<textarea style="display: none;" data-id=2 class="form-control property-content" rows=16></textarea>
+		<textarea style="display: none;" data-id=3 class="form-control property-content" rows=16></textarea>
+		<textarea style="display: none;" data-id=4 class="form-control property-content" rows=16></textarea>
+		<textarea style="display: none;" data-id=5 class="form-control property-content" rows=16></textarea>
+	</div>
+	
+	<textarea style="display: none;" name=text class=form-control></textarea>
+</div>
+
+<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+
+<div class=form-group>
+	<div style="width: 48%; display: inline-block; float: left;">
+		<label>분류:</label><br>
+		<input class=form-control type=text name=category>
+		<select id=categorySelect class="form-control input-examples" size=8 placeholder="직접 입력">
+			<option>동물</option>
+			<option>게임</option>
+			<option>컴퓨터</option>
+			<option>요리</option>
+		</select>
+	</div>
+	
+	<div style="width: 48%; display: inline-block; float: right;">
+		<label>저작권:</label><br>
+		<input class=form-control type=text name=license>
+		<select id=licenseSelect class="form-control input-examples" size=8 placeholder="직접 입력">
+			<option>CC-0</option>
+			<option>CC BY</option>
+			<option>CC BY-NC</option>
+			<option>CC BY-NC-ND</option>
+			<option>CC BY-NC-SA</option>
+			<option>CC BY-ND</option>
+			<option>CC BY-SA</option>
+			<option>제한적 이용</option>
+		</select>
+	</div>
+</div>
