@@ -2138,7 +2138,7 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	res.redirect(desturl);
 });
 
-wiki.get('/Upload', function uploadFilePage(req, res) {
+wiki.get('/Upload', async function uploadFilePage(req, res) {
 	var content = `
 		<script>
 			$(function() {
@@ -2147,7 +2147,7 @@ wiki.get('/Upload', function uploadFilePage(req, res) {
 			});
 		</script>
 	
-		<form method=post id=usingScript enctype="multipart/form-data" style="display: none;">
+		<form class=file-upload-form method=post id=usingScript enctype="multipart/form-data" style="display: none;">
 			<div class=form-group>
 				<label>화일 선택: </label><br>
 				<input class=form-control type=file name=file>
@@ -2277,10 +2277,14 @@ wiki.get('/Upload', function uploadFilePage(req, res) {
 	res.send(render(req, '화일 올리기', content, {}));
 });
 
-wiki.post('/Upload', function saveFile(req, res) {
+wiki.post('/Upload', async function saveFile(req, res) {
 	const file = req.files['file'];
 	
+	var content = `[include(틀:이미지 라이선스/${req.body['license']})]\n[[분류:파일/${req.body['category']}]]\n\n` + req.body['text'];
+	
 	file.mv('./images/' + sha3(file.name) + path.extname(file.name), function moveToServer(err) {
+		curs.execute("insert into documents (title, content) values (?, ?)", ['파일:' + req.body['document'] + path.extname(file.name), content]);
+		
 		res.redirect('/w/파일:' + encodeURI(req.body['document']));
 	});
 });
