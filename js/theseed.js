@@ -18,4 +18,16 @@ $(function() {
 			}
 		}
 	});
+	
+	$('.file-upload-form').submit(function() {
+		var content = '';
+		
+		for(var k=1; k<=5; k++) {
+			content += `== ${document.querySelector('select#propertySelect option[value="' + String(k) + '"]').innerText} ==\n${$('textarea[data-id="' + String(k) + '"]').val()}\n\n`;
+		}
+		
+		$('textarea[name="text"]').val(content);
+		
+		return true;
+	});
 });
