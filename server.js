@@ -2368,6 +2368,86 @@ wiki.post('/Upload', async function saveFile(req, res) {
 	});
 });
 
+wiki.get(/^\/acl\/(.*)/, function aclControlPanel(req, res) {
+	const title = req.params[0];
+	
+	const dispname = ['읽기', '편집', '토론', '편집 요청'];
+	const aclname  = ['read', 'edit', 'discuss', 'edit_request'];
+	
+	const permlist = [
+		['any', '모두'],
+		['member', '로그인된 사용자'],
+		['blocked_ip', '차단된 아이피'],
+		['blocked_member', '차단된 계정'],
+		['admin', '관리자'],
+		['developer', '소유자'],
+		['document_creator', '문서를 만든 사용자'],
+		['document_last_edited', '문서에 마지막으로 기여한 사용자'],
+		['document_contributor', '문서 기여자'],
+		['blocked_before', '차단된 적이 있는 사용자'],
+		['discussed_document', '이 문서에서 토론한 사용자'],
+		['discussed', '토론한 적이 있는 사용자'],
+		['has_starred_document', '이 문서를 주시하는 사용자']
+	];
+	
+	var permopts = '';
+	
+	for(var prm of permlist) {
+		permopts += `<option value="${prm[0]}">${prm[1]}</option>`;
+	}
+	
+	var content = '';
+	
+	for(var acl=0; acl<dispname.length; acl++) {
+		content += `
+			<div class=form-group>
+				<h3 style="margin: none;" class=wiki-heading>${dispname[acl]}</h3>
+				<div class=wiki-heading-content>
+					<div style="width: 49.5%; float: left;" class=acl-list-form data-acltype=${aclname[acl]} data-action=allow>
+						<label>허용 대상: </label><br>
+						<div class=acl-controller>
+							<select style="width: 100%;" type=text class="form-control acl-value">
+								${permopts}
+							</select>
+							<label><input type=checkbox name=not> 선택한 대상의 반대</label>
+						
+							<span style="float: right;">
+								<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
+								<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
+							</span>
+						</div>
+						
+						<select size=16 class="form-control acl-list">
+							
+						</select>
+					</div>
+					
+					<div style="width: 49.5%; float: right;" class=acl-list-form data-acltype=${aclname[acl]} data-action=deny>
+						<label>거부 대상: </label><br>
+						<div class=acl-controller>
+							<select style="width: 100%;" type=text class="form-control acl-value">
+								${permopts}
+							</select>
+							<label><input type=checkbox name=not> 선택한 대상의 반대</label>
+						
+							<span style="float: right;">
+								<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
+								<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
+							</span>
+						</div>
+						
+						<select size=16 class="form-control acl-list">
+							
+						</select>
+					</div>
+				</div>
+			</div>
+		`;
+	}
+	
+	res.send(render(req, title, content, {}, ' (ACL)'));
+});
+
 wiki.use(function(req, res, next) {
     return res.status(404).send(`
 		접속한 페이지가 없음.
