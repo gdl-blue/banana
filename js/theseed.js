@@ -18,4 +18,46 @@ $(function() {
 			}
 		}
 	});
+	
+	$('div.acl-controller button.addbtn').click(function() {
+		const addbtn = $(this);
+	
+		$.ajax({
+			type: "POST",
+			data: {
+				'action': addbtn.parent().parent().parent().attr('data-action'),
+				'type': addbtn.parent().parent().parent().attr('data-acltype'),
+				'value': addbtn.parent().prev().val(),
+				'mode': 'add'
+			},
+			dataType: 'text',
+			success: function aclAddSuccess(res) {
+				addbtn.parent().parent().next().html(res);
+			},
+			error: function aclAddFail(e) {
+				alert('ACL 추가에 실패했습니다.');
+			}
+		});
+	});
+	
+	$('div.acl-controller button.delbtn').click(function() {
+		const delbtn = $(this);
+	
+		$.ajax({
+			type: "POST",
+			data: {
+				'action': delbtn.parent().parent().parent().attr('data-action'),
+				'type': delbtn.parent().parent().parent().attr('data-acltype'),
+				'value': delbtn.parent().prev().val(),
+				'mode': 'remove'
+			},
+			dataType: 'text',
+			success: function aclRemoveSuccess(res) {
+				delbtn.parent().parent().next().html(res);
+			},
+			error: function aclAddFail(e) {
+				alert('ACL 삭제에 실패했습니다.');
+			}
+		});
+	});
 });
