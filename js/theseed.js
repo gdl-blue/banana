@@ -1,9 +1,9 @@
 $(function() {
-	$('.input-examples').change(function() {
+	$('.input-examples').on('change click', function() {
 		$(this).prev().val($(this).val());
 	});
 	
-	$('#propertySelect').change(function() {
+	$('#propertySelect').on('change click', function() {
 		const id = $(this).val();
 		$('textarea.property-content').hide();
 		$('textarea[data-id="' + id + '"]').show();
@@ -17,17 +17,5 @@ $(function() {
 				item.style.display = '';
 			}
 		}
-	});
-	
-	$('.file-upload-form').submit(function() {
-		var content = '';
-		
-		for(var k=1; k<=5; k++) {
-			content += `== ${document.querySelector('select#propertySelect option[value="' + String(k) + '"]').innerText} ==\n${$('textarea[data-id="' + String(k) + '"]').val()}\n\n`;
-		}
-		
-		$('textarea[name="text"]').val(content);
-		
-		return true;
 	});
 });
