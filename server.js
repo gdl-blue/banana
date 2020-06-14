@@ -149,16 +149,14 @@ const fs = require('fs');
 var wikiconfig = {};
 var permlist = {};
 
-function setupWiki() { "함수 목록에 추가용"; };
-
 var firstrun = 1;
 var hostconfig;
 try { hostconfig = require('./config.json'); }
 catch(e) {
 	firstrun = 0;
-	(async function setup() {
+	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.2.1 [디버그 전용]");
+		print("버전 1.3.0 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -174,7 +172,7 @@ catch(e) {
 			'namespaces': ['namespace', 'locked', 'norecent', 'file'],
 			'users': ['username', 'password'],
 			'user_settings': ['username', 'key', 'value'],
-			'acl': ['title', 'no', 'type', 'content', 'action', 'expire'],
+			'acl': ['title', 'notval', 'type', 'value', 'action'],
 			'nsacl': ['namespace', 'no', 'type', 'content', 'action', 'expire'],
 			'config': ['key', 'value'],
 			'email_filters': ['address'],
@@ -321,12 +319,12 @@ function getSkin() {
 	return hostconfig['skin'];
 }
 
-async function getperm(perm, username) {
-	await curs.execute("select perm from perms where username = ? and perm = ?", [username, perm]);
-	if(curs.fetchall().length) {
-		return true;
+function getperm(perm, username) {
+	try {
+		return permlist[username].includes(perm)
+	} catch(e) {
+		return false;
 	}
-	return false;
 }
 
 function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '') {
@@ -544,7 +542,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 		} else {
 			content = markdown(rawContent[0]['content']);
 			
-			if(title.startsWith("사용자:") && await getperm('admin', title.replace(/^사용자[:]/, ''))) {
+			if(title.startsWith("사용자:") && getperm('admin', title.replace(/^사용자[:]/, ''))) {
 				content = `
 					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'red\';" onmouseout="this.style.borderTopColor=\'orange\';">
 						<span style="font-size: 14pt;">이 사용자는 특수 권한을 가지고 있습니다.</span>
@@ -1266,7 +1264,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 									${
 										rs['hidden'] == '1'
 										? (
-											await getperm('hide_thread_comment', ip_check(req))
+											getperm('hide_thread_comment', ip_check(req))
 											? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]<div class="text-line-break" style="margin: 25px 0px 0px -10px; display:block"><a class="text" onclick="$(this).parent().parent().children(\'.hidden-content\').show(); $(this).parent().css(\'margin\', \'15px 0 15px -10px\'); return false;" style="display: block; color: #fff;">[ADMIN] Show hidden content</a><div class="line"></div></div><div class="hidden-content" style="display:none">' + markdown(rs['content'], rs['ismember']) + '</div>'
 											: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
 										  )
@@ -1339,7 +1337,7 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 	
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
 					(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-					['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', await getperm('admin', ip_check(req)) ? '1' : '0']);
+					['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0']);
 					
 	res.redirect('/thread/' + tnum);
 });
@@ -1368,7 +1366,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		<h2 class=wiki-heading style="cursor: pointer;">
 			${html.escape(topic)}
 			${
-				await getperm('delete_thread', ip_check(req))
+				getperm('delete_thread', ip_check(req))
 				? '<span class=pull-right><a onclick="return confirm(\'삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
 				: ''
 			}
@@ -1400,7 +1398,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		<h2 class=wiki-heading style="cursor: pointer;">댓글 달기</h2>
 	`;
 	
-	if(await getperm('update_thread_status', ip_check(req))) {
+	if(getperm('update_thread_status', ip_check(req))) {
 		var sts = '';
 		
 		switch(status) {
@@ -1430,7 +1428,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		`;
 	}
 	
-	if(await getperm('update_thread_document', ip_check(req))) {
+	if(getperm('update_thread_document', ip_check(req))) {
 		content += `
         	<form method="post" id="thread-document-form">
         		쓰레드 이동
@@ -1440,7 +1438,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		`;
 	}
 	
-	if(await getperm('update_thread_topic', ip_check(req))) {
+	if(getperm('update_thread_topic', ip_check(req))) {
 		content += `
         	<form method="post" id="thread-topic-form">
         		쓰레드 주제 변경
@@ -1496,7 +1494,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 	
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						String(lid + 1), req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', await getperm('admin', ip_check(req)) ? '1' : '0'
+						String(lid + 1), req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0'
 					]);
 					
 	curs.execute("update threads set time = ? where tnum = ?", [getTime(), tnum]);
@@ -1533,7 +1531,7 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 	await curs.execute("select id, content, username, time, hidden, hider, status, ismember from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
 	for(rs of curs.fetchall()) {
 		var hbtn = ''
-		if(await getperm('hide_thread_comment', ip_check(req))) {
+		if(getperm('hide_thread_comment', ip_check(req))) {
 			hbtn += `
 				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[숨기기${rs['hidden'] == '1' ? ' 해제' : ''}]</a>
 			`;
@@ -1551,7 +1549,7 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 						${
 							rs['hidden'] == '1'
 							? (
-								await getperm('hide_thread_comment', ip_check(req))
+								getperm('hide_thread_comment', ip_check(req))
 								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.] ' + markdown(rs['content'])
 								: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
 							  )
@@ -1581,7 +1579,7 @@ wiki.get('/admin/thread/:tnum/:id/show', async function showHiddenComment(req, r
 	
 	if(!rescount) { res.send(showError(req, "thread_not_found")); return; }
 	
-	if(!await getperm('hide_thread_comment', ip_check(req))) {
+	if(!getperm('hide_thread_comment', ip_check(req))) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1602,7 +1600,7 @@ wiki.get('/admin/thread/:tnum/:id/hide', async function hideComment(req, res) {
 	
 	if(!rescount) { res.send(showError(req, "thread_not_found")); return; }
 	
-	if(!await getperm('hide_thread_comment', ip_check(req))) {
+	if(!getperm('hide_thread_comment', ip_check(req))) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1625,7 +1623,7 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 	var newstatus = req.body['status'];
 	if(!['close', 'pause', 'normal'].includes(newstatus)) newstatus = 'normal';
 	
-	if(!await getperm('update_thread_status', ip_check(req))) {
+	if(!getperm('update_thread_status', ip_check(req))) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1634,7 +1632,7 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 	curs.execute("update threads set status = ? where tnum = ?", [newstatus, tnum]);
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
 					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?)", [
-						String(rescount + 1), '스레드 상태를 <strong>' + newstatus + '</strong>로 변경', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', await getperm('admin', ip_check(req)) ? '1' : '0' 
+						String(rescount + 1), '스레드 상태를 <strong>' + newstatus + '</strong>로 변경', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
@@ -1655,7 +1653,7 @@ wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(re
 		return;
 	}
 	
-	if(!await getperm('update_thread_document', ip_check(req))) {
+	if(!getperm('update_thread_document', ip_check(req))) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1664,7 +1662,7 @@ wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(re
 	curs.execute("update threads set title = ? where tnum = ?", [newdoc, tnum]);
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
 					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?)", [
-						String(rescount + 1), '스레드를 <strong>' + newdoc + '</strong> 문서로 이동', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', await getperm('admin', ip_check(req)) ? '1' : '0' 
+						String(rescount + 1), '스레드를 <strong>' + newdoc + '</strong> 문서로 이동', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
@@ -1685,7 +1683,7 @@ wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res
 		return;
 	}
 	
-	if(!await getperm('update_thread_topic', ip_check(req))) {
+	if(!getperm('update_thread_topic', ip_check(req))) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1694,7 +1692,7 @@ wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res
 	curs.execute("update threads set topic = ? where tnum = ?", [newtopic, tnum]);
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
 					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?)", [
-						String(rescount + 1), '스레드 주제를 <strong>' + newtopic + '</strong>로 변경', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', await getperm('admin', ip_check(req)) ? '1' : '0' 
+						String(rescount + 1), '스레드 주제를 <strong>' + newtopic + '</strong>로 변경', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
@@ -1709,7 +1707,7 @@ wiki.get('/admin/thread/:tnum/delete', async function deleteThread(req, res) {
 	
 	if(!rescount) { res.send(showError(req, "thread_not_found")); return; }
 	
-	if(!await getperm('delete_thread', ip_check(req))) {
+	if(!getperm('delete_thread', ip_check(req))) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -2223,7 +2221,7 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 
 			<div class=form-group>
 				<label>화일 정보: </label><br>
-				<div style="width: 120px; display: inline-block; float: left;">
+				<div style="width: 140px; display: inline-block; float: left;">
 					<select id=propertySelect class=form-control size=5 placeholder="직접 입력" style="height: 400px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; borde-right: none;">
 						<option value=1 selected>출처</option>
 						<option value=2>저작자</option>
@@ -2233,7 +2231,7 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 					</select>
 				</div>
 				
-				<div style="width: calc(100% - 120px); display: inline-block; float: right;">
+				<div style="width: calc(100% - 140px); display: inline-block; float: right;">
 					<textarea name=prop1 data-id=1 class="form-control property-content" style="height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
 					<textarea name=prop2 data-id=2 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
 					<textarea name=prop3 data-id=3 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
@@ -2242,10 +2240,8 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 				</div>
 			</div>
 
-			<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
 			<div class=form-group>
-				<div style="width: 48%; display: inline-block; float: left;">
+				<div style="width: 49.5%; display: inline-block; float: left;">
 					<label>분류:</label><br>
 					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=categorySelect class="form-control dropdown-search" type=text name=category placeholder="목록에 없으면 이곳에 입력하십시오">
 					<select style="border-top-right-radius: 0px; border-top-left-radius: 0px;" id=categorySelect class="form-control input-examples" size=8>
@@ -2253,7 +2249,7 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 					</select>
 				</div>
 				
-				<div style="width: 48%; display: inline-block; float: right;">
+				<div style="width: 49.5%; display: inline-block; float: right;">
 					<label>저작권:</label><br>
 					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=licenseSelect class="form-control dropdown-search" type=text name=license placeholder="목록에 없으면 이곳에 입력하십시오">
 					<select style="border-top-right-radius: 0px; border-top-left-radius: 0px;" id=licenseSelect class="form-control input-examples" size=8>
@@ -2262,8 +2258,6 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 					</select>
 				</div>
 			</div>
-
-			<br><br><br><br><br><br><br><br><br><br>
 
 			<div class=btns>
 				<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
@@ -2368,7 +2362,7 @@ wiki.post('/Upload', async function saveFile(req, res) {
 	});
 });
 
-wiki.get(/^\/acl\/(.*)/, function aclControlPanel(req, res) {
+wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 	const title = req.params[0];
 	
 	const dispname = ['읽기', '편집', '토론', '편집 요청'];
@@ -2399,6 +2393,24 @@ wiki.get(/^\/acl\/(.*)/, function aclControlPanel(req, res) {
 	var content = '';
 	
 	for(var acl=0; acl<dispname.length; acl++) {
+		var ret1 = '', ret2 = '';
+	
+		await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+			'allow', title, aclname[acl]
+		]);
+		
+		for(var aclitm of curs.fetchall()) {
+			ret1 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
+		}
+		
+		await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+			'deny', title, aclname[acl]
+		]);
+		
+		for(var aclitm of curs.fetchall()) {
+			ret2 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
+		}
+		
 		content += `
 			<div class=form-group>
 				<h3 style="margin: none;" class=wiki-heading>${dispname[acl]}</h3>
@@ -2418,7 +2430,7 @@ wiki.get(/^\/acl\/(.*)/, function aclControlPanel(req, res) {
 						</div>
 						
 						<select size=16 class="form-control acl-list">
-							
+							${ret1}
 						</select>
 					</div>
 					
@@ -2437,7 +2449,7 @@ wiki.get(/^\/acl\/(.*)/, function aclControlPanel(req, res) {
 						</div>
 						
 						<select size=16 class="form-control acl-list">
-							
+							${ret2}
 						</select>
 					</div>
 				</div>
@@ -2446,6 +2458,79 @@ wiki.get(/^\/acl\/(.*)/, function aclControlPanel(req, res) {
 	}
 	
 	res.send(render(req, title, content, {}, ' (ACL)'));
+});
+
+/*
+wiki.get('/t', function(q, s) {
+	s.send('<form method=post><input type=checkbox name=c><button>Submit</sbutton></form>');
+});
+
+wiki.post('/t', function(q, s) {
+	console.log('[' + q.body['c'] + ']');
+	console.log(typeof q.body['c']);
+	
+	s.send(q.body['c']);
+});
+*/
+
+wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
+	const title = req.params[0];
+	
+	const action = req.body['action'];
+	const type   = req.body['type'];
+	const value  = req.body['value'];
+	const mode   = req.body['mode'];
+	const not    = req.body['not'] ? '1' : '0';
+	
+	if(!getperm('acl', ip_check(req))) {
+		res.redirect('/');
+		
+		return;
+	}
+	
+	switch(mode) {
+		case 'add':
+			await curs.execute("insert into acl (title, action, value, type, notval) values (?, ?, ?, ?, ?)", [
+				title, action, value, type, not
+			]);
+		break;case 'remove':
+			await curs.execute("delete from acl where value = ? and title = ? and notval = ? and type = ? and action = ?", [
+				value, title, not, type, action
+			]);
+	}
+	
+	var rev = 1;
+	
+	await curs.execute("select rev from history where title = ? order by CAST(rev AS INTEGER) desc limit 1", [title]);
+	try {
+		rev = Number(curs.fetchall()[0]['rev']) + 1;
+	} catch(e) {
+		rev = 0 + 1;
+	}
+	
+	var dc = '';
+	
+	await curs.execute("select content from documents where title = ?", [title]);
+	const asdf = curs.fetchall();
+	
+	if(asdf.length) dc = asdf[0]['content'];
+	
+	await curs.execute("insert into history (title, content, rev, username, time, changes, log, iserq, erqnum, ismember, advance) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+		title, dc, rev, ip_check(req), getTime(), '0', '', '0', '-1', islogin(req) ? 'author' : 'ip', `(ACL ${mode == 'add' ? '추가' : '삭제'} - ${type}:${action == 'deny' ? '거부' : '허용'}:${html.escape(value)})`
+	]);
+	
+	var retval = '';
+	
+	await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+		action, title, type
+	]);
+	
+	for(var acl of curs.fetchall()) {
+		retval += `<option>${acl['not'] == '1' ? 'not ' : ''}${acl['value']}</option>`;
+	}
+	
+	res.send(retval);
 });
 
 wiki.use(function(req, res, next) {
