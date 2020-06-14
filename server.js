@@ -394,7 +394,7 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 		<script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" src="/js/dateformatter.js?508d6dd4"></script>
 		<script type="text/javascript" src="/js/intersection-observer.js?36e469ff"></script>
-		<script type="text/javascript" src="/js/theseed.js?24141115"></script>
+		<script type="text/javascript" src="/js/banana.js?24141115"></script>
 	`;
 	for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
 		header += '<script type="text/javascript" src="/skins/' + getSkin() + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
