@@ -9,7 +9,7 @@ function prt(x) { process.stdout.write(x); }
 
 function beep(cnt = 1) { // 경고음 재생
 	for(var i=1; i<=cnt; i++)
-		prt("");
+		prt(''); // prt("");
 }
 
 const path = require('path');
@@ -79,7 +79,7 @@ const curs = {
 			
 			return retval;
 		} else {
-			conn.run(sql, params, err => { beep(3); });
+			await conn.run(sql, params, err => { if(err) print('[오류!] ' + err); beep(3); });
 		}
 		
 		return [];
@@ -149,54 +149,83 @@ const fs = require('fs');
 var wikiconfig = {};
 var permlist = {};
 
+function setupWiki() { "함수 목록에 추가용"; };
+
+var firstrun = 1;
 var hostconfig;
 try { hostconfig = require('./config.json'); }
 catch(e) {
-	print("바나나 위키엔진에 오신것을 환영합니다.");
-	print("버전 1.2.0 [디버그 전용]");
-	
-	prt('\n');
-	
-	hostconfig = {
-		host: input("호스트 주소: "),
-		port: input("포트 번호: "),
-		skin: input("기본 스킨 이름: ")
-	};
-	
-	const tables = {
-		'documents': ['title', 'content'],
-		'history': ['title', 'content', 'rev', 'time', 'username', 'changes', 'log', 'iserq', 'erqnum', 'advance', 'ismember'],
-		'namespaces': ['namespace', 'locked', 'norecent', 'file'],
-		'users': ['username', 'password'],
-		'user_settings': ['username', 'key', 'value'],
-		'acl': ['title', 'no', 'type', 'content', 'action', 'expire'],
-		'nsacl': ['namespace', 'no', 'type', 'content', 'action', 'expire'],
-		'config': ['key', 'value'],
-		'email_filters': ['address'],
-		'stars': ['title', 'username', 'lastedit'],
-		'perms': ['perm', 'username'],
-		'threads': ['title', 'topic', 'status', 'time', 'tnum'],
-		'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin'],
-		'useragents': ['username', 'string'],
-		'login_history': ['username', 'ip'],
-		'account_creation': ['key', 'email', 'time']
-	};
-	
-	for(var table in tables) {
-		var sql = '';
-		sql = `CREATE TABLE ${table} ( `;
+	firstrun = 0;
+	(async function setup() {
+		print("바나나 위키엔진에 오신것을 환영합니다.");
+		print("버전 1.2.1 [디버그 전용]");
 		
-		for(col of tables[table]) {
-			sql += `${col} TEXT DEFAULT '', `;
+		prt('\n');
+		
+		hostconfig = {
+			host: input("호스트 주소: "),
+			port: input("포트 번호: "),
+			skin: input("기본 스킨 이름: ")
+		};
+		
+		const tables = {
+			'documents': ['title', 'content'],
+			'history': ['title', 'content', 'rev', 'time', 'username', 'changes', 'log', 'iserq', 'erqnum', 'advance', 'ismember'],
+			'namespaces': ['namespace', 'locked', 'norecent', 'file'],
+			'users': ['username', 'password'],
+			'user_settings': ['username', 'key', 'value'],
+			'acl': ['title', 'no', 'type', 'content', 'action', 'expire'],
+			'nsacl': ['namespace', 'no', 'type', 'content', 'action', 'expire'],
+			'config': ['key', 'value'],
+			'email_filters': ['address'],
+			'stars': ['title', 'username', 'lastedit'],
+			'perms': ['perm', 'username'],
+			'threads': ['title', 'topic', 'status', 'time', 'tnum'],
+			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin'],
+			'useragents': ['username', 'string'],
+			'login_history': ['username', 'ip'],
+			'account_creation': ['key', 'email', 'time'],
+			'files': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category'],
+			'filehistory': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category', 'username', 'rev'],
+			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al'],
+			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al'],
+			'filelicenses': ['license', 'creator'],
+			'filecategories': ['category', 'creator']
+		};
+		
+		for(var table in tables) {
+			var sql = '';
+			sql = `CREATE TABLE ${table} ( `;
+			
+			for(col of tables[table]) {
+				sql += `${col} TEXT DEFAULT '', `;
+			}
+			
+			sql = sql.replace(/[,]\s$/, '');		
+			sql += `)`;
+			
+			await curs.execute(sql);
 		}
 		
-		sql = sql.replace(/[,]\s$/, '');		
-		sql += `)`;
-		
-		curs.execute(sql);
-	}
-	
-	fs.writeFile('config.json', JSON.stringify(hostconfig), 'utf8', (e) => { beep(2); });
+		setTimeout(async () => {
+			const fcates = ['동물', '게임', '컴퓨터', '요리', '탈것', '전화기', '기계', '광고', '도구', '만화/애니메이션', '아이콘/기호'];
+			const flices = ['CC BY', 'CC BY-NC', 'CC BY-NC-ND', 'CC BY-NC-SA', 'CC BY-ND', 'CC BY-SA', 'CC-0', 'PD-author', 'PD-self', 'PD-software'];
+
+			for(var cate of fcates) {
+				await curs.execute("insert into filecategories (category, creator) values (?, '')", [cate]);
+			}
+			
+			for(var lice of flices) {
+				await curs.execute("insert into filelicenses (license, creator) values (?, '')", [lice]);
+			}
+			
+			await fs.writeFile('config.json', JSON.stringify(hostconfig), 'utf8', (e) => { beep(2); });
+			
+			setTimeout(async () => {
+				print("\n설정이 완료되었습니다. 5초 후에 엔진을 다시 시작하십시오.");
+			}, 5000);
+		}, 5000);
+	})();
 }
 
 function markdown(content) {
@@ -260,6 +289,23 @@ function getUsername(req, forceIP = 0) {
 
 const ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
 
+async function isBanned(req, ismember, username = '') {
+	// 미완성
+	return false;
+	
+	if(!islogin(req)) {
+		await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req, 1), ismember]);
+		if(curs.fetchall().length) return true;
+	}
+	
+	await curs.execute("select username from banned_users where username = ? and ismember = ? and al = '0'", [ip_check(req, 1), ismember]);
+	if(curs.fetchall().length) return true;
+	
+	await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req), ismember]);
+}
+
+const ban_check = isBanned;
+
 const config = {
 	getString: function(str, def = '') {
 		str = str.replace(/^wiki[.]/, '');
@@ -316,6 +362,9 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 	templateVariables['content'] = content;
 	templateVariables['perms'] = perms;
 	templateVariables['url'] = req.path;
+	templateVariables['req'] = {
+		ip: ip_check(req, 1)
+	};
 	
 	if(islogin(req)) {
 		templateVariables['member'] = {
@@ -782,7 +831,7 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 	res.send(render(req, '최근 변경내역', content, {}));
 });
 
-wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function documentContributionList(req, res) {
+wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function documentContribution(req, res) {
 	const ismember = req.params[0];
 	const username = req.params[1];
 	
@@ -1503,7 +1552,7 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 							rs['hidden'] == '1'
 							? (
 								await getperm('hide_thread_comment', ip_check(req))
-								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]<div class="text-line-break" style="margin: 25px 0px 0px -10px; display:block"><a class="text" onclick="$(this).parent().parent().children(\'.hidden-content\').show(); $(this).parent().css(\'margin\', \'15px 0 15px -10px\'); $(this).hide(); return false;" style="display: block; color: #fff;">[ADMIN] Show hidden content</a><div class="line"></div></div><div class="hidden-content" style="display:none">' + markdown(rs['content']) + '</div>'
+								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.] ' + markdown(rs['content'])
 								: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
 							  )
 							: (
@@ -1894,7 +1943,7 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 	`, {}));
 });
 
-wiki.post('/member/signup', async function emailConfirmationScreen(req, res) {
+wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	var desturl = req.query['redirect'];
 	if(!desturl) desturl = '/';
 	
@@ -2139,6 +2188,20 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 });
 
 wiki.get('/Upload', async function uploadFilePage(req, res) {
+	await curs.execute("select license from filelicenses order by license");
+	const licelst = curs.fetchall();
+	await curs.execute("select category from filecategories order by category");
+	const catelst = curs.fetchall();
+	
+	var liceopts = '', cateopts = '';
+	
+	for(var lice of licelst) {
+		liceopts += `<option>${html.escape(lice['license'])}</option>`;
+	}
+	for(var cate of catelst) {
+		cateopts += `<option>${html.escape(cate['category'])}</option>`;
+	}
+	
 	var content = `
 		<script>
 			$(function() {
@@ -2161,7 +2224,7 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 			<div class=form-group>
 				<label>화일 정보: </label><br>
 				<div style="width: 120px; display: inline-block; float: left;">
-					<select id=propertySelect class=form-control size=5 placeholder="직접 입력" style="height: 400px;">
+					<select id=propertySelect class=form-control size=5 placeholder="직접 입력" style="height: 400px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; borde-right: none;">
 						<option value=1 selected>출처</option>
 						<option value=2>저작자</option>
 						<option value=3>만든 이</option>
@@ -2171,14 +2234,12 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 				</div>
 				
 				<div style="width: calc(100% - 120px); display: inline-block; float: right;">
-					<textarea data-id=1 class="form-control property-content" style="height: 400px;"></textarea>
-					<textarea data-id=2 class="form-control property-content" style="display: none; height: 400px;"></textarea>
-					<textarea data-id=3 class="form-control property-content" style="display: none; height: 400px;"></textarea>
-					<textarea data-id=4 class="form-control property-content" style="display: none; height: 400px;"></textarea>
-					<textarea data-id=5 class="form-control property-content" style="display: none; height: 400px;"></textarea>
+					<textarea name=prop1 data-id=1 class="form-control property-content" style="height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+					<textarea name=prop2 data-id=2 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+					<textarea name=prop3 data-id=3 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+					<textarea name=prop4 data-id=4 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+					<textarea name=prop5 data-id=5 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
 				</div>
-				
-				<textarea style="display: none;" name=text class=form-control></textarea>
 			</div>
 
 			<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
@@ -2186,37 +2247,23 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 			<div class=form-group>
 				<div style="width: 48%; display: inline-block; float: left;">
 					<label>분류:</label><br>
-					<input data-datalist=categorySelect class="form-control dropdown-search" type=text name=category placeholder="목록에 없으면 이곳에 입력하십시오">
-					<select id=categorySelect class="form-control input-examples" size=8>
-						<option>동물</option>
-						<option>게임</option>
-						<option>컴퓨터</option>
-						<option>요리</option>
+					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=categorySelect class="form-control dropdown-search" type=text name=category placeholder="목록에 없으면 이곳에 입력하십시오">
+					<select style="border-top-right-radius: 0px; border-top-left-radius: 0px;" id=categorySelect class="form-control input-examples" size=8>
+						${cateopts}
 					</select>
 				</div>
 				
 				<div style="width: 48%; display: inline-block; float: right;">
 					<label>저작권:</label><br>
-					<input data-datalist=licenseSelect class="form-control dropdown-search" type=text name=license placeholder="목록에 없으면 이곳에 입력하십시오">
-					<select id=licenseSelect class="form-control input-examples" size=8>
-						<option>CC-0</option>
-						<option>CC BY</option>
-						<option>CC BY-NC</option>
-						<option>CC BY-NC-ND</option>
-						<option>CC BY-NC-SA</option>
-						<option>CC BY-ND</option>
-						<option>CC BY-SA</option>
+					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=licenseSelect class="form-control dropdown-search" type=text name=license placeholder="목록에 없으면 이곳에 입력하십시오">
+					<select style="border-top-right-radius: 0px; border-top-left-radius: 0px;" id=licenseSelect class="form-control input-examples" size=8>
+						${liceopts}
 						<option>제한적 이용</option>
 					</select>
 				</div>
 			</div>
 
 			<br><br><br><br><br><br><br><br><br><br>
-
-			<div class=form-group>
-				<label>메모: </label><br>
-				<input type=text class=form-control name=log>
-			</div>
 
 			<div class=btns>
 				<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
@@ -2235,37 +2282,43 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 			</div>
 
 			<div class=form-group>
-				<label>화일 정보: </label><br>
-				<textarea style="display: none;" name=text class=form-control></textarea>
+				<label>출처: </label><br>
+				<textarea name=prop1 class=form-control rows=3></textarea>
 			</div>
 
 			<div class=form-group>
-				<label>분류:</label><br>
-				<select name=category id=categorySelect class="form-control input-examples" size=8 placeholder="직접 입력">
-					<option>동물</option>
-					<option>게임</option>
-					<option>컴퓨터</option>
-					<option>요리</option>
-				</select>
+				<label>저작자: </label><br>
+				<textarea name=prop2 class=form-control rows=3></textarea>
 			</div>
 
 			<div class=form-group>
-				<label>저작권:</label><br>
-				<select name=license id=licenseSelect class="form-control input-examples" size=8 placeholder="직접 입력">
-					<option>CC-0</option>
-					<option>CC BY</option>
-					<option>CC BY-NC</option>
-					<option>CC BY-NC-ND</option>
-					<option>CC BY-NC-SA</option>
-					<option>CC BY-ND</option>
-					<option>CC BY-SA</option>
-					<option>제한적 이용</option>
-				</select>
+				<label>만든 이: </label><br>
+				<textarea name=prop3 class=form-control rows=3></textarea>
+			</div>
+
+			<div class=form-group>
+				<label>날짜: </label><br>
+				<textarea name=prop4 class=form-control rows=3></textarea>
 			</div>
 
 			<div class=form-group>
 				<label>메모: </label><br>
-				<input type=text class=form-control name=log>
+				<textarea name=prop5 class=form-control rows=3></textarea>
+			</div>
+
+			<div class=form-group>
+				<label>분류: <span style="color: gray; float: right;">분류를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
+				<select name=category id=categorySelect class="form-control input-examples" size=8 placeholder="직접 입력">
+					${cateopts}
+				</select>
+			</div>
+
+			<div class=form-group>
+				<label>저작권: <span style="color: gray; float: right;">라이선스를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
+				<select name=license id=licenseSelect class="form-control input-examples" size=8 placeholder="직접 입력">
+					${liceopts}
+					<option>제한적 이용</option>
+				</select>
 			</div>
 
 			<div class=btns>
@@ -2282,10 +2335,36 @@ wiki.post('/Upload', async function saveFile(req, res) {
 	
 	var content = `[include(틀:이미지 라이선스/${req.body['license']})]\n[[분류:파일/${req.body['category']}]]\n\n` + req.body['text'];
 	
-	file.mv('./images/' + sha3(file.name) + path.extname(file.name), function moveToServer(err) {
-		curs.execute("insert into documents (title, content) values (?, ?)", ['파일:' + req.body['document'] + path.extname(file.name), content]);
+	/*
+		'files': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category']
+		'filehistory': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category', 'username', 'editor']
+		'filelicenses': ['license', 'creator']
+		'filecategories': ['category', 'creator']
+	*/
+	
+	const fn = req.body['document'] + path.extname(file.name);
+	
+	await curs.execute("select filename from files where filename = ?", [fn]);
+	if(curs.fetchall().length) {
+		req.send(showError(req, 'file_already_exists'));
+		return;
+	}
+	
+	file.mv('./images/' + sha3(file.name) + path.extname(file.name), async function moveToServer(err) {
+		await curs.execute("select license from filelicenses where license = ?", [req.body['license']]);
+		if(!curs.fetchall().length) {
+			await curs.execute("insert into filelicenses (license, creator) values (?, ?)", [req.body['license'], ip_check(req)]);
+		}
 		
-		res.redirect('/w/파일:' + encodeURI(req.body['document']));
+		await curs.execute("select category from filecategories where category = ?", [req.body['category']]);
+		if(!curs.fetchall().length) {
+			await curs.execute("insert into filecategories (category, creator) values (?, ?)", [req.body['category'], ip_check(req)]);
+		}
+		
+		curs.execute("insert into files (filename, prop1, prop2, prop3, prop4, prop5, license, category) values (?, ?, ?, ?, ?, ?, ?, ?)", [fn, req.body['prop1'], req.body['prop2'], req.body['prop3'], req.body['prop4'], req.body['prop5'], req.body['license'], req.body['category']]);
+		curs.execute("insert into filehistory (filename, prop1, prop2, prop3, prop4, prop5, license, category, username, rev) values (?, ?, ?, ?, ?, ?, ?, ?, ?, '1')", [fn, req.body['prop1'], req.body['prop2'], req.body['prop3'], req.body['prop4'], req.body['prop5'], req.body['license'], req.body['category'], ip_check(req)]);
+		
+		res.redirect('/file/' + encodeURI(req.body['document']));
 	});
 });
 
@@ -2295,24 +2374,25 @@ wiki.use(function(req, res, next) {
 	`);
 });
 
-(async function setWikiData() {
-	await curs.execute("select key, value from config");
-	
-	for(var cfg of curs.fetchall()) {
-		wikiconfig[cfg['key']] = cfg['value'];
-	}
-	
-	await curs.execute("select username, perm from perms order by username");
-	
-	for(var prm of curs.fetchall()) {
-		if(typeof(permlist[prm['username']]) == 'undefined')
-			permlist[prm['username']] = [prm['perm']];
-		else
-			permlist[prm['username']].push(prm['perm']);
-	}
-	
-	const server = wiki.listen(hostconfig['port']); // 서버실행
-	print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
-})();
-
+if(firstrun) {
+	(async function setWikiData() {
+		await curs.execute("select key, value from config");
+		
+		for(var cfg of curs.fetchall()) {
+			wikiconfig[cfg['key']] = cfg['value'];
+		}
+		
+		await curs.execute("select username, perm from perms order by username");
+		
+		for(var prm of curs.fetchall()) {
+			if(typeof(permlist[prm['username']]) == 'undefined')
+				permlist[prm['username']] = [prm['perm']];
+			else
+				permlist[prm['username']].push(prm['perm']);
+		}
+		
+		const server = wiki.listen(hostconfig['port']); // 서버실행
+		print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
+	})();
+}
 
