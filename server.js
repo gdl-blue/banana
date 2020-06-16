@@ -156,7 +156,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.3.0 [디버그 전용]");
+		print("버전 1.3.1 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -172,7 +172,7 @@ catch(e) {
 			'namespaces': ['namespace', 'locked', 'norecent', 'file'],
 			'users': ['username', 'password'],
 			'user_settings': ['username', 'key', 'value'],
-			'acl': ['title', 'notval', 'type', 'value', 'action'],
+			'acl': ['title', 'notval', 'type', 'value', 'action', 'hipri'],
 			'nsacl': ['namespace', 'no', 'type', 'content', 'action', 'expire'],
 			'config': ['key', 'value'],
 			'email_filters': ['address'],
@@ -394,7 +394,7 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 		<script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" src="/js/dateformatter.js?508d6dd4"></script>
 		<script type="text/javascript" src="/js/intersection-observer.js?36e469ff"></script>
-		<script type="text/javascript" src="/js/banana.js?24141115"></script>
+		<script type="text/javascript" src="/js/theseed.js?24141115"></script>
 	`;
 	for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
 		header += '<script type="text/javascript" src="/skins/' + getSkin() + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
@@ -457,8 +457,99 @@ function ip_pas(ip = '', ismember = '') {
 	}
 }
 
-async function getacl(title, action) {
-	return 1;
+async function getacl(req, title, action) {
+	var fullacllst = [];
+	
+	await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
+	fullacllst.push(curs.fetchall());
+	
+	await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
+	fullacllst.push(curs.fetchall());
+	
+	await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
+	fullacllst.push(curs.fetchall());
+	
+	for(var acllst of fullacllst) {
+		for(var acl of acllst) {
+			var   condition = true;
+			const action    = acl['action'];
+			const high      = acl['hipri'] == '1' ? true : false;
+			const not       = acl['not'] == '1' ? true : false;
+			const value     = acl['value'];
+			
+			['any', '모두'],
+			['member', '로그인된 사용자'],
+			['blocked_ip', '차단된 아이피'],
+			['blocked_member', '차단된 계정'],
+			['admin', '관리자'],
+			['developer', '소유자'],
+			['document_creator', '문서를 만든 사용자'],
+			['document_last_edited', '문서에 마지막으로 기여한 사용자'],
+			['document_contributor', '문서 기여자'],
+			['blocked_before', '차단된 적이 있는 사용자'],
+			['discussed_document', '이 문서에서 토론한 사용자'],
+			['discussed', '토론한 적이 있는 사용자'],
+			['has_starred_document', '이 문서를 주시하는 사용자']
+			
+			switch(acl['value']) {
+				case 'any':
+					condition = true;
+				break;case 'member':
+					condition = islogin(req);
+				break;case 'blocked_ip':
+					condition = !islogin(req) && isBanned(req, 'ip', ip_check(req));
+				break;case 'blocked_member':
+					condition = islogin(req) && isBanned(req, 'ip', ip_check(req));
+				break;case 'admin':
+					condition = getperm('admin', ip_check(req)) || getperm('developer', ip_check(req));
+				break;case 'developer':
+					condition = getperm('developer', ip_check(req));
+				break;case 'document_creator':
+					await curs.execute("select username from history where title = ? and username = ? and ismember = ? and rev = '1' and advance = '(새 문서)'", [title, ip_check(req), islogin(req) ? 'author' : 'ip']);
+					condition = curs.fetchall().length;
+				break;case 'document_last_edited':
+					await curs.execute("select username from history where title = ? and ismember = ? order by cast(rev as integer) desc limit 1", [title, islogin(req) ? 'author' : 'ip']);
+					condition = curs.fetchall()[0]['username'] == ip_check(req);
+				break;case 'document_contributor':
+					await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
+					condition = curs.fetchall().length > 0;
+				break;default:
+					if(value.startsWith('member:')) {
+						condition = islogin(req) && ip_check(req).toUpperCase() == value.replace(/^member[:]/i, '').toUpperCase();
+					}
+					else if(value.startsWith('ip:')) {
+						condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
+					}
+					else {
+						condition = false;
+					}
+			}
+			
+			if(action == 'allow') {
+				if(!not && condition) {
+					return true;
+				}
+				else if(not && !condition) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			} else {
+				if(!not && !condition) {
+					return true;
+				}
+				else if(not && condition) {
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+		}
+	}
+	
+	return false;
 }
 
 function navbtn(cs, ce, s, e) {
@@ -533,7 +624,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	var lstedt = undefined;
 	
 	try {
-		if(!await getacl(title, 'read')) {
+		if(!await getacl(req, title, 'read')) {
 			httpstat = 403;
 			error = true;
 			res.status(403).send(showError(req, 'insufficient_privileges_read'));
@@ -574,7 +665,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 	const title = req.params[0];
 	
-	if(!await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'read')) {
 		res.status(403).send(showError(req, 'insufficient_privileges_read'));
 		
 		return;
@@ -598,7 +689,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 		baserev = 0;
 	}
 	
-	if(!await getacl(title, 'edit')) {
+	if(!await getacl(req, title, 'edit')) {
 		error = true;
 		content = `
 			${alertBalloon('권한 부족', '편집 권한이 부족합니다. 대신 <strong><a href="/new_edit_request/' + html.escape(title) + '">편집 요청</a></strong>을 생성하실 수 있습니다.', 'danger', true)}
@@ -677,7 +768,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 	const title = req.params[0];
 	
-	if(!await getacl(title, 'edit') || !await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'edit') || !await getacl(req, title, 'read')) {
 		res.send(showError(req, 'insufficient_privileges_edit'));
 		
 		return;
@@ -1055,7 +1146,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	const from = req.query['from'];
 	const until = req.query['until'];
 	
-	if(!await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'read')) {
 		res.send(showError('insufficient_privileges_read'));
 		
 		return;
@@ -1164,7 +1255,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 	var state = req.query['state'];
 	if(!state) state = '';
 	
-	if(!await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'read')) {
 		res.send(showError('insufficient_privileges_read'));
 		
 		return;
@@ -1312,13 +1403,13 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 	const title = req.params[0];
 	
-	if(!await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'read')) {
 		res.send(showError('insufficient_privileges_read'));
 		
 		return;
 	}
 	
-	if(!await getacl(title, 'create_thread')) {
+	if(!await getacl(req, title, 'create_thread')) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1356,7 +1447,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	const topic = curs.fetchall()[0]['topic'];
 	const status = curs.fetchall()[0]['status'];
 	
-	if(!await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'read')) {
 		res.send(showError(req, 'insufficient_privileges_read'));
 		
 		return;
@@ -1477,13 +1568,13 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 	const topic = curs.fetchall()[0]['topic'];
 	const status = curs.fetchall()[0]['status'];
 	
-	if(!await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'read')) {
 		res.send(showError('insufficient_privileges_read'));
 		
 		return;
 	}
 	
-	if(!await getacl(title, 'write_thread_comment')) {
+	if(!await getacl(req, title, 'write_thread_comment')) {
 		res.send(showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1520,7 +1611,7 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 	const topic = curs.fetchall()[0]['topic'];
 	const status = curs.fetchall()[0]['status'];
 	
-	if(!await getacl(title, 'read')) {
+	if(!await getacl(req, title, 'read')) {
 		res.send(showError(req, 'insufficient_privileges_read'));
 		
 		return;
@@ -2421,7 +2512,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 							<select style="width: 100%;" type=text class="form-control acl-value">
 								${permopts}
 							</select>
-							<label><input type=checkbox name=not> 선택한 대상의 반대</label>
+							<label><input type=checkbox name=not> 선택대상의 반대</label> <label title="ACL은 기본적으로 거부가 우선적으로 작동합니다."><input type=checkbox name=high> 높은 우선순위</label>
 						
 							<span style="float: right;">
 								<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
@@ -2440,7 +2531,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 							<select style="width: 100%;" type=text class="form-control acl-value">
 								${permopts}
 							</select>
-							<label><input type=checkbox name=not> 선택한 대상의 반대</label>
+							<label><input type=checkbox name=not> 선택대상의 반대</label>
 						
 							<span style="float: right;">
 								<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
@@ -2541,6 +2632,18 @@ wiki.use(function(req, res, next) {
 
 if(firstrun) {
 	(async function setWikiData() {
+		const SML = [
+			"바나나를 불러오는 중...",
+			"바나나를 꺼내는 중...",
+			"바나나 껍질을 까는 중...",
+			"바나나 나무를 찾는 중..."
+		];
+		
+		print(
+			SML[ Math.floor(Math.random() * SML.length) ] + 
+			'\n'
+		);
+		
 		await curs.execute("select key, value from config");
 		
 		for(var cfg of curs.fetchall()) {
