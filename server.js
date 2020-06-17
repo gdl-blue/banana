@@ -364,6 +364,45 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 		ip: ip_check(req, 1)
 	};
 	
+	// 오픈나무 스킨 호환용
+	templateVariables['imp'] = [
+		title, 
+		[
+			config.getString('wiki.site_name', ''),
+			config.getString('wiki.copyright_text', '') + config.getString('wiki.footer_text', ''),
+			'',
+			'',
+			config.getString('wiki.logo_url', ''),
+			''
+		], 
+		[
+			'',
+			'',
+			islogin(req) ? 1 : 0,
+			'',
+			'someone@example.com', // 아직 이메일 추가기능도 미구현.,
+			islogin(req) ? ip_check(req) : '사용자',
+			getperm('admin', ip_check(req)) ? 1 : 0,
+			ban_check(req, islogin(req) ? 'author' : 'ip', ip_check(req)) ? 1 : 0,
+			0,
+			[], // 오픈나무에서 정확히 어떻게 처리되는지 미확인,
+			ip_check(req),
+			0 // 곧 구현 예정
+		], 
+		[
+			subtitle == '' ? 0 : subtitle,
+			!varlist['date'] ? 0 : varlist['date'], 
+			['wiki', 'notfound'].includes(viewname)
+			 ? (
+				varlist['starred'] ? 2 : (
+					islogin(req) ? 1 : 0
+				)
+			 ) : (
+				''
+			 )
+		]
+	];
+	
 	if(islogin(req)) {
 		templateVariables['member'] = {
 			username: req.session.username
