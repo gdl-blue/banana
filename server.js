@@ -37,10 +37,10 @@ function input(p) {
 const exec = eval;
 
 const { SHA3 } = require('sha3');
- 
-const hash = new SHA3(512);
 
 function sha3(p) {
+	const hash = new SHA3(512);
+	
 	hash.update(p);
 	return hash.digest('hex');
 }
@@ -117,6 +117,8 @@ function generateTime(time, fmt) {
 	return `<time datetime="${d}T${t}.000Z" data-format="${fmt}">${time}</time>`;
 }
 
+const md5 = require('md5');
+
 swig.setFilter('encode_userdoc', function encodeUserdocURL(input) {
 	return encodeURI('사용자:' + input);
 });
@@ -128,6 +130,15 @@ swig.setFilter('encode_doc', function encodeDocURL(input) {
 swig.setFilter('to_date', toDate);
 
 swig.setFilter('localdate', generateTime);
+
+// 오픈나무 스킨 호환용
+swig.setFilter('cut_100', function cutUntil100Chars(input) {
+	return input.slice(0, 100);
+});
+
+swig.setFilter('md5_replace', function MD5Hash(input) {
+	return md5(input);
+});
 
 wiki.use(session({
 	key: 'sid',
@@ -327,7 +338,7 @@ function getperm(perm, username) {
 	}
 }
 
-function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '') {
+function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
 	const skinInfo = {
 		title: title + subtitle,
 		viewName: viewname
@@ -402,6 +413,8 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 			 )
 		]
 	];
+	templateVariables['data'] = content;
+	templateVariables['menu'] = menu;
 	
 	if(islogin(req)) {
 		templateVariables['member'] = {
@@ -2005,7 +2018,7 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	id = curs.fetchall()[0]['username'];
 	
-	curs.execute("select username, password from users where username = ? and password = ?", [id, sha3(pw)]);
+	await curs.execute("select username, password from users where username = ? and password = ?", [id, sha3(pw)]);
 	if(!curs.fetchall().length) {
 		res.send(render(req, '로그인', `
 			<form class=login-form method=post>
