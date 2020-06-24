@@ -27,7 +27,7 @@ $(function() {
 			data: {
 				'action': addbtn.parent().parent().parent().attr('data-action'),
 				'type': addbtn.parent().parent().parent().attr('data-acltype'),
-				'value': addbtn.parent().prev().prev().val(),
+				'value': addbtn.parent().prev().prev().prev().val(),
 				'mode': 'add',
 				'not': addbtn.parent().prev().is(":checked")
 			},
@@ -49,7 +49,7 @@ $(function() {
 			data: {
 				'action': delbtn.parent().parent().parent().attr('data-action'),
 				'type': delbtn.parent().parent().parent().attr('data-acltype'),
-				'value': delbtn.parent().prev().prev().val(),
+				'value': delbtn.parent().parent().next().val(),
 				'mode': 'remove',
 				'not': delbtn.parent().prev().is(":checked")
 			},
