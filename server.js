@@ -1,5 +1,5 @@
 const perms = [
-	'admin', 'ban_user', 'developer', 'update_thread_document',
+	'admin', 'suspend_account', 'developer', 'update_thread_document',
 	'update_thread_status', 'update_thread_topic', 'hide_thread_comment', 'grant',
 	'login_history', 'delete_thread', 'acl'
 ];
@@ -167,7 +167,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.3.1 [디버그 전용]");
+		print("버전 1.3.2 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -750,65 +750,93 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 		`;
 	} else {
 		content = `
-			<form method="post" id="editForm" data-title="${title}" data-recaptcha="0">
-				<input type="hidden" name="token" value="">
-				<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
-				<input type="hidden" name="baserev" value="${baserev}">
-
-				<ul class="nav nav-pills">
-					<li class="nav-item">
-						<a class="nav-link active" data-toggle="tab" href="#edit" role="tab">편집기</a>
-					</li>
-					
-					<li class="nav-item">
-						<a id="previewLink" class="nav-link" data-toggle="tab" href="#preview" role="tab">미리보기</a>
-					</li>
-					
-					<li class="nav-item">
-						<a class="nav-link" data-toggle="tab" href="#delete" role="tab">삭제</a>
-					</li>
-					
-					<li class="nav-item">
-						<a class="nav-link" data-toggle="tab" href="#move" role="tab">이동</a>
-					</li>
-					
-					<li class="nav-item">
-						<a class="nav-link" data-toggle="tab" href="#upload" role="tab">첨부</a>
-					</li>
-				</ul>
-
-				<div class="tab-content bordered">
-					<div class="tab-pane active" id="edit" role="tabpanel">
-						<textarea id="textInput" name="text" wrap="soft" class="form-control">${html.escape(rawContent)}</textarea>
-					</div>
-					
-					<div class="tab-pane" id="preview" role="tabpanel">
+			<!-- hidden input 가지고 장난치지 말 것. -->
+		
+			<ul class="nav nav-pills">
+				<li class="nav-item">
+					<a class="nav-link active" data-toggle="tab" href="#edit" role="tab">편집기</a>
+				</li>
+				
+				<li class="nav-item">
+					<a id="previewLink" class="nav-link" data-toggle="tab" href="#preview" role="tab">미리보기</a>
+				</li>
+				
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#delete" role="tab">삭제</a>
+				</li>
+				
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#move" role="tab">이동</a>
+				</li>
+			</ul>
+			
+			<div class="tab-content bordered">
+				<div class="tab-pane active" id="edit" role="tabpanel">
+					<form method="post" id="editForm" data-title="${title}" data-recaptcha="0">
+						<input type="hidden" name="token" value="">
+						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
+						<input type="hidden" name="baserev" value="${baserev}">
 						
-					</div>
+						<textarea id="textInput" name="text" wrap="soft" class="form-control">${html.escape(rawContent)}</textarea>
+
+						<div class="form-group" style="margin-top: 1rem;">
+							<label class="control-label" for="summaryInput">편집 메모:</label>
+							<input type="text" class="form-control" id="logInput" name="log" value="">
+						</div>
+						
+						<div class="btns">
+							<button id="editBtn" class="btn btn-primary" style="width: 100px;">저장</button>
+						</div>
+					</form>
+				</div>
+				
+				<div class="tab-pane" id="preview" role="tabpanel">
 					
-					<div class="tab-pane" id="delete" role="tabpanel">
-						<label><input type=checkbox> 문서 제목을 변경하는 것이 아님에 동의합니다.</label>
-					</div>
-					
-					<div class="tab-pane" id="move" role="tabpanel">
-						<div class=form-group>
-							<label>새 문서 제목: </label><br>
+				</div>
+				
+				<div class="tab-pane" id="delete" role="tabpanel">
+					<form method="post" id="editForm" data-title="${title}" data-recaptcha="0">
+						<input type="hidden" name="token" value="">
+						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
+						<input type="hidden" name="baserev" value="${baserev}">
+
+						<div class="form-group" style="margin-top: 1rem;">
+							<label>사유: </label>
+							<input type="text" class="form-control" id="logInput" name="log" value="">
+						</div>
+						
+						<label><input type=checkbox name=agree> 문서 제목을 변경하는 것이 아님에 동의합니다.</label>
+						
+						<div class="btns">
+							<button id="editBtn" class="btn btn-danger" style="width: 100px;">문서 삭제</button>
+						</div>
+					</form>
+				</div>
+				
+				<div class="tab-pane" id="move" role="tabpanel">
+					<form method="post" id="editForm" data-title="${title}" data-recaptcha="0">
+						<input type="hidden" name="token" value="">
+						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
+						<input type="hidden" name="baserev" value="${baserev}">
+
+						<div class="form-group" style="margin-top: 1rem;">
+							<label>제목: </label>
 							<input type=text class=form-control name=newtitle>
 						</div>
-					</div>
-				</div>
 
-				<div class="form-group" style="margin-top: 1rem;">
-					<label class="control-label" for="summaryInput">편집 메모:</label>
-					<input type="text" class="form-control" id="logInput" name="log" value="">
+						<div class="form-group" style="margin-top: 1rem;">
+							<label>사유: </label>
+							<input type="text" class="form-control" id="logInput" name="log" value="">
+						</div>
+						
+						<div class="btns">
+							<button id="editBtn" class="btn btn-warning" style="width: 100px;">문서 이동</button>
+						</div>
+					</form>
 				</div>
-				
-				<p style="font-weight: bold;">비로그인 상태로 편집합니다. 편집 역사에 IP(${ip_check(req)})가 영구히 기록됩니다.</p>
-				
-				<div class="btns">
-					<button id="editBtn" class="btn btn-primary" style="width: 100px;">저장</button>
-				</div>
-			</form>
+			</div>
+			
+			<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 역사에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>
 		`;
 	}
 
@@ -2307,7 +2335,11 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	await curs.execute("select username from users");
 	if(!curs.fetchall().length) {
 		for(perm of perms) {
-			curs.execute(`insert into perms (username, perm) values (?, ?)`, [id, perm]);
+			await curs.execute(`insert into perms (username, perm) values (?, ?)`, [id, perm]);
+			if(typeof(permlist[id]) == 'undefined')
+				permlist[id] = [perm];
+			else
+				permlist[id].push(perm);
 		}
 	}
 	
@@ -2387,7 +2419,7 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 				<div style="width: 49.5%; display: inline-block; float: left;">
 					<label>분류:</label><br>
 					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=categorySelect class="form-control dropdown-search" type=text name=category placeholder="목록에 없으면 이곳에 입력하십시오">
-					<select style="border-top-right-radius: 0px; border-top-left-radius: 0px;" id=categorySelect class="form-control input-examples" size=8>
+					<select style="height: 170px; border-top-right-radius: 0px; border-top-left-radius: 0px;" id=categorySelect class="form-control input-examples" size=8>
 						${cateopts}
 					</select>
 				</div>
@@ -2395,7 +2427,7 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 				<div style="width: 49.5%; display: inline-block; float: right;">
 					<label>저작권:</label><br>
 					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=licenseSelect class="form-control dropdown-search" type=text name=license placeholder="목록에 없으면 이곳에 입력하십시오">
-					<select style="border-top-right-radius: 0px; border-top-left-radius: 0px;" id=licenseSelect class="form-control input-examples" size=8>
+					<select style="height: 170px; border-top-right-radius: 0px; border-top-left-radius: 0px;" id=licenseSelect class="form-control input-examples" size=8>
 						${liceopts}
 						<option>제한적 이용</option>
 					</select>
@@ -2572,7 +2604,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 							</span>
 						</div>
 						
-						<select size=16 class="form-control acl-list">
+						<select size=16 style="height: 250px;" class="form-control acl-list">
 							${ret1}
 						</select>
 					</div>
@@ -2591,7 +2623,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 							</span>
 						</div>
 						
-						<select size=16 class="form-control acl-list">
+						<select size=16 style="height: 250px;" class="form-control acl-list">
 							${ret2}
 						</select>
 					</div>
