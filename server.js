@@ -383,12 +383,14 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 	
 	var user_document_discuss = false;
 	
+	/*
 	if(islogin(req)) {
 		await curs.execute("select topic from threads where title = ? and (status = 'normal' or status = 'pause')", ['사용자:' + ip_check(req)]);
 		if(curs.fetchall().length) {
 			user_document_discuss = true;
 		}
 	}
+	*/
 	
 	templateVariables['user_document_discuss'] = user_document_discuss;
 	
@@ -428,7 +430,7 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 			0,  // 역사숨기기엿는데 구현 안함
 			getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
 			getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
-			user_document_discuss  // 사용자 토론 존재여부
+			user_document_discuss,  // 사용자 토론 존재여부
 			getperm('ipacl'),  // IPACL 권한 유무(데프리케잇; imp[1][8] 사용)
 			getperm('admin'),  // 중재자 권한인데 admin으로 통합
 			getperm('admin'),  // 호민관 권한인데 admin으로 통합
@@ -1965,8 +1967,17 @@ wiki.get('/member/login', async function loginScreen(req, res) {
 	
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
+	var warningText = '';
+	var warningScript = '';
+	
+	if(!req.secure) {
+		warningText = '<p><strong><font color=red>[경고!] HTTPS 연결이 아닌 것같습니다. 로그인할 시 개인정보가 유출될 수 있으며, 이에 대한 책임은 본인에게 있습니다.</font></strong></p>';
+		warningScript = ` onsubmit="return confirm('경고 - 지금 HTTPS 연결이 감지되지 않았습니다. 로그인할 경우 비밀번호가 다른 사람에게 노출될 수 있으며, 이에 대한 책임은 본인에게 있습니다. 계속하시겠습니까?');"`;
+	}
+	
 	res.send(render(req, '로그인', `
-		<form class=login-form method=post>
+		${warningText}
+		<form class=login-form method=post${warningScript}>
 			<div class=form-group>
 				<label>사용자 이름:</label><br>
 				<input class=form-control name="username" type="text">
@@ -2222,8 +2233,18 @@ wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 	
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
+	var warningText = '';
+	var warningScript = '';
+	
+	if(!req.secure) {
+		warningText = '<p><strong><font color=red>[경고!] HTTPS 연결이 아닌 것같습니다. 가입 시 개인정보가 유출될 수 있으며, 이에 대한 책임은 본인에게 있습니다.</font></strong></p>';
+		warningScript = ` onsubmit="return confirm('지금 HTTPS 연결이 감지되지 않았습니다. 가입할 경우 비밀번호가 다른 사람에게 노출될 수 있으며, 이에 대한 책임은 본인에게 있습니다. 계속하시겠습니까?');"`;
+	}
+	
 	res.send(render(req, '계정 만들기', `
-		<form class=signup-form method=post onsubmit="return confirm('가입 후 탈퇴할 수 없습니다.');">
+		${warningText}
+	
+		<form class=signup-form method=post${warningScript}>
 			<div class=form-group>
 				<label>사용자 이름:</label><br>
 				<input class=form-control name="username" type="text">
