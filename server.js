@@ -1,7 +1,7 @@
 const perms = [
 	'admin', 'suspend_account', 'developer', 'update_thread_document',
 	'update_thread_status', 'update_thread_topic', 'hide_thread_comment', 'grant',
-	'login_history', 'delete_thread', 'acl'
+	'login_history', 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote'
 ];
 
 function print(x) { console.log(x); }
@@ -167,7 +167,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.3.2 [디버그 전용]");
+		print("버전 1.4.0 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -199,7 +199,9 @@ catch(e) {
 			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al'],
 			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al'],
 			'filelicenses': ['license', 'creator'],
-			'filecategories': ['category', 'creator']
+			'filecategories': ['category', 'creator'],
+			'vote': ['num', 'name', 'start', 'end', 'required_date', 'options', 'mode'],
+			'votedata': ['data', 'username', 'date', 'num']
 		};
 		
 		for(var table in tables) {
@@ -375,30 +377,64 @@ function render(req, title = '', content = '', varlist = {}, subtitle = '', erro
 		ip: ip_check(req, 1)
 	};
 	
+	function getpermForSkin(permname) {
+		return getperm(permname, ip_check(req));
+	}
+	
+	var user_document_discuss = false;
+	
+	if(islogin(req)) {
+		await curs.execute("select topic from threads where title = ? and (status = 'normal' or status = 'pause')", ['사용자:' + ip_check(req)]);
+		if(curs.fetchall().length) {
+			user_document_discuss = true;
+		}
+	}
+	
+	templateVariables['user_document_discuss'] = user_document_discuss;
+	
 	// 오픈나무 스킨 호환용
 	templateVariables['imp'] = [
-		title, 
-		[
-			config.getString('wiki.site_name', ''),
-			config.getString('wiki.copyright_text', '') + config.getString('wiki.footer_text', ''),
-			'',
-			'',
-			config.getString('wiki.logo_url', ''),
-			''
+		title,  // 페이지 제목 (imp[0])
+		[  // 위키 설정 (imp[1][x])
+			config.getString('wiki.site_name', ''),  // 위키 이름
+			config.getString('wiki.copyright_text', '') +  // 위키 
+			config.getString('wiki.footer_text', ''),      // 라이선스
+			'',  // 전역 CSS
+			'',  // 전역 JS
+			config.getString('wiki.logo_url', ''),  // 로고
+			'',  // 전역 <HEAD>
+			config.getString('wiki.site_notice', ''),  // 공지
+			getpermForSkin,  // 권한 유무 여부 함수
+			toDate(getTime())  // 시간
 		], 
-		[
-			'',
-			'',
-			islogin(req) ? 1 : 0,
-			'',
-			'someone@example.com', // 아직 이메일 추가기능도 미구현.,
-			islogin(req) ? ip_check(req) : '사용자',
-			getperm('admin', ip_check(req)) ? 1 : 0,
-			ban_check(req, islogin(req) ? 'author' : 'ip', ip_check(req)) ? 1 : 0,
-			0,
-			[], // 오픈나무에서 정확히 어떻게 처리되는지 미확인,
-			ip_check(req),
-			0 // 곧 구현 예정
+		[  // 사용자 정보 (imp[2][x])
+		   // --------------------------
+		   // return [0, 1, 2, 3, 4, 5, ip_check(), 
+		   //			admin_check(1), admin_check(3), admin_check(4), admin_check(5), 
+		   //           admin_check(6), admin_check(7), admin_check(), 
+		   //           toplst('사용자:' + ip_check()), ipa, ar, tr, cv, mycolor[0][0], str(spin)]
+		
+			'',  // 사용자 CSS
+			'',  // 사용자 JS
+			islogin(req) ? 1 : 0,  // 로그인 여부
+			'',  // 사용자 <HEAD>
+			'someone@example.com', // 전자우편 주소; 아직 이메일 추가기능도 미구현.,
+			islogin(req) ? ip_check(req) : '사용자',  // 사용자 이름
+			ip_check(req),  // 사용자/아이피 주소
+			getperm('suspend_account'),  // 차단 권한 유무(데프리케잇; imp[1][8] 사용)
+			0,  // 토론 권한 여부인데 세분화해서 쓰므로 안 씀
+			getperm('login_history'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
+			getperm('admin'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
+			0,  // 역사숨기기엿는데 구현 안함
+			getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
+			getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
+			user_document_discuss  // 사용자 토론 존재여부
+			getperm('ipacl'),  // IPACL 권한 유무(데프리케잇; imp[1][8] 사용)
+			getperm('admin'),  // 중재자 권한인데 admin으로 통합
+			getperm('admin'),  // 호민관 권한인데 admin으로 통합
+			getperm('create_vote'),  // 투표추가 권한 유무(데프리케잇; imp[1][8] 사용)
+			'default',  // 스킨 색 구성표인데 스킨 선택도 안 만듬
+			'12345678'  // 지원 PIN인데 미구현
 		], 
 		[
 			subtitle == '' ? 0 : subtitle,
@@ -608,6 +644,17 @@ function navbtn(cs, ce, s, e) {
 	return '';
 }
 
+function stringInFormat(pattern, string) {
+    if(len(string) < 1) return 0;
+	
+    try {
+        if(string.replace(pattern, '') == '') return 1;
+        else return 0;
+    } catch(e) {
+        return 0;
+	}
+}
+
 const html = {
 	escape: function(content = '') {
 		content = content.replace(/[<]/gi, '&lt;');
@@ -636,7 +683,7 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, function dropSkinFile(req, res) {
 });
 
 function dropSourceCode(req, res) {
-	res.sendFile('index.js', { root: "./" });
+	// res.sendFile('index.js', { root: "./" });
 }
 
 wiki.get('/index.js', dropSourceCode);
@@ -2706,6 +2753,124 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 	}
 	
 	res.send(retval);
+});
+
+/*
+function processVotes(req, rtype) {
+	const num = req.param('num');
+	
+    await curs.execute("select num, name, start, end, required_date, options, mode from vote where num = ?", [num]);
+    const dbData = curs.fetchall();
+    var voteTitle = '무제';
+    if(dbData.length) {
+        voteTitle = dbData[0]['name'];
+        var data = ''
+        data += '시작일: ' + dbData[0]['start'] + '<br>'
+        data += '종료일: ' + dbData[0]['end'] + '<br>'
+        data += '투표 방식: ' + dbData[0]['mode'] + ' 투표<br>'
+        if(!(['공개', '비공개', '기명'].includes(dbData[0]['mode']))) {
+            return showError(req, 'invalid_vote_type');
+		}
+		
+        var adminMenu = '<span class="pull-right" style="display: inline-block;">'
+        if(getperm('delete_vote'))
+            adminMenu += '<a href="/admin/vote/' + num + '/delete" class="btn btn-danger btn-sm" onclick="return confirm(\'삭제하시겠습니까?\');">[ADMIN] 삭제</a>';
+        if(getperm('edit_vote'))
+            adminMenu += ' <a href="/admin/vote/' + num + '/edit" class="btn btn-warning btn-sm">[ADMIN] 편집</a></span>';
+        adminMenu += '</span>';
+        data += '<br><h2 style="border:none">투표하기 ' + adminMenu + '</h2>';
+        await curs.execute("select data, username, date from votedata where num = ? order by data, date asc", [num]);
+        data += '<textarea rows=5 readonly style="background:#eceeef" class="form-control">';
+        for(var i of curs.fetchall()) {
+            if dbData[0]['mode'] == '기명':
+                data += i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표: ' + i[0] + '\n'
+            elif dbData[0][6] == '공개':
+                if admin_check() == 1:
+                    data += '[ADMIN] ' + i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표: ' + i[0] + '\n'
+                else:
+                    data += i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표 완료.\n'
+            else:
+                if admin_check() == 1:
+                    data += '[ADMIN] ' + i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표: ' + i[0] + '\n'
+                else:
+                    data += '어떤 사용자가 어디론가 투표함.\n'
+		}
+        data += '</textarea><hr>'
+        if not('state' in flask.session):
+            data += '로그인이 필요합니다.'
+        else:
+            if re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) >= dbData[0][3]:
+                data += '기한 만료.'
+            elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) < dbData[0][2]:
+                data += '투표가 시작되지 않았음.'
+            elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', getUserDate(conn, ip_check())) > dbData[0][4]:
+                data += '자격 조건 미달.'
+            else:
+                curs.execute("select data from votedata where username = ? and num = ?", [ip_check(), num])
+                if curs.fetchall():
+                    data += '투표 완료.'
+                else:
+                    data += dbData[0][5] + '<br><div class="btns pull-right"><button type="submit" class="btn btn-info" style="width: 120px;">투표</button></div>'
+    } else {
+        res.send(showError(req, '투표를 찾을 수 없습니다.'));
+		return;
+	}
+
+    if flask.request.method == 'POST':
+        curs.execute("select num, name, start, end, deserve, options, mode from vote where num = ?", [num])
+		dbData = curs.fetchall()
+		if not(dbData):
+			return showError('투표를 찾을 수 없습니다.')
+		if not('state' in flask.session):
+			return showError('로그인이 필요합니다.')
+		if re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) >= dbData[0][3]:
+			return showError('기한이 만료되었습니다.')
+		elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) < dbData[0][2]:
+			return showError('투표가 아직 시작되지 않았습니다.')
+		elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', getUserDate(conn, ip_check())) > dbData[0][4]:
+			return showError('자격 조건을 충족하지 않습니다.')
+		if ban_check() == 1:
+			return re_error('/ban')
+		curs.execute("select data from votedata where username = ? and num = ?", [ip_check(), num])
+		if curs.fetchall():
+			return showError('투표를 이미 완료했습니다.')
+		if getForm('voteOptionsSelect', None) == None:
+			return easy_minify(flask.render_template(skin_check(),
+				imp = [voteTitle, wiki_set(), custom(), other2([' (투표)', 0])],
+				data =  alertBalloon('투표한 옵션이 없습니다.') + '''
+						<form method="post" onsubmit="return confirm('계속하시겠습니까? 취소 및 수정은 불가능합니다.');">
+							''' + data + '''
+						</form>
+						''',
+				menu = 0,
+				err = 1,
+				vote = 1
+			))
+		curs.execute("insert into votedata (num, username, data, date) values (?, ?, ?, ?)", [num, ip_check(), getForm('voteOptionsSelect'), get_time()])
+		conn.commit()
+		return redirect('/vote/' + num)
+
+    else:
+        return easy_minify(flask.render_template(skin_check(),
+            imp = [voteTitle, wiki_set(), custom(), other2([' (투표)', 0])],
+            data =  '''
+                    <form method="post" onsubmit="return confirm('계속하시겠습니까? 취소 및 수정은 불가능합니다.');">
+                        ''' + data + '''
+                    </form>
+                    ''',
+            menu = 0,
+            vote = 1,
+            smsub = ' 투표'
+        ))
+}
+*/
+
+wiki.get('/vote/:num', async function voteScreen(req, res) {
+	processVotes(req, 'get');
+});
+
+wiki.post('/vote/:num', async function submitVote(req, res) {
+	processVotes(req, 'post');
 });
 
 wiki.use(function(req, res, next) {
