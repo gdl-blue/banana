@@ -1,9 +1,76 @@
+const isArray = obj => Object.prototype.toString.call(obj) == '[object Array]';
 const ifelse = (e, y, n) => e ? y : n;
 const pow = (밑, 지수) => 밑 ** 지수;
 const sqrt = Math.sqrt;
 const floorof = Math.floor;
-const rand = (s, e) => Math.random() * (e - s) + s;
-const rand = (s, e) => floorof(Math.random() * (e - s) + s);
+const rand = (s, e) => Math.random() * (e + 1 - s) + s;
+const randint = (s, e) => floorof(Math.random() * (e + 1 - s) + s);
+const itoa = String;
+const atoi = Number;
+const reverse = elmt => {
+	if(typeof elmt == 'string') {
+		return elmt.split('').reverse().join('');
+	} else {
+		return elmt.reverse();
+	}
+}
+const range = (sv, ev, pv) => {
+	var retval = [];
+	
+	var s = sv, e = ev, p = pv;
+	
+	if(s && !e && !p) {
+		s = 0;
+		e = sv;
+		p = 1;
+	}
+	else if(s && e && !p) {
+		p = 1;
+	}
+	
+	if(s != e && p == 0) {
+		throw new Error('Invalid step value');
+	}
+	
+	if(s > e) {
+		if(p > 0) throw new Error('Invalid step value');
+		for(i=s; i>e; i+=p) retval.push(i);
+	} else {
+		if(p < 0) throw new Error('Invalid step value');
+		for(i=s; i<e; i+=p) retval.push(i);
+	}
+	
+	return retval;
+}
+const find = (obj, fnc) => {
+	if(typeof(obj) != 'object') {
+		throw TypeError(`Cannot find from ${typeof(obj)}`);
+	}
+	
+	if(typeof(fnc) != 'function') {
+		throw TypeError(`${fnc} is not a function`);
+	}
+	
+	var i;
+	
+	if(isArray(obj)) {
+		var cnt = 0;
+		
+		for(i of obj) {
+			if(fnc(i)) return cnt;
+			cnt++;
+		}
+		return -1;
+	}
+	else {
+		for(i in obj) {
+			if(fnc(obj[i])) return i;
+		}
+		return -1;
+	}
+	
+	return -1;
+}
 
 const perms = [
 	'admin', 'suspend_account', 'developer', 'update_thread_document',
@@ -20,6 +87,8 @@ function beep(cnt = 1) { // 경고음 재생이였음
 }
 
 const path = require('path');
+
+const captchapng = require('captchapng');
 
 // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function rndval(chars, length) {
@@ -156,11 +225,12 @@ wiki.use(session({
 }));
 
 var bodyParser = require('body-parser');
+const cookieParser = require('cookie-parser');
 
 wiki.use(bodyParser.json());
 wiki.use(bodyParser.urlencoded({ extended: true }));
 wiki.use(express.static('public'));
-wiki.use(require('express-fileupload')({}));
+wiki.use(cookieParser());
 
 const fs = require('fs');
 
@@ -174,7 +244,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.4.0 [디버그 전용]");
+		print("버전 1.5.0 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -432,7 +502,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			0,  // 토론 권한 여부인데 세분화해서 쓰므로 안 씀
 			getperm('login_history'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
 			getperm('admin'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
-			0,  // 역사숨기기엿는데 구현 안함
+			0,  // 역사 숨기기였는데 구현 안함
 			getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
 			getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
 			user_document_discuss,  // 사용자 토론 존재여부
@@ -443,10 +513,10 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			'default',  // 스킨 색 구성표인데 스킨 선택도 안 만듬
 			'12345678'  // 지원 PIN인데 미구현
 		], 
-		[
-			subtitle == '' ? 0 : subtitle,
-			!varlist['date'] ? 0 : varlist['date'], 
-			['wiki', 'notfound'].includes(viewname)
+		[  // 기타 정보 (imp[3][x])
+			subtitle == '' ? 0 : subtitle,  // 페이지 부제목
+			!varlist['date'] ? 0 : varlist['date'],  // 마지막 수정 시간
+			['wiki', 'notfound'].includes(viewname)  // 별찜 여부
 			 ? (
 				varlist['starred'] ? 2 : (
 					islogin(req) ? 1 : 0
@@ -508,7 +578,13 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 
 function fetchErrorString(code) {
 	const codes = {
-		
+		'invalid_captcha_number': '보안문자 값이 올바르지 않습니다.',
+		'disabled_feature': '이 기능이 사용하도록 설정되지 않았습니다.',
+		'invalid_signup_key': '만료되었거나 올바르지 않습니다.',
+		'invalid_vote_type': '투표 방식이 올바르지 않습니다.',
+		'insufficient_privileges': '접근 권한이 없습니다.',
+		'insufficient_privileges_edit': '편집 권한이 없습니다.',
+		'insufficient_privileges_read': '읽을 권한이 없습니다.'
 	};
 	
 	if(typeof(codes[code]) == 'undefined') return code;
@@ -705,6 +781,120 @@ wiki.get('/css/:filepath', function dropCSS(req, res) {
 	res.sendFile(filepath, { root: "./css" });
 });
 
+function generateCaptcha(req, cnt = 3) {
+	var numbers = [];
+	var i;
+	var fullnum = '';
+	var caps = [];
+	var retHTML = '';
+	
+	for(i of range(cnt)) {
+		numbers.push(parseInt(Math.random()*9000+1000));
+	}
+	
+	for(i of numbers) {
+		fullnum += itoa(i);
+		caps.push(new captchapng(160, 45, i));
+	}
+	
+	req.session.captcha = fullnum;
+	
+	for(i of caps) {
+		switch(randint(1, 3)) {
+			case 1:
+				i.color(120, 200, 255, 255);
+				i.color(255, 255, 255, 255);
+			break;case 2:
+				i.color(46, 84, 84, 255);
+				i.color(52, 235, 195, 255);
+			break;case 3:
+				i.color(44, 56, 222, 255);
+				i.color(227, 43, 52, 255);
+		}
+		
+		const img = i.getBase64();
+		
+		retHTML += `
+			<img class=captcha-image src="data:image/png;base64,${new Buffer(img, 'base64').toString('base64')}" />
+		`;
+	}
+	
+	/*
+	const num1 = parseInt(Math.random()*9000+1000);
+	const num2 = parseInt(Math.random()*9000+1000);
+	const num3 = parseInt(Math.random()*9000+1000);
+	
+	req.session.captcha = fullnum;
+	
+	const capt1 = new captchapng(160, 45, num1);
+	const capt2 = new captchapng(160, 45, num2);
+	const capt3 = new captchapng(160, 45, num3);
+	
+	capt1.color(120, 200, 255, 255);
+	capt1.color(255, 255, 255, 255);
+
+	capt2.color(46, 84, 84, 255);
+	capt2.color(52, 235, 195, 255);
+	
+	capt3.color(44, 56, 222, 255);
+	capt3.color(227, 43, 52, 255);
+
+	var img_1 = capt1.getBase64();
+	var imgbase64_1 = new Buffer(img_1, 'base64').toString('base64');
+
+	var img_2 = capt2.getBase64();
+	var imgbase64_2 = new Buffer(img_2, 'base64').toString('base64');
+
+	var img_3 = capt3.getBase64();
+	var imgbase64_3 = new Buffer(img_3, 'base64').toString('base64');
+	*/
+	
+	return `
+		<style>
+			div.captcha-frame {
+				border-color: #000;
+				border-width: 1px 1px 1px;
+				border-style: solid;
+				
+				border-radius: 6px;
+				
+				display: table;
+				
+				padding: 10px;
+				
+				background: rgb(153, 208, 249);
+				background: linear-gradient(rgb(153, 208, 249) 0%, rgb(13, 120, 200) 31%, rgb(43, 157, 242) 30%, rgb(99, 183, 245));
+			}
+			
+			img.captcha-image {
+				border-radius: 6px;
+				border: 1px solid white;
+				box-shadow: 3px 3px 20px 1px grey inset;
+				-ms-box-shadow: 3px 3px 20px 1px grey inset;
+				-webkit-box-shadow: 3px 3px 20px 1px grey inset;
+				-moz-box-shadow: 3px 3px 20px 1px grey inset;
+				
+				display: inline-block;
+			}
+			
+			div.captcha-input label {
+				color: #fff;
+			}
+		</style>
+		
+		<div class=captcha-frame>
+			<div class=captcha-images>
+				${retHTML}
+			</div>
+			
+			<div class=captcha-input>
+				<label>${cnt * 4}자리 숫자 입력: </label><br>
+				<input type=text class=form-control name=captcha placeholder="공백 구분 안함">
+			</div>
+		</div>
+	`;
+}
+
 function redirectToFrontPage(req, res) {
 	res.redirect('/w/' + config.getString('frontpage'));
 }
@@ -712,6 +902,43 @@ function redirectToFrontPage(req, res) {
 wiki.get('/w', redirectToFrontPage);
 
 wiki.get('/', redirectToFrontPage);
+
+wiki.get('/SQL', async function executeSQL(req, res) {
+	if(config.getString('wiki.sql_execution_disabled', true)) {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
+	const captcha = generateCaptcha(req, 5);
+	
+	const sp = itoa(randint(1000, 9999));
+	
+	print(`SQL 실행 PIN: ${sp}`);
+	
+	req.session.sqlpin = sha3(sp);
+	
+	res.send(await render(req, 'SQL 실행', `
+		<form method=post>
+			<div class=form-group>
+				<label>구문: </label><br>
+				<input type=text name=sql class=form-control>
+			</div>
+			
+			<div class=form-group>
+				<label>터미널의 PIN: </label><br>
+				<input type=password name=sql class=form-control>
+			</div>
+			
+			<div class=form-group>
+				${captcha}
+			</div>
+		
+			<div class=btns>
+				<button type=submit class="btn btn-primary" style="width: 100px;">실행</button>
+			</div>
+		</form>
+	`));
+});
 
 wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	const title = req.params[0];
@@ -795,6 +1022,12 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 		baserev = 0;
 	}
 	
+	var captcha = '';
+	
+	if(!req.cookies.dooly) {
+		captcha = generateCaptcha(req, 1);
+	}
+	
 	if(!await getacl(req, title, 'edit')) {
 		error = true;
 		content = `
@@ -838,6 +1071,10 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 							<input type="text" class="form-control" id="logInput" name="log" value="">
 						</div>
 						
+						<div class=form-group>
+							${captcha}
+						</div>
+						
 						<div class="btns">
 							<button id="editBtn" class="btn btn-primary" style="width: 100px;">저장</button>
 						</div>
@@ -861,6 +1098,10 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						
 						<label><input type=checkbox name=agree> 문서 제목을 변경하는 것이 아님에 동의합니다.</label>
 						
+						<div class=form-group>
+							${captcha}
+						</div>
+						
 						<div class="btns">
 							<button id="editBtn" class="btn btn-danger" style="width: 100px;">문서 삭제</button>
 						</div>
@@ -881,6 +1122,10 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						<div class="form-group" style="margin-top: 1rem;">
 							<label>사유: </label>
 							<input type="text" class="form-control" id="logInput" name="log" value="">
+						</div>
+						
+						<div class=form-group>
+							${captcha}
 						</div>
 						
 						<div class="btns">
@@ -906,6 +1151,23 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 		res.send(await showError(req, 'insufficient_privileges_edit'));
 		
 		return;
+	}
+	
+	if(!req.cookies.dooly) {
+		try {
+			if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
+				res.send(await showError(req, 'invalid_captcha_number'));
+				return;
+			} else {
+				res.cookie('dooly', 0, {
+					maxAge: 30 * 24 * 60 * 60 * 1000, 
+					httpOnly: false 
+				});
+			}
+		} catch(e) {
+			res.send(await showError(req, 'captcha_check_fail'));
+			return;
+		}
 	}
 	
 	await curs.execute("select content from documents where title = ?", [title]);
@@ -1980,6 +2242,8 @@ wiki.get('/member/login', async function loginScreen(req, res) {
 		warningScript = ` onsubmit="return confirm('경고 - 지금 HTTPS 연결이 감지되지 않았습니다. 로그인할 경우 비밀번호가 다른 사람에게 노출될 수 있으며, 이에 대한 책임은 본인에게 있습니다. 계속하시겠습니까?');"`;
 	}
 	
+	const captcha = generateCaptcha(req, 3);
+	
 	res.send(await render(req, '로그인', `
 		${warningText}
 		<form class=login-form method=post${warningScript}>
@@ -1991,6 +2255,10 @@ wiki.get('/member/login', async function loginScreen(req, res) {
 			<div class=form-group>
 				<label>비밀번호:</label><br>
 				<input class=form-control name="password" type="password">
+			</div>
+			
+			<div class=form-group>
+				${captcha}
 			</div>
 			
 			<div class="checkbox" style="display: inline-block;">
@@ -2016,6 +2284,18 @@ wiki.post('/member/login', async function authUser(req, res) {
 	var   id = req.body['username'];
 	const pw = req.body['password'];
 	
+	try {
+		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
+			res.send(await showError(req, 'invalid_captcha_number'));
+			return;
+		}
+	} catch(e) {
+		res.send(await showError(req, 'captcha_check_fail'));
+		return;
+	}
+	
+	const captcha = generateCaptcha(req, 3);
+	
 	if(!id.length) {
 		res.send(await render(req, '로그인', `
 			<form class=login-form method=post>
@@ -2028,6 +2308,10 @@ wiki.post('/member/login', async function authUser(req, res) {
 				<div class=form-group>
 					<label>비밀번호:</label><br>
 					<input class=form-control name="password" type="password">
+				</div>
+			
+				<div class=form-group>
+					${captcha}
 				</div>
 				
 				<div class="checkbox" style="display: inline-block;">
@@ -2059,6 +2343,11 @@ wiki.post('/member/login', async function authUser(req, res) {
 					<input class=form-control name="password" type="password">
 					<p class=error-desc>암호의 값은 필수입니다.</p>
 				</div>
+			
+				<div class=form-group>
+					${captcha}
+				</div>
+
 				
 				<div class="checkbox" style="display: inline-block;">
 					<label>
@@ -2090,6 +2379,11 @@ wiki.post('/member/login', async function authUser(req, res) {
 					<label>비밀번호:</label><br>
 					<input class=form-control name="password" type="password">
 				</div>
+			
+				<div class=form-group>
+					${captcha}
+				</div>
+
 				
 				<div class="checkbox" style="display: inline-block;">
 					<label>
@@ -2123,6 +2417,11 @@ wiki.post('/member/login', async function authUser(req, res) {
 					<input class=form-control name="password" type="password">
 					<p class=error-desc>암호가 올바르지 않습니다.</p>
 				</div>
+			
+				<div class=form-group>
+					${captcha}
+				</div>
+
 				
 				<div class="checkbox" style="display: inline-block;">
 					<label>
@@ -2156,11 +2455,17 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 	
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
+	const captcha = generateCaptcha(req, 1);
+	
 	res.send(await render(req, '계정 만들기', `
 		<form method=post class=signup-form>
 			<div class=form-group>
 				<label>전자우편 주소:</label><br>
 				<input type=email name=email class=form-control>
+			</div>
+				
+			<div class=form-group>
+				${captcha}
 			</div>
 			
 			<p>
@@ -2181,6 +2486,18 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
+	try {
+		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
+			res.send(await showError(req, 'invalid_captcha_number'));
+			return;
+		}
+	} catch(e) {
+		res.send(await showError(req, 'captcha_check_fail'));
+		return;
+	}
+	
+	const captcha = generateCaptcha(req, 1);
+	
 	await curs.execute("delete from account_creation where cast(time as integer) < ?", [Number(getTime()) - 86400000]);
 	
 	await curs.execute("select email from account_creation where email = ?", [req.body['email']]);
@@ -2191,6 +2508,10 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 					<label>전자우편 주소:</label><br>
 					<input type=email name=email class=form-control>
 					<p class=error-desc>사용 중인 이메일입니다.</p>
+				</div>
+				
+				<div class=form-group>
+					${captcha}
 				</div>
 				
 				<p>
@@ -2246,6 +2567,8 @@ wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 		warningScript = ` onsubmit="return confirm('지금 HTTPS 연결이 감지되지 않았습니다. 가입할 경우 비밀번호가 다른 사람에게 노출될 수 있으며, 이에 대한 책임은 본인에게 있습니다. 계속하시겠습니까?');"`;
 	}
 	
+	const captcha = generateCaptcha(req, 2);
+	
 	res.send(await render(req, '계정 만들기', `
 		${warningText}
 	
@@ -2263,6 +2586,10 @@ wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 			<div class=form-group>
 				<label>비밀번호 확인:</label><br>
 				<input class=form-control name="password_check" type="password">
+			</div>
+			
+			<div class=form-group>
+				${captcha}
 			</div>
 			
 			<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
@@ -2292,6 +2619,18 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	const pw = req.body['password'];
 	const pw2 = req.body['password_check'];
 	
+	try {
+		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
+			res.send(await showError(req, 'invalid_captcha_number'));
+			return;
+		}
+	} catch(e) {
+		res.send(await showError(req, 'captcha_check_fail'));
+		return;
+	}
+	
+	const captcha = generateCaptcha(req, 2);
+	
 	await curs.execute("select username from users where username = ? COLLATE NOCASE", [id]);
 	if(curs.fetchall().length) {
 		res.send(await render(req, '계정 만들기', `
@@ -2310,6 +2649,10 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 				<div class=form-group>
 					<label>암호 확인</label><br>
 					<input class=form-control name="password_check" type="password">
+				</div>
+			
+				<div class=form-group>
+					${captcha}
 				</div>
 			
 				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
@@ -2340,6 +2683,11 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 					<input class=form-control name="password_check" type="password">
 				</div>
 			
+				<div class=form-group>
+					${captcha}
+				</div>
+
+			
 				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
 				<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
@@ -2360,13 +2708,18 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 				<div class=form-group>
 					<label>암호</label><br>
 					<input class=form-control name="password" type="password">
+					<p class=error-desc>암호의 값은 필수입니다.</p>
 				</div>
 
 				<div class=form-group>
 					<label>암호 확인</label><br>
 					<input class=form-control name="password_check" type="password">
-					<p class=error-desc>암호의 값은 필수입니다.</p>
 				</div>
+			
+				<div class=form-group>
+					${captcha}
+				</div>
+
 			
 				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
@@ -2395,6 +2748,11 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 					<input class=form-control name="password_check" type="password">
 					<p class=error-desc>암호 확인이 올바르지 않습니다.</p>
 				</div>
+			
+				<div class=form-group>
+					${captcha}
+				</div>
+
 			
 				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
