@@ -2,8 +2,8 @@ const ifelse = (e, y, n) => e ? y : n;
 const pow = (밑, 지수) => 밑 ** 지수;
 const sqrt = Math.sqrt;
 const floorof = Math.floor;
-const rand = n => Math.random() * n;
-const randint = n => floorof(random(n));
+const rand = (s, e) => Math.random() * (e - s) + s;
+const rand = (s, e) => floorof(Math.random() * (e - s) + s);
 
 const perms = [
 	'admin', 'suspend_account', 'developer', 'update_thread_document',
