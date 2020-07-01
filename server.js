@@ -216,21 +216,8 @@ swig.setFilter('md5_replace', function MD5Hash(input) {
 	return md5(input);
 });
 
-wiki.use(session({
-	key: 'sid',
-	secret: 'secret',
-	cookie: {
-		expires: false
-	}
-}));
-
 var bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-
-wiki.use(bodyParser.json());
-wiki.use(bodyParser.urlencoded({ extended: true }));
-wiki.use(express.static('public'));
-wiki.use(cookieParser());
 
 const fs = require('fs');
 
@@ -244,14 +231,15 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.5.0 [디버그 전용]");
+		print("버전 1.5.1 [디버그 전용]");
 		
 		prt('\n');
 		
 		hostconfig = {
 			host: input("호스트 주소: "),
 			port: input("포트 번호: "),
-			skin: input("기본 스킨 이름: ")
+			skin: input("기본 스킨 이름: "),
+			secret: input("세션 비밀 키: ")
 		};
 		
 		const tables = {
@@ -278,7 +266,8 @@ catch(e) {
 			'filelicenses': ['license', 'creator'],
 			'filecategories': ['category', 'creator'],
 			'vote': ['num', 'name', 'start', 'end', 'required_date', 'options', 'mode'],
-			'votedata': ['data', 'username', 'date', 'num']
+			'votedata': ['data', 'username', 'date', 'num'],
+			'tokens': ['username', 'token']
 		};
 		
 		for(var table in tables) {
@@ -315,6 +304,18 @@ catch(e) {
 		}, 5000);
 	})();
 }
+
+wiki.use(bodyParser.json());
+wiki.use(bodyParser.urlencoded({ extended: true }));
+wiki.use(express.static('public'));
+wiki.use(cookieParser());
+wiki.use(session({
+	key: 'doornot',
+	secret: hostconfig['secret'],
+	cookie: {
+		expires: false
+	}
+}));
 
 function markdown(content) {
 	// ([^제외]*)
@@ -355,6 +356,10 @@ function markdown(content) {
 }
 
 function islogin(req) {
+	if(req.cookies.gildong && req.cookies.icestar) {
+		
+	}
+	
 	if(req.session.username) return true;
 	return false;
 }
@@ -559,7 +564,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		<script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script>
 		<script type="text/javascript" src="/js/dateformatter.js?508d6dd4"></script>
 		<script type="text/javascript" src="/js/intersection-observer.js?36e469ff"></script>
-		<script type="text/javascript" src="/js/theseed.js?24141115"></script>
+		<script type="text/javascript" src="/js/banana.js?24141115"></script>
 	`;
 	for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
 		header += '<script type="text/javascript" src="/skins/' + getSkin() + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
@@ -800,7 +805,7 @@ function generateCaptcha(req, cnt = 3) {
 	req.session.captcha = fullnum;
 	
 	for(i of caps) {
-		switch(randint(1, 3)) {
+		switch(randint(1, 6)) {
 			case 1:
 				i.color(120, 200, 255, 255);
 				i.color(255, 255, 255, 255);
@@ -810,6 +815,15 @@ function generateCaptcha(req, cnt = 3) {
 			break;case 3:
 				i.color(44, 56, 222, 255);
 				i.color(227, 43, 52, 255);
+			break;case 4:
+				i.color(31, 216, 220, 255);
+				i.color(255, 0, 0, 255);
+			break;case 5:
+				i.color(85, 170, 170, 255);
+				i.color(255, 255, 255, 255);
+			break;case 6:
+				i.color(225, 202, 48, 255);
+				i.color(9, 198, 122, 255);
 		}
 		
 		const img = i.getBase64();
@@ -1543,7 +1557,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	const until = req.query['until'];
 	
 	if(!await getacl(req, title, 'read')) {
-		res.send(showError('insufficient_privileges_read'));
+		res.send(await showError(req, 'insufficient_privileges_read'));
 		
 		return;
 	}
@@ -2298,7 +2312,8 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	if(!id.length) {
 		res.send(await render(req, '로그인', `
-			<form class=login-form method=post>
+			${warningText}
+			<form class=login-form method=post${warningScript}>
 				<div class=form-group>
 					<label>사용자 이름:</label><br>
 					<input class=form-control name="username" type="text">
@@ -2332,7 +2347,8 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	if(!pw.length) {
 		res.send(await render(req, '로그인', `
-			<form class=login-form method=post>
+			${warningText}
+			<form class=login-form method=post${warningScript}>
 				<div class=form-group>
 					<label>사용자 이름:</label><br>
 					<input class=form-control name="username" type="text" value="${html.escape(id)}">
@@ -2368,7 +2384,8 @@ wiki.post('/member/login', async function authUser(req, res) {
 	await curs.execute("select username from users where username = ? COLLATE NOCASE", [id]);
 	if(!curs.fetchall().length) {
 		res.send(await render(req, '로그인', `
-			<form class=login-form method=post>
+			${warningText}
+			<form class=login-form method=post${warningScript}>
 				<div class=form-group>
 					<label>사용자 이름:</label><br>
 					<input class=form-control name="username" type="text" value="${html.escape(id)}">
@@ -2406,7 +2423,8 @@ wiki.post('/member/login', async function authUser(req, res) {
 	await curs.execute("select username, password from users where username = ? and password = ?", [id, sha3(pw)]);
 	if(!curs.fetchall().length) {
 		res.send(await render(req, '로그인', `
-			<form class=login-form method=post>
+			${warningText}
+			<form class=login-form method=post${warningScript}>
 				<div class=form-group>
 					<label>사용자 이름:</label><br>
 					<input class=form-control name="username" type="text" value="${html.escape(id)}">
@@ -2443,8 +2461,45 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	req.session.username = id;
 	
+	if(req.body['autologin']) {
+		const usrtkn = rndval('0123456789abcdefghijklmnopqrstuvwxzABCDEFGHIJKLMNOPQRSTUVWXYZ', 64);
+		curs.execute("delete from tokens where username = ?", [id]);
+		curs.execute("insert into tokens (username, token) values (?, ?)", [id, usrtkn]);
+		
+		res.cookie('gildong', '', {
+			maxAge: 0, 
+			httpOnly: true
+			//secure: true
+		});
+		res.cookie('icestar', '', {
+			maxAge: 0, 
+			httpOnly: true
+			//secure: true
+		});
+		
+		res.cookie('gildong', id, {
+			maxAge: 90 * 24 * 60 * 60 * 1000, 
+			httpOnly: true
+			//secure: true
+		});
+		res.cookie('icestar', sha3(sha3(sha3(sha3(pw))) + sha3(usrtkn)), {
+			maxAge: 90 * 24 * 60 * 60 * 1000, 
+			httpOnly: true
+			//secure: true
+		});
+	}
+	
 	await curs.execute("delete from useragents where username = ?", [id]);
 	await curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent']]);
+	
+	res.redirect(desturl);
+});
+
+wiki.get('/member/logout', async function logout(req, res) {
+	var desturl = req.query['redirect'];
+	if(!desturl) desturl = '/';
+	
+	req.session.username = undefined;
 	
 	res.redirect(desturl);
 });
@@ -3047,6 +3102,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 								${permopts}
 							</select>
 							<label><input type=checkbox name=not> 선택대상의 반대</label>
+							<label></label>
 						
 							<span style="float: right;">
 								<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
@@ -3068,11 +3124,11 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 
 /*
 wiki.get('/t', function(q, s) {
-	s.send('<form method=post><input type=checkbox name=c><button>Submit</sbutton></form>');
+	s.send('<form method=post><input type=checkbox name=c><input type=checkbox name=c><input type=checkbox name=c><input type=checkbox name=c><button>Submit</sbutton></form>');
 });
 
 wiki.post('/t', function(q, s) {
-	console.log('[' + q.body['c'] + ']');
+	console.log(q.body['c']);
 	console.log(typeof q.body['c']);
 	
 	s.send(q.body['c']);
@@ -3087,6 +3143,11 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 	const value  = req.body['value'];
 	const mode   = req.body['mode'];
 	const not    = req.body['not'] ? '1' : '0';
+	
+	if(!action || !type || !value || !mode || !not) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
 	
 	if(!getperm('acl', ip_check(req))) {
 		res.redirect('/');
