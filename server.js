@@ -241,7 +241,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.6.2 [디버그 전용]");
+		print("버전 1.6.3 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -798,6 +798,51 @@ wiki.get('/css/:filepath', function dropCSS(req, res) {
 	const filepath = req.param('filepath');
 	res.sendFile(filepath, { root: "./css" });
 });
+
+/*
+wiki.get('/u', function(req, res) {
+	res.send(req.headers['user-agent']);
+});
+*/
+
+function compatMode(req) {
+	try {
+		const useragent = req.headers['user-agent'];
+		if(!useragent) return false;
+		
+		const UAParser = require('ua-parser-js');
+		
+		const clsUserAgent = new UAParser(useragent);
+		
+		const navigatorName    = clsUserAgent.getBrowser()['name'].toLowerCase();
+		const navigatorVersion = atoi(clsUserAgent.getBrowser()['version'].split('.')[0]);
+		
+		if(navigatorName == 'chrome') navigatorName = 'chromium';
+		
+		switch(navigatorName) {
+			case 'chromium':
+				if(navigatorVersion < 30) {
+					return true;
+				}
+			break; case 'firefox':
+				if(navigatorVersion < 40) {
+					return true;
+				}
+			break; case 'ie':
+				if(navigatorVersion < 11) {
+					return true;
+				}
+			break; case 'navigator':
+				return true;
+			break; case 'mozilla':
+				return true;
+		}
+		
+		return false;
+	} catch(e) {
+		return false;
+	}
+}
 
 function generateCaptcha(req, cnt = 3) {
 	const fst = atoi(rndval('017', 1));
@@ -1763,7 +1808,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 						if(!ambx) {
 							content += `
 								<div>
-									<a class=more-box href="/thread/${trd['tnum']}">more...</a>
+									<a class=more-box href="/thread/${trd['tnum']}">더보기...</a>
 								</div>
 							`;
 							
@@ -1805,12 +1850,12 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 					<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 					
 					<div class="form-group">
-						<label class="control-label" for="topicInput" style="margin-bottom: 0.2rem;">주제 :</label>
+						<label>주제:</label>
 						<input type="text" class="form-control" id="topicInput" name="topic">
 					</div>
 
 					<div class="form-group">
-					<label class="control-label" for="contentInput" style="margin-bottom: 0.2rem;">내용 :</label>
+						<label>내용:</label>
 						<textarea name="text" class="form-control" id="contentInput" rows="5"></textarea>
 					</div>
 					
@@ -1957,7 +2002,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			<div id=res-container>
 	`;
 	
-	if(req.query['nojs'] == '1') {
+	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
 		content += await getThreadData(req, tnum);
 	} else {
 		for(var i=1; i<=rescount; i++) {
@@ -1981,6 +2026,10 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		
 		<h2 class=wiki-heading style="cursor: pointer;">댓글 달기</h2>
 	`;
+	
+	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
+		content += alertBalloon('경고', '지원되지 않는 브라우저를 사용하기 때문에 새로운 댓글을 자동으로 불러올 수 없습니다. <small>지원되며, 사용자 에이전트를 변경한 것이라면 <a href="?nojs=0">여기</a>를 누르십시오.</small>', 'warning');
+	}
 	
 	if(getperm('update_thread_status', ip_check(req))) {
 		var sts = '';
@@ -2044,7 +2093,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		</form>
 	`;
 	
-	if(!req.query['nojs']) {
+	if(!req.query['nojs'] && !(!req.query['nojs'] && compatMode(req))) {
 		content += `
 			<noscript>
 				<meta http-equiv=refresh content="0; url=?nojs=1" />
@@ -2091,7 +2140,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 					
 	curs.execute("update threads set time = ? where tnum = ?", [getTime(), tnum]);
 	
-	if(req.query['nojs'] == '1') {
+	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
 		res.redirect('/thread/' + tnum + '?nojs=1');
 	} else {
 		res.json({});
@@ -2557,7 +2606,7 @@ wiki.post('/member/login', async function authUser(req, res) {
 	}
 	
 	await curs.execute("delete from useragents where username = ?", [id]);
-	await curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent']]);
+	await curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent'] ? req.headers['user-agent'] : '']);
 	
 	res.redirect(desturl);
 });
@@ -2908,12 +2957,12 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 					]);
 		
 	curs.execute("insert into login_history (username, ip) values (?, ?)", [id, ip_check(req, 1)]);
-	curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent']]);
+	curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent'] ? req.headers['user-agent'] : '']);
 	
 	res.redirect(desturl);
 });
 
-wiki.get('/Upload', async function uploadFilePage(req, res) {
+wiki.get('/Upload', async function fileUploadPage(req, res) {
 	await curs.execute("select license from filelicenses order by license");
 	const licelst = curs.fetchall();
 	await curs.execute("select category from filecategories order by category");
@@ -2928,126 +2977,137 @@ wiki.get('/Upload', async function uploadFilePage(req, res) {
 		cateopts += `<option>${html.escape(cate['category'])}</option>`;
 	}
 	
-	var content = `
-		<script>
-			$(function() {
-				document.getElementById('usingScript').style.display = '';
-				document.getElementById('noscriptFallback').remove();
-			});
-		</script>
+	var content = '';
 	
-		<form class=file-upload-form method=post id=usingScript enctype="multipart/form-data" style="display: none;">
-			<div class=form-group>
-				<label>화일 선택: </label><br>
-				<input class=form-control type=file name=file>
-			</div>
-
-			<div class=form-group>
-				<label>사용할 화일 이름: </label><br>
-				<input class=form-control type=text name=document>
-			</div>
-
-			<div class=form-group>
-				<label>화일 정보: </label><br>
-				<div style="width: 140px; display: inline-block; float: left;">
-					<select id=propertySelect class=form-control size=5 placeholder="직접 입력" style="height: 400px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; borde-right: none;">
-						<option value=1 selected>출처</option>
-						<option value=2>저작자</option>
-						<option value=3>만든 이</option>
-						<option value=4>날짜</option>
-						<option value=5>메모</option>
-					</select>
+	if(!req.query['nojs'] && compatMode(req)) {
+		res.redirect('/Upload?nojs=1');
+		return;
+	}
+	
+	if(!req.query['nojs'] || (req.query['nojs'] && req.query['nojs'] != '1')) {
+		content = `
+			<form class=file-upload-form method=post id=usingScript enctype="multipart/form-data">
+				<div class=form-group>
+					<label>화일 선택: </label><br>
+					<input class=form-control type=file name=file>
 				</div>
-				
-				<div style="width: calc(100% - 140px); display: inline-block; float: right;">
-					<textarea name=prop1 data-id=1 class="form-control property-content" style="height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
-					<textarea name=prop2 data-id=2 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
-					<textarea name=prop3 data-id=3 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
-					<textarea name=prop4 data-id=4 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
-					<textarea name=prop5 data-id=5 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
-				</div>
-			</div>
 
-			<div class=form-group>
-				<div style="width: 49.5%; display: inline-block; float: left;">
-					<label>분류:</label><br>
-					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=categorySelect class="form-control dropdown-search" type=text name=category placeholder="목록에 없으면 이곳에 입력하십시오">
-					<select style="height: 170px; border-top-right-radius: 0px; border-top-left-radius: 0px;" id=categorySelect class="form-control input-examples" size=8>
+				<div class=form-group>
+					<label>사용할 화일 이름: </label><br>
+					<input class=form-control type=text name=document>
+				</div>
+
+				<div class=form-group>
+					<label>화일 정보: </label><br>
+					<div style="width: 140px; display: inline-block; float: left;">
+						<select id=propertySelect class=form-control size=5 placeholder="직접 입력" style="height: 400px; border-top-right-radius: 0px; border-bottom-right-radius: 0px; borde-right: none;">
+							<option value=1 selected>출처</option>
+							<option value=2>저작자</option>
+							<option value=3>만든 이</option>
+							<option value=4>날짜</option>
+							<option value=5>메모</option>
+						</select>
+					</div>
+					
+					<div style="width: calc(100% - 140px); display: inline-block; float: right;">
+						<textarea name=prop1 data-id=1 class="form-control property-content" style="height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+						<textarea name=prop2 data-id=2 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+						<textarea name=prop3 data-id=3 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+						<textarea name=prop4 data-id=4 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+						<textarea name=prop5 data-id=5 class="form-control property-content" style="display: none; height: 400px; border-top-left-radius: 0px; border-bottom-left-radius: 0px;"></textarea>
+					</div>
+				</div>
+
+				<div class=form-group>
+					<div style="width: 49.5%; display: inline-block; float: left;">
+						<label>분류:</label><br>
+						<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=categorySelect class="form-control dropdown-search" type=text name=category placeholder="목록에 없으면 이곳에 입력하십시오">
+						<select style="height: 170px; border-top-right-radius: 0px; border-top-left-radius: 0px;" id=categorySelect class="form-control input-examples" size=8>
+							${cateopts}
+						</select>
+					</div>
+					
+					<div style="width: 49.5%; display: inline-block; float: right;">
+						<label>저작권:</label><br>
+						<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=licenseSelect class="form-control dropdown-search" type=text name=license placeholder="목록에 없으면 이곳에 입력하십시오">
+						<select style="height: 170px; border-top-right-radius: 0px; border-top-left-radius: 0px;" id=licenseSelect class="form-control input-examples" size=8>
+							${liceopts}
+							<option>제한적 이용</option>
+						</select>
+					</div>
+				</div>
+
+				<div class=btns>
+					<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
+				</div>
+			</form>`;
+	} else {
+		content = `
+			<form method=post enctype="multipart/form-data">
+				<div class=form-group>
+					<label>화일 선택: </label><br>
+					<input class=form-control type=file name=file>
+				</div>
+
+				<div class=form-group>
+					<label>사용할 화일 이름: </label><br>
+					<input class=form-control type=text name=document>
+				</div>
+
+				<div class=form-group>
+					<label>출처: </label><br>
+					<textarea name=prop1 class=form-control rows=3></textarea>
+				</div>
+
+				<div class=form-group>
+					<label>저작자: </label><br>
+					<textarea name=prop2 class=form-control rows=3></textarea>
+				</div>
+
+				<div class=form-group>
+					<label>만든 이: </label><br>
+					<textarea name=prop3 class=form-control rows=3></textarea>
+				</div>
+
+				<div class=form-group>
+					<label>날짜: </label><br>
+					<textarea name=prop4 class=form-control rows=3></textarea>
+				</div>
+
+				<div class=form-group>
+					<label>메모: </label><br>
+					<textarea name=prop5 class=form-control rows=3></textarea>
+				</div>
+
+				<div class=form-group>
+					<label>분류: <span style="color: gray; float: right;">분류를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
+					<select name=category id=categorySelect class="form-control input-examples" size=8 placeholder="직접 입력">
 						${cateopts}
 					</select>
 				</div>
-				
-				<div style="width: 49.5%; display: inline-block; float: right;">
-					<label>저작권:</label><br>
-					<input style="border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; border-bottom: none;" data-datalist=licenseSelect class="form-control dropdown-search" type=text name=license placeholder="목록에 없으면 이곳에 입력하십시오">
-					<select style="height: 170px; border-top-right-radius: 0px; border-top-left-radius: 0px;" id=licenseSelect class="form-control input-examples" size=8>
+
+				<div class=form-group>
+					<label>저작권: <span style="color: gray; float: right;">라이선스를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
+					<select name=license id=licenseSelect class="form-control input-examples" size=8 placeholder="직접 입력">
 						${liceopts}
 						<option>제한적 이용</option>
 					</select>
 				</div>
-			</div>
 
-			<div class=btns>
-				<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
-			</div>
-		</form>
-
-		<form method=post enctype="multipart/form-data" id=noscriptFallback>
-			<div class=form-group>
-				<label>화일 선택: </label><br>
-				<input class=form-control type=file name=file>
-			</div>
-
-			<div class=form-group>
-				<label>사용할 화일 이름: </label><br>
-				<input class=form-control type=text name=document>
-			</div>
-
-			<div class=form-group>
-				<label>출처: </label><br>
-				<textarea name=prop1 class=form-control rows=3></textarea>
-			</div>
-
-			<div class=form-group>
-				<label>저작자: </label><br>
-				<textarea name=prop2 class=form-control rows=3></textarea>
-			</div>
-
-			<div class=form-group>
-				<label>만든 이: </label><br>
-				<textarea name=prop3 class=form-control rows=3></textarea>
-			</div>
-
-			<div class=form-group>
-				<label>날짜: </label><br>
-				<textarea name=prop4 class=form-control rows=3></textarea>
-			</div>
-
-			<div class=form-group>
-				<label>메모: </label><br>
-				<textarea name=prop5 class=form-control rows=3></textarea>
-			</div>
-
-			<div class=form-group>
-				<label>분류: <span style="color: gray; float: right;">분류를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
-				<select name=category id=categorySelect class="form-control input-examples" size=8 placeholder="직접 입력">
-					${cateopts}
-				</select>
-			</div>
-
-			<div class=form-group>
-				<label>저작권: <span style="color: gray; float: right;">라이선스를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
-				<select name=license id=licenseSelect class="form-control input-examples" size=8 placeholder="직접 입력">
-					${liceopts}
-					<option>제한적 이용</option>
-				</select>
-			</div>
-
-			<div class=btns>
-				<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
-			</div>
-		</form>
-	`;
+				<div class=btns>
+					<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
+				</div>
+			</form>
+		`;
+	}
+	
+	if(!req.query['nojs']) {
+		content += `
+			<noscript>
+				<meta http-equiv=refresh content="0; url=?nojs=1" />
+			</noscript>
+		`;
+	}
 	
 	res.send(await render(req, '화일 올리기', content, {}));
 });
