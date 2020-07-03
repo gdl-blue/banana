@@ -241,7 +241,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.6.3 [디버그 전용]");
+		print("버전 1.6.4 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -2105,6 +2105,16 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 });
 
 wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
+	if(!req.body['content']) {
+		if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
+			res.send(await showError(req, 'invalid_request_body'));
+			return;
+		} else {
+			res.json({});
+			return;
+		}
+	}
+	
 	const tnum = req.param("tnum");
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
@@ -3173,12 +3183,38 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 	];
 	
 	var permopts = '';
+	var acltypes = '';
 	
 	for(var prm of permlist) {
 		permopts += `<option value="${prm[0]}">${prm[1]}</option>`;
 	}
 	
-	var content = '';
+	for(var typ=0; typ<aclname.length; typ++) {
+		acltypes += `<option value="${aclname[typ]}">${dispname[typ]}</option>`;
+	}
+	
+	var content = `
+		<style>
+			${(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) || !getperm('acl', ip_check(req)) ? '.acl-controller {display: none; }' : ''}
+		</style>
+	`;
+	
+	if(req.query['nojs'] == '1' && getperm('acl', ip_check(req))) {
+		// action type mode value not
+		content += `
+			<form method=post>
+				<p>ACL <select name=mode><option value=add>추가</option><option value=remove>삭제</option></select></p>
+				<label>액션: </label><select name=action><option value=allow>허용</option><option value=deny>거부</option></select><br>
+				<label>주체: </label><select name=type>${acltypes}</select><br>
+				<label>대상: </label><select name=value>${permopts}</select><br>
+				<label>반대 대상: </label><input type=checkbox name=not><br>
+				
+				<div class=btns>
+					<button type=submit class="btn btn-primary" style="width: 100px;">확인</button>
+				</div>
+			</form>
+		`;
+	}
 	
 	for(var acl=0; acl<dispname.length; acl++) {
 		var ret1 = '', ret2 = '';
@@ -3246,6 +3282,14 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 		`;
 	}
 	
+	if(!req.query['nojs'] && !(!req.query['nojs'] && compatMode(req))) {
+		content += `
+			<noscript>
+				<meta http-equiv=refresh content="0; url=?nojs=1" />
+			</noscript>
+		`;
+	}
+	
 	res.send(await render(req, title, content, {}, ' (ACL)', _, 'acl'));
 });
 
@@ -3270,6 +3314,11 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 	const value  = req.body['value'];
 	const mode   = req.body['mode'];
 	const not    = req.body['not'] ? '1' : '0';
+	
+	if(!action || !type || !value || !mode || !not) {
+		res.send(await showError(req, 'invalid_request_body'));
+		return;
+	}
 	
 	if(!action || !type || !value || !mode || !not) {
 		res.send(await showError(req, 'invalid_value'));
@@ -3324,7 +3373,11 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 		retval += `<option>${acl['not'] == '1' ? 'not ' : ''}${acl['value']}</option>`;
 	}
 	
-	res.send(retval);
+	if(req.query['nojs'] == '1') {
+		res.redirect('/acl/' + encodeURIComponent(title) + '?nojs=1');
+	} else {
+		res.send(retval);
+	}
 });
 
 /*
