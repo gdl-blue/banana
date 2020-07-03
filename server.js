@@ -241,7 +241,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.6.0 [디버그 전용]");
+		print("버전 1.6.1 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -564,17 +564,15 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		<meta charset=utf-8>
 		<meta name=generator content=banana>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-		<link rel="stylesheet" href="/css/diffview.css">
-		<link rel="stylesheet" href="/css/katex.min.css">
 		<link rel="stylesheet" href="/css/wiki.css">
 	`;
 	for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
 		header += '<link rel=stylesheet href="/skins/' + getSkin() + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
 	}
 	header += `
-		<script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script>
+		<!--[if !IE]><!--><script type="text/javascript" src="https://theseed.io/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
+		<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
 		<script type="text/javascript" src="/js/dateformatter.js?508d6dd4"></script>
-		<script type="text/javascript" src="/js/intersection-observer.js?36e469ff"></script>
 		<script type="text/javascript" src="/js/banana.js?24141115"></script>
 	`;
 	for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
