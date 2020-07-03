@@ -241,7 +241,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.6.1 [디버그 전용]");
+		print("버전 1.6.2 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -3186,7 +3186,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 		`;
 	}
 	
-	res.send(await render(req, title, content, {}, ' (ACL)'));
+	res.send(await render(req, title, content, {}, ' (ACL)', _, 'acl'));
 });
 
 /*
