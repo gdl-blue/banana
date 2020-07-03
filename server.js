@@ -1829,7 +1829,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 										rs['hidden'] == '1'
 										? (
 											getperm('hide_thread_comment', ip_check(req))
-											? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]<div class="text-line-break" style="margin: 25px 0px 0px -10px; display:block"><a class="text" onclick="$(this).parent().parent().children(\'.hidden-content\').show(); $(this).parent().css(\'margin\', \'15px 0 15px -10px\'); return false;" style="display: block; color: #fff;">[ADMIN] Show hidden content</a><div class="line"></div></div><div class="hidden-content" style="display:none">' + markdown(rs['content'], rs['ismember']) + '</div>'
+											? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]<br>' + markdown(rs['content'], rs['ismember'])
 											: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
 										  )
 										: markdown(rs['content'], rs['ismember'])
@@ -1948,7 +1948,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 							rs['hidden'] == '1'
 							? (
 								getperm('hide_thread_comment', ip_check(req))
-								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.] ' + markdown(rs['content'])
+								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]<br>' + markdown(rs['content'])
 								: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
 							  )
 							: (
