@@ -193,27 +193,37 @@ function generateTime(time, fmt) {
 	return `<time datetime="${d}T${t}.000Z" data-format="${fmt}">${time}</time>`;
 }
 
+const url_pas = u => encodeURIComponent(u);
+
 const md5 = require('md5');
 
-swig.setFilter('encode_userdoc', function encodeUserdocURL(input) {
-	return encodeURI('사용자:' + input);
+swig.setFilter('encode_userdoc', function filter_sencodeUserdocURL(input) {
+	return encodeURIComponent('사용자:' + input);
 });
 
-swig.setFilter('encode_doc', function encodeDocURL(input) {
-	return encodeURI(input);
+swig.setFilter('encode_doc', function filter_encodeDocURL(input) {
+	return encodeURIComponent(input);
 });
 
 swig.setFilter('to_date', toDate);
 
 swig.setFilter('localdate', generateTime);
 
-// 오픈나무 스킨 호환용
-swig.setFilter('cut_100', function cutUntil100Chars(input) {
+// 오픈나무(터보위키) 스킨 호환용
+swig.setFilter('cut_100', function filter_slice100Chars(input) {
 	return input.slice(0, 100);
 });
 
-swig.setFilter('md5_replace', function MD5Hash(input) {
+swig.setFilter('md5_replace', function filter_MD5Hash(input) {
 	return md5(input);
+});
+
+swig.setFilter('url_pas', function filter_encodeURL(input) {
+	return url_pas(input);
+});
+
+swig.setFilter('CEng', function filter_setLanguage(input, eng) {
+	return input;
 });
 
 var bodyParser = require('body-parser');
@@ -231,7 +241,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.5.1 [디버그 전용]");
+		print("버전 1.6.0 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -267,7 +277,8 @@ catch(e) {
 			'filecategories': ['category', 'creator'],
 			'vote': ['num', 'name', 'start', 'end', 'required_date', 'options', 'mode'],
 			'votedata': ['data', 'username', 'date', 'num'],
-			'tokens': ['username', 'token']
+			'tokens': ['username', 'token'],
+			'requests': ['ip', 'time']
 		};
 		
 		for(var table in tables) {
@@ -627,9 +638,9 @@ async function showError(req, code) {
 
 function ip_pas(ip = '', ismember = '') {
 	if(ismember == 'author') {
-		return `<strong><a href="/w/사용자:${encodeURI(ip)}">${html.escape(ip)}</a></strong>`;
+		return `<strong><a href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
 	} else {
-		return `<a href="/contribution/ip/${encodeURI(ip)}/document">${html.escape(ip)}</a>`;
+		return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
 	}
 }
 
@@ -690,13 +701,17 @@ async function getacl(req, title, action) {
 					await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
 					condition = curs.fetchall().length > 0;
 				break;default:
-					if(value.startsWith('member:')) {
-						condition = islogin(req) && ip_check(req).toUpperCase() == value.replace(/^member[:]/i, '').toUpperCase();
-					}
-					else if(value.startsWith('ip:')) {
-						condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
-					}
-					else {
+					try {
+						if(value.startsWith('member:')) {
+							condition = islogin(req) && ip_check(req).toUpperCase() == value.replace(/^member[:]/i, '').toUpperCase();
+						}
+						else if(value.startsWith('ip:')) {
+							condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
+						}
+						else {
+							condition = false;
+						}
+					} catch(e) {
 						condition = false;
 					}
 			}
@@ -787,11 +802,16 @@ wiki.get('/css/:filepath', function dropCSS(req, res) {
 });
 
 function generateCaptcha(req, cnt = 3) {
+	const fst = atoi(rndval('017', 1));
+	
 	var numbers = [];
 	var i;
 	var fullnum = '';
 	var caps = [];
 	var retHTML = '';
+	
+	fullnum += itoa(fst);
+	caps.push(new captchapng(60, 45, fst));
 	
 	for(i of range(cnt)) {
 		numbers.push(parseInt(Math.random()*9000+1000));
@@ -902,7 +922,7 @@ function generateCaptcha(req, cnt = 3) {
 			</div>
 			
 			<div class=captcha-input>
-				<label>${cnt * 4}자리 숫자 입력: </label><br>
+				<label>${cnt * 4 + 1}자리 숫자 입력: </label><br>
 				<input type=text class=form-control name=captcha placeholder="공백 구분 안함">
 			</div>
 		</div>
@@ -998,7 +1018,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 		
 		httpstat = 404;
 		content = `
-			<h2>문서가 존재하지 않습니다. 새로 작성하려면 <a href="/edit/${encodeURI(title)}">여기</a>를 클릭하십시오.</h2>
+			<h2>문서가 존재하지 않습니다. 새로 작성하려면 <a href="/edit/${encodeURIComponent(title)}">여기</a>를 클릭하십시오.</h2>
 		`;
 	}
 	
@@ -1280,14 +1300,14 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 		content += `
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
-						<a href="/w/${encodeURI(row['title'])}">${html.escape(row['title'])}</a> 
-						<a href="/history/${encodeURI(row['title'])}">[역사]</a> 
+						<a href="/w/${encodeURIComponent(row['title'])}">${html.escape(row['title'])}</a> 
+						<a href="/history/${encodeURIComponent(row['title'])}">[역사]</a> 
 						${
 								Number(row['rev']) > 1
-								? '<a \href="/diff/' + encodeURI(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">[비교]</a>'
+								? '<a \href="/diff/' + encodeURIComponent(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">[비교]</a>'
 								: ''
 						} 
-						<a href="/discuss/${encodeURI(row['title'])}">[토론]</a> 
+						<a href="/discuss/${encodeURIComponent(row['title'])}">[토론]</a> 
 						
 						(<span style="color: ${
 							(
@@ -1372,14 +1392,14 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		content += `
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
-						<a href="/w/${encodeURI(row['title'])}">${html.escape(row['title'])}</a> 
-						<a href="/history/${encodeURI(row['title'])}">[역사]</a> 
+						<a href="/w/${encodeURIComponent(row['title'])}">${html.escape(row['title'])}</a> 
+						<a href="/history/${encodeURIComponent(row['title'])}">[역사]</a> 
 						${
 								Number(row['rev']) > 1
-								? '<a \href="/diff/' + encodeURI(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">[비교]</a>'
+								? '<a \href="/diff/' + encodeURIComponent(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">[비교]</a>'
 								: ''
 						} 
-						<a href="/discuss/${encodeURI(row['title'])}">[토론]</a> 
+						<a href="/discuss/${encodeURIComponent(row['title'])}">[토론]</a> 
 						
 						(<span style="color: ${
 							(
@@ -1469,7 +1489,7 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		content += `
 			<tr>
 				<td>
-					<a href="/thread/${trd['tnum']}">${html.escape(trd['topic'])}</a> (<a href="/discuss/${encodeURI(trd['title'])}">${html.escape(trd['title'])}</a>)
+					<a href="/thread/${trd['tnum']}">${html.escape(trd['topic'])}</a> (<a href="/discuss/${encodeURIComponent(trd['title'])}">${html.escape(trd['title'])}</a>)
 				</td>
 				
 				<td>
@@ -1533,7 +1553,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 		content += `
 				<tr>
 					<td>
-						<a href="/thread/${row['tnum']}">#${row['id']} ${html.escape(td['topic'])}</a> (<a href="/w/${encodeURI(td['title'])}">${html.escape(td['title'])}</a>)
+						<a href="/thread/${row['tnum']}">#${row['id']} ${html.escape(td['topic'])}</a> (<a href="/w/${encodeURIComponent(td['title'])}">${html.escape(td['title'])}</a>)
 					</td>
 					
 					<td>
@@ -1607,12 +1627,12 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		content += `
 				<tr>
 					<td>
-						<strong>r${row['rev']}</strong> | <a rel=nofollow href="/w/${encodeURI(title)}?rev=${row['rev']}">보기</a> |
-							<a rel=nofollow href="/raw/${encodeURI(title)}?rev=${row['rev']}" data-npjax="true">RAW</a> |
-							<a rel=nofollow href="/blame/${encodeURI(title)}?rev=${row['rev']}">Blame</a> |
-							<a rel=nofollow href="/revert/${encodeURI(title)}?rev=${row['rev']}">이 리비젼으로 되돌리기</a>${
+						<strong>r${row['rev']}</strong> | <a rel=nofollow href="/w/${encodeURIComponent(title)}?rev=${row['rev']}">보기</a> |
+							<a rel=nofollow href="/raw/${encodeURIComponent(title)}?rev=${row['rev']}" data-npjax="true">RAW</a> |
+							<a rel=nofollow href="/blame/${encodeURIComponent(title)}?rev=${row['rev']}">Blame</a> |
+							<a rel=nofollow href="/revert/${encodeURIComponent(title)}?rev=${row['rev']}">이 리비젼으로 되돌리기</a>${
 								Number(row['rev']) > 1
-								? ' | <a rel=nofollow href="/diff/' + encodeURI(title) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교</a>'
+								? ' | <a rel=nofollow href="/diff/' + encodeURIComponent(title) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교</a>'
 								: ''
 							}
 							
@@ -1781,7 +1801,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			}
 				
 			content += `
-				<h2 class="wiki-heading">토론 발제</h2>
+				<h4 class="wiki-heading">토론 발제</h4>
 				
 				<form method="post" class="new-thread-form" id="topicForm">
 					<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
@@ -1819,7 +1839,7 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 		return;
 	}
 	
-	if(!await getacl(req, title, 'create_thread')) {
+	if(!await getacl(req, title, 'discuss')) {
 		res.send(await showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -1842,6 +1862,67 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 					
 	res.redirect('/thread/' + tnum);
 });
+
+async function getThreadData(req, tnum, tid = '-1') {
+	await curs.execute("select id from res where tnum = ?", [tnum]);
+	
+	const rescount = curs.fetchall().length;
+	
+	if(!rescount) { return ''; }
+	
+	await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
+	const fstusr = curs.fetchall()[0]['username'];
+	
+	await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
+	const title = curs.fetchall()[0]['title'];
+	const topic = curs.fetchall()[0]['topic'];
+	const status = curs.fetchall()[0]['status'];
+	
+	if(tid == '-1') {
+		await curs.execute("select id, content, username, time, hidden, hider, status, ismember from res where tnum = ? order by cast(id as integer) asc", [tnum]);
+	} else {
+		await curs.execute("select id, content, username, time, hidden, hider, status, ismember from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
+	}
+	content = '';
+	for(rs of curs.fetchall()) {
+		var hbtn = ''
+		if(getperm('hide_thread_comment', ip_check(req))) {
+			hbtn += `
+				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[숨기기${rs['hidden'] == '1' ? ' 해제' : ''}]</a>
+			`;
+		}
+		content += `
+			<div class=res-wrapper data-id="${rs['id']}">
+				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
+					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
+						<span class=num>
+							<a id="${rs['id']}">#${rs['id']}</a>&nbsp;
+						</span> ${ip_pas(rs['username'], rs['ismember'])} ${hbtn} <span style="float: right;">${generateTime(toDate(rs['time']), timeFormat)}</span>
+					</div>
+					
+					<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">
+						${
+							rs['hidden'] == '1'
+							? (
+								getperm('hide_thread_comment', ip_check(req))
+								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.] ' + markdown(rs['content'])
+								: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
+							  )
+							: (
+								rs['status'] == 1
+								? rs['content']
+								: markdown(rs['content'])
+							)
+						}
+					</div>
+				</div>`;
+		content += `
+			</div>
+		`;
+	}
+	
+	return content;
+}
 
 wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	const tnum = req.param("tnum");
@@ -1878,18 +1959,22 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			<div id=res-container>
 	`;
 	
-	for(var i=1; i<=rescount; i++) {
-		content += `
-			<div class="res-wrapper res-loading" data-id="${i}" data-locked="false" data-visible=false>
-				<div class="res res-type-normal">
-					<div class="r-head">
-						<span class="num"><a id="${i}">#${i}</a>&nbsp;</span>
+	if(req.query['nojs'] == '1') {
+		content += await getThreadData(req, tnum);
+	} else {
+		for(var i=1; i<=rescount; i++) {
+			content += `
+				<div class="res-wrapper res-loading" data-id="${i}" data-locked="false" data-visible=false>
+					<div class="res res-type-normal">
+						<div class="r-head">
+							<span class="num"><a id="${i}">#${i}</a>&nbsp;</span>
+						</div>
+						
+						<div class="r-body"></div>
 					</div>
-					
-					<div class="r-body"></div>
 				</div>
-			</div>
-		`;
+			`;
+		}
 	}
 	
 	content += `
@@ -1961,6 +2046,14 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		</form>
 	`;
 	
+	if(!req.query['nojs']) {
+		content += `
+			<noscript>
+				<meta http-equiv=refresh content="0; url=?nojs=1" />
+			</noscript>
+		`;
+	}
+	
 	res.send(await render(req, title, content, {}, ' (토론) - ' + topic, error = false, viewname = 'thread'));
 });
 
@@ -1984,7 +2077,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 		return;
 	}
 	
-	if(!await getacl(req, title, 'write_thread_comment')) {
+	if(!await getacl(req, title, 'discuss')) {
 		res.send(await showError(req, 'insufficient_privileges'));
 		
 		return;
@@ -2000,7 +2093,11 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 					
 	curs.execute("update threads set time = ? where tnum = ?", [getTime(), tnum]);
 	
-	res.json({});
+	if(req.query['nojs'] == '1') {
+		res.redirect('/thread/' + tnum + '?nojs=1');
+	} else {
+		res.json({});
+	}
 });
 
 wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
@@ -2029,43 +2126,7 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 	
 	content = ``;
 	
-	await curs.execute("select id, content, username, time, hidden, hider, status, ismember from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
-	for(rs of curs.fetchall()) {
-		var hbtn = ''
-		if(getperm('hide_thread_comment', ip_check(req))) {
-			hbtn += `
-				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[숨기기${rs['hidden'] == '1' ? ' 해제' : ''}]</a>
-			`;
-		}
-		content += `
-			<div class=res-wrapper data-id="${rs['id']}">
-				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
-					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
-						<span class=num>
-							<a id="${rs['id']}">#${rs['id']}</a>&nbsp;
-						</span> ${ip_pas(rs['username'], rs['ismember'])} ${hbtn} <span style="float: right;">${generateTime(toDate(rs['time']), timeFormat)}</span>
-					</div>
-					
-					<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">
-						${
-							rs['hidden'] == '1'
-							? (
-								getperm('hide_thread_comment', ip_check(req))
-								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.] ' + markdown(rs['content'])
-								: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
-							  )
-							: (
-								rs['status'] == 1
-								? rs['content']
-								: markdown(rs['content'])
-							)
-						}
-					</div>
-				</div>`;
-		content += `
-			</div>
-		`;
-	}
+	content = await getThreadData(req, tnum, tid);
 	
 	res.send(content);
 });
@@ -2222,7 +2283,7 @@ wiki.get('/admin/thread/:tnum/delete', async function deleteThread(req, res) {
 	curs.execute("delete from threads where tnum = ?", [tnum]);
 	curs.execute("delete from res where tnum = ?", [tnum]);
 	
-	res.redirect('/discuss/' + encodeURI(title));
+	res.redirect('/discuss/' + encodeURIComponent(title));
 });
 
 wiki.post('/notify/thread/:tnum', async function notifyEvent(req, res) {
@@ -2309,6 +2370,14 @@ wiki.post('/member/login', async function authUser(req, res) {
 	}
 	
 	const captcha = generateCaptcha(req, 3);
+	
+	var warningText = '';
+	var warningScript = '';
+	
+	if(!req.secure) {
+		warningText = '<p><strong><font color=red>[경고!] HTTPS 연결이 아닌 것같습니다. 로그인할 시 개인정보가 유출될 수 있으며, 이에 대한 책임은 본인에게 있습니다.</font></strong></p>';
+		warningScript = ` onsubmit="return confirm('경고 - 지금 HTTPS 연결이 감지되지 않았습니다. 로그인할 경우 비밀번호가 다른 사람에게 노출될 수 있으며, 이에 대한 책임은 본인에게 있습니다. 계속하시겠습니까?');"`;
+	}
 	
 	if(!id.length) {
 		res.send(await render(req, '로그인', `
@@ -3019,7 +3088,7 @@ wiki.post('/Upload', async function saveFile(req, res) {
 		curs.execute("insert into files (filename, prop1, prop2, prop3, prop4, prop5, license, category) values (?, ?, ?, ?, ?, ?, ?, ?)", [fn, req.body['prop1'], req.body['prop2'], req.body['prop3'], req.body['prop4'], req.body['prop5'], req.body['license'], req.body['category']]);
 		curs.execute("insert into filehistory (filename, prop1, prop2, prop3, prop4, prop5, license, category, username, rev) values (?, ?, ?, ?, ?, ?, ?, ?, ?, '1')", [fn, req.body['prop1'], req.body['prop2'], req.body['prop3'], req.body['prop4'], req.body['prop5'], req.body['license'], req.body['category'], ip_check(req)]);
 		
-		res.redirect('/file/' + encodeURI(req.body['document']));
+		res.redirect('/file/' + encodeURIComponent(req.body['document']));
 	});
 });
 
