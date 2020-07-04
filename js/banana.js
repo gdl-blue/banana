@@ -170,8 +170,68 @@ $(function() {
 				},
 				error: function(d) {
 					submitBtn.removeAttr('disabled');
-					
 					alert('댓글을 달 수 없습니다.');
+				}
+			});
+			
+			return false;
+		});
+		
+		$('form#thread-status-form').submit(function() {
+			var submitBtn = $(this).find('button[type="submit"]');
+			submitBtn.attr('disabled', '');
+			
+			$.ajax({
+				type: "POST",
+				dataType: 'json',
+				data: $(this).serialize(),
+				url: '/admin/thread/' + tnum + '/status',
+				success: function(d) {
+					submitBtn.removeAttr('disabled');
+					history.go(0);
+				},
+				error: function(d) {
+					alert('처리 중에 오류가 발생했습니다.');
+				}
+			});
+			
+			return false;
+		});
+		
+		$('form#thread-document-form').submit(function() {
+			var submitBtn = $(this).find('button[type="submit"]');
+			submitBtn.attr('disabled', '');
+			
+			$.ajax({
+				type: "POST",
+				dataType: 'json',
+				data: $(this).serialize(),
+				url: '/admin/thread/' + tnum + '/document',
+				success: function(d) {
+					submitBtn.removeAttr('disabled');
+				},
+				error: function(d) {
+					alert('처리 중에 오류가 발생했습니다.');
+				}
+			});
+			
+			return false;
+		});
+		
+		$('form#thread-topic-form').submit(function() {
+			var submitBtn = $(this).find('button[type="submit"]');
+			submitBtn.attr('disabled', '');
+			
+			$.ajax({
+				type: "POST",
+				dataType: 'json',
+				data: $(this).serialize(),
+				url: '/admin/thread/' + tnum + '/topic',
+				success: function(d) {
+					submitBtn.removeAttr('disabled');
+				},
+				error: function(d) {
+					alert('처리 중에 오류가 발생했습니다.');
 				}
 			});
 			
@@ -208,7 +268,7 @@ $(function() {
 			});
 			
 			discussFetch(tnum);
-		}, 2000);
+		}, 500);
 		
 		setVisibleState();
 	}
