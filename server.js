@@ -265,7 +265,7 @@ catch(e) {
 			'stars': ['title', 'username', 'lastedit'],
 			'perms': ['perm', 'username'],
 			'threads': ['title', 'topic', 'status', 'time', 'tnum'],
-			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin'],
+			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin', 'stype'],
 			'useragents': ['username', 'string'],
 			'login_history': ['username', 'ip'],
 			'account_creation': ['key', 'email', 'time'],
@@ -1729,7 +1729,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 	if(!state) state = '';
 	
 	if(!await getacl(req, title, 'read')) {
-		res.send(showError('insufficient_privileges_read'));
+		res.send(await showError(req, 'insufficient_privileges_read'));
 		
 		return;
 	}
@@ -1746,7 +1746,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			content += '<ul class=wiki-list>';
 			
 			var cnt = 0;
-			await curs.execute("select topic, tnum from threads where title = ? and status = 'close' order by cast(time as integer) desc");
+			await curs.execute("select topic, tnum from threads where title = ? and status = 'close' order by cast(time as integer) desc", [title]);
 			trdlst = curs.fetchall();
 			
 			for(trd of trdlst) {
@@ -1779,7 +1779,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				<div class=wiki-heading-content>
 			`;
 				
-			await curs.execute("select topic, tnum from threads where title = ? and status = 'normal' order by cast(time as integer) desc", [title]);
+			await curs.execute("select topic, tnum from threads where title = ? and not status = 'close' order by cast(time as integer) desc", [title]);
 			trdlst = curs.fetchall();
 			
 			cnt = 0;
@@ -1840,9 +1840,10 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 					`;
 				}
 				
-				content += '<a href="?state=close">[닫힌 토론 목록 보기]</a></div>';
+				content += '</div>';
 			}
-				
+			content += '<a href="?state=close">[닫힌 토론 목록 보기]</a>';
+			
 			content += `
 				<h4 class="wiki-heading">토론 발제</h4>
 				
@@ -1922,9 +1923,9 @@ async function getThreadData(req, tnum, tid = '-1') {
 	const status = curs.fetchall()[0]['status'];
 	
 	if(tid == '-1') {
-		await curs.execute("select id, content, username, time, hidden, hider, status, ismember from res where tnum = ? order by cast(id as integer) asc", [tnum]);
+		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype from res where tnum = ? order by cast(id as integer) asc", [tnum]);
 	} else {
-		await curs.execute("select id, content, username, time, hidden, hider, status, ismember from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
+		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
 	}
 	content = '';
 	for(rs of curs.fetchall()) {
@@ -1953,7 +1954,15 @@ async function getThreadData(req, tnum, tid = '-1') {
 							  )
 							: (
 								rs['status'] == 1
-								? rs['content']
+								? (
+									rs['stype'] == 'status'
+									? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 상태로 표시'
+									: (
+										rs['stype'] == 'document'
+										? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 문서로 이동'
+										: '토론 주제를 <strong>' + html.escape(rs['content']) + '</strong>(으)로 변경'
+									)
+								)
 								: markdown(rs['content'])
 							)
 						}
@@ -2037,24 +2046,24 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		switch(status) {
 			case 'close':
 				sts = `
-					<option value="normal">normal</option>
-					<option value="pause">pause</option>
+					<option value="normal">진행</option>
+					<option value="pause">동결</option>
 				`;
 			break;case 'normal':
 				sts = `
-					<option value="close">close</option>
-					<option value="pause">pause</option>
+					<option value="close">닫힘</option>
+					<option value="pause">동결</option>
 				`;
 			break;case 'pause':
 				sts = `
-					<option value="close">close</option>
-					<option value="normal">normal</option>
+					<option value="close">닫힘</option>
+					<option value="normal">진행</option>
 				`;
 		}
 		
 		content += `
 		    <form method="post" id="thread-status-form">
-        		쓰레드 상태 변경
+        		토론 상태: 
         		<select name="status">${sts}</select>
         		<button id="changeBtn" class="d_btn type_blue">변경</button>
         	</form>
@@ -2064,7 +2073,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	if(getperm('update_thread_document', ip_check(req))) {
 		content += `
         	<form method="post" id="thread-document-form">
-        		쓰레드 이동
+        		토론 문서: 
         		<input type="text" name="document" value="${title}">
         		<button id="changeBtn" class="d_btn type_blue">변경</button>
         	</form>
@@ -2074,7 +2083,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	if(getperm('update_thread_topic', ip_check(req))) {
 		content += `
         	<form method="post" id="thread-topic-form">
-        		쓰레드 주제 변경
+        		토론 주제: 
         		<input type="text" name="topic" value="${topic}">
         		<button id="changeBtn" class="d_btn type_blue">변경</button>
         	</form>
@@ -2249,9 +2258,9 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 	}
 	
 	curs.execute("update threads set status = ? where tnum = ?", [newstatus, tnum]);
-	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
-					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?)", [
-						String(rescount + 1), '스레드 상태를 <strong>' + newstatus + '</strong>로 변경', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
+	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin, stype) \
+					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?, 'status')", [
+						String(rescount + 1), newstatus, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
@@ -2279,9 +2288,9 @@ wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(re
 	}
 	
 	curs.execute("update threads set title = ? where tnum = ?", [newdoc, tnum]);
-	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
-					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?)", [
-						String(rescount + 1), '스레드를 <strong>' + newdoc + '</strong> 문서로 이동', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
+	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin, stype) \
+					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?, 'document')", [
+						String(rescount + 1), newdoc, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
@@ -2309,9 +2318,9 @@ wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res
 	}
 	
 	curs.execute("update threads set topic = ? where tnum = ?", [newtopic, tnum]);
-	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
-					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?)", [
-						String(rescount + 1), '스레드 주제를 <strong>' + newtopic + '</strong>로 변경', ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
+	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin, stype) \
+					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?, 'topic')", [
+						String(rescount + 1), newtopic, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
