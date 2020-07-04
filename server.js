@@ -241,7 +241,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.6.4 [디버그 전용]");
+		print("버전 1.6.5 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -2105,7 +2105,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 });
 
 wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
-	if(!req.body['content']) {
+	if(!req.body['text']) {
 		if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
 			res.send(await showError(req, 'invalid_request_body'));
 			return;
