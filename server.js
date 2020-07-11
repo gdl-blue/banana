@@ -5,6 +5,7 @@ const sqrt = Math.sqrt;
 const floorof = Math.floor;
 const rand = (s, e) => Math.random() * (e + 1 - s) + s;
 const randint = (s, e) => floorof(Math.random() * (e + 1 - s) + s);
+const len = obj => obj.length;
 const itoa = String;
 const atoi = Number;
 const reverse = elmt => {
@@ -73,9 +74,10 @@ const find = (obj, fnc) => {
 }
 
 const perms = [
-	'admin', 'suspend_account', 'developer', 'update_thread_document',
+	'admin', 'suspend_account', 'developer', 'update_thread_document', 'ipacl',
 	'update_thread_status', 'update_thread_topic', 'hide_thread_comment', 'grant',
-	'login_history', 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote'
+	'login_history', 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote',
+	'ban_users'
 ];
 
 function print(x) { console.log(x); }
@@ -120,6 +122,8 @@ function sha3(p) {
 	hash.update(p);
 	return hash.digest('hex');
 }
+
+const ipRangeCheck = require("ip-range-check");
 
 // VB6 함수 모방
 function Split(str, del) { return str.split(del); }; const split = Split;
@@ -197,7 +201,7 @@ const url_pas = u => encodeURIComponent(u);
 
 const md5 = require('md5');
 
-swig.setFilter('encode_userdoc', function filter_sencodeUserdocURL(input) {
+swig.setFilter('encode_userdoc', function filter_encodeUserdocURL(input) {
 	return encodeURIComponent('사용자:' + input);
 });
 
@@ -241,7 +245,7 @@ catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
 		print("바나나 위키엔진에 오신것을 환영합니다.");
-		print("버전 1.6.6 [디버그 전용]");
+		print("버전 2.0.0 [디버그 전용]");
 		
 		prt('\n');
 		
@@ -256,7 +260,7 @@ catch(e) {
 			'documents': ['title', 'content'],
 			'history': ['title', 'content', 'rev', 'time', 'username', 'changes', 'log', 'iserq', 'erqnum', 'advance', 'ismember'],
 			'namespaces': ['namespace', 'locked', 'norecent', 'file'],
-			'users': ['username', 'password'],
+			'users': ['username', 'password', 'id'],
 			'user_settings': ['username', 'key', 'value'],
 			'acl': ['title', 'notval', 'type', 'value', 'action', 'hipri'],
 			'nsacl': ['namespace', 'no', 'type', 'content', 'action', 'expire'],
@@ -271,14 +275,19 @@ catch(e) {
 			'account_creation': ['key', 'email', 'time'],
 			'files': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category'],
 			'filehistory': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category', 'username', 'rev'],
-			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al'],
-			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al'],
+			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al', 'blockview'],
+			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'isip', 'blockview'],
 			'filelicenses': ['license', 'creator'],
 			'filecategories': ['category', 'creator'],
 			'vote': ['num', 'name', 'start', 'end', 'required_date', 'options', 'mode'],
 			'votedata': ['data', 'username', 'date', 'num'],
 			'tokens': ['username', 'token'],
-			'requests': ['ip', 'time']
+			'requests': ['ip', 'time'],
+			'bbs_boards': ['name', 'id'],
+			'bbs_posts': ['userid', 'boardid', 'title', 'content', 'category', 'id', 'time'],
+			'bbs_categories': ['name', 'id'],
+			'bbs_comments': ['userid', 'postid', 'content', 'id', 'deleted', 'edited', 'time'],
+			'bbs_ids': ['id']
 		};
 		
 		for(var table in tables) {
@@ -298,7 +307,11 @@ catch(e) {
 		setTimeout(async () => {
 			const fcates = ['동물', '게임', '컴퓨터', '요리', '탈것', '전화기', '기계', '광고', '도구', '만화/애니메이션', '아이콘/기호'];
 			const flices = ['CC BY', 'CC BY-NC', 'CC BY-NC-ND', 'CC BY-NC-SA', 'CC BY-ND', 'CC BY-SA', 'CC-0', 'PD-author', 'PD-self', 'PD-software'];
-
+			const bcates = {
+				'문의': ['대기', '완료'],
+				'신고': ['대기', '완료'],
+			};
+			
 			for(var cate of fcates) {
 				await curs.execute("insert into filecategories (category, creator) values (?, '')", [cate]);
 			}
@@ -433,6 +446,10 @@ function getperm(perm, username) {
 	}
 }
 
+async function fetchNamespaces() {
+	return ['문서', '틀', '분류', '파일', '사용자', 'wiki', '휴지통', '파일휴지통'];
+}
+
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
 	const skinInfo = {
 		title: title + subtitle,
@@ -551,8 +568,21 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		}
 	}
 	
-	if(viewname != '') {
-		templateVariables['document'] = title;
+	const nslist = await fetchNamespaces();
+	
+	if(['wiki', 'notfound', 'edit', 'thread', 'thread_list', 'thread_list_close',
+			'move', 'delete', 'xref', 'history', 'acl'].includes(viewname)) {
+		const ns = title.split(':')[0];
+		
+		templateVariables['document'] = {
+			toString: function() {
+				return title;
+			},
+			title: nslist.includes(ns)
+					? title.replace(new RegExp('^' + ns + ':'), '')
+					: title,
+			namespace: nslist.includes(ns) ? ns : '문서'
+		};
 	}
 	
 	output = template(templateVariables);
@@ -594,14 +624,17 @@ function fetchErrorString(code) {
 	const codes = {
 		'invalid_captcha_number': '보안문자 값이 올바르지 않습니다.',
 		'disabled_feature': '이 기능이 사용하도록 설정되지 않았습니다.',
-		'invalid_signup_key': '만료되었거나 올바르지 않습니다.',
+		'invalid_signup_key': '이 인증은 만료되었거나 올바르지 않습니다.',
 		'invalid_vote_type': '투표 방식이 올바르지 않습니다.',
 		'insufficient_privileges': '접근 권한이 없습니다.',
 		'insufficient_privileges_edit': '편집 권한이 없습니다.',
-		'insufficient_privileges_read': '읽을 권한이 없습니다.'
+		'insufficient_privileges_read': '읽을 권한이 없습니다.',
+		'invalid_value': '전송한 값 중 하나가 정해진 형식을 위반했습니다.',
+		'invalid_request_body': '필요한 값 중 일부가 빠져서 처리가 불가능합니다.',
+		'thread_not_found': '토론을 찾을 수 없습니다.'
 	};
 	
-	if(typeof(codes[code]) == 'undefined') return code;
+	if(typeof(codes[code]) == 'undefined') return `알 수 없는 오류 ${code}이(가) 발생하였습니다.`;
 	else return codes[code];
 }
 
@@ -626,19 +659,29 @@ function alertBalloon(title, content, type = 'danger', dismissible = true, class
 		</div>`;
 }
 
-async function fetchNamespaces() {
-	return ['문서', '틀', '분류', '파일', '사용자', 'wiki', '휴지통', '파일휴지통'];
-}
-
 async function showError(req, code) {
 	return await render(req, "문제가 발생했습니다!", `<h2>${fetchErrorString(code)}</h2>`);
 }
 
-function ip_pas(ip = '', ismember = '') {
-	if(ismember == 'author') {
-		return `<strong><a href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
+function ip_pas(ip = '', ismember = '', isadmin = null) {
+	if(isadmin) {
+		if(ismember == 'author') {
+			if(isadmin == '1') {
+				return `<strong><a href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
+			}
+			return `<a href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a>`;
+		} else {
+			if(isadmin == '1') {
+				return `<strong><a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a></strong>`;
+			}
+			return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
+		}
 	} else {
-		return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
+		if(ismember == 'author') {
+			return `<strong><a href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
+		} else {
+			return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
+		}
 	}
 }
 
@@ -767,7 +810,85 @@ const html = {
 	}
 }
 
-wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, function dropSkinFile(req, res) {
+function mmmmmmmmmmmmmmn() { return 0; }
+
+async function fileExplorer(path, req, res) {
+	// const path = ('./skins' + req.params[0]).replace(/\/$/, '');
+	
+	// https://stackoverflow.com/questions/18112204/get-all-directories-within-directory-nodejs
+	const getDirectories = path => fs.readdirSync(path, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
+	const getFiles       = path => fs.readdirSync(path, { withFileTypes: true }).filter(dirent => !dirent.isDirectory()).map(dirent => dirent.name);
+	
+	const dirlist  = getDirectories(path);
+	const filelist = getFiles(path);
+	
+	var content = `
+		<table class="table table-hover">
+			<thead>
+				<tr>
+					<td><strong>이름</strong></td>
+					<td><strong>형식</strong></td>
+					<td><strong>크기</strong></td>
+				</tr>
+			</thead>
+			
+			<tbody id>
+				<tr>
+					<td><a href="${path.endsWith('/') ? '..' : '.'}">..</a></td>
+					<td>디렉토리</td>
+					<td>0</td>
+				</tr>
+	`;
+	
+	for(var d of dirlist) {
+		content += `
+			<tr>
+				<td>
+					<a href="/${html.escape((path.endsWith('/') ? path : path + '/') + d)}">${html.escape(d)}</a>
+				</td>
+				
+				<td>디렉토리</td>
+				
+				<td>
+					${fs.statSync(path + '/' + d)['size']}
+				</td>
+			</tr>
+		`;
+	}
+	
+	for(var f of filelist) {
+		var acode;
+		console.log(path)
+		if(fs.existsSync((path.endsWith('/') ? path : path + '/') + f)) {
+			acode = `<a href="/${html.escape((path.endsWith('/') ? path : path + '/') + f)}">${html.escape(f)}</a>`;
+		} else {
+			acode = `${html.escape(f)}`;
+		}
+		
+		content += `
+			<tr>
+				<td>
+					${acode}
+				</td>
+				
+				<td>파일</td>
+				
+				<td>
+					${fs.statSync(path + '/' + f)['size']}
+				</td>
+			</tr>
+		`;
+	}
+	
+	content += `
+			</tbody>
+		</table>
+	`;
+	
+	res.send(await render(req, '탐색 중 - ' + path.replace(/^[.]\//, ''), content));
+}
+
+wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropSkinFile(req, res) {
 	const skinname = req.params[0];
 	const filepath = req.params[1];
 	
@@ -779,6 +900,17 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, function dropSkinFile(req, res) {
 	for(dir of afn) {
 		rootp += '/' + dir;
 	}
+	
+	try {
+		if(fs.lstatSync(rootp).isDirectory()) {
+			await fileExplorer(rootp, req, res);
+			return;
+		}
+	} catch(e) {
+		res.send(await showError(req, 'file_not_found'));
+		return;
+	}
+	
 	
 	res.sendFile(fn, { root: rootp.replace('/' + fn, '') });
 });
@@ -809,6 +941,10 @@ function compatMode(req) {
 	try {
 		const useragent = req.headers['user-agent'];
 		if(!useragent) return false;
+		
+		if(useragent.includes('Mypal') || useragent.includes('Centaury')) {
+			return false;
+		}
 		
 		const UAParser = require('ua-parser-js');
 		
@@ -972,15 +1108,71 @@ function generateCaptcha(req, cnt = 3) {
 	`;
 }
 
+wiki.get('/recent_changes', function redirectA(req, res) {
+	res.redirect('/RecentChanges');
+});
+
+wiki.get('/recent_discuss', function redirectB(req, res) {
+	res.redirect('/RecentChanges');
+});
+
+wiki.get('/upload', function redirectC(req, res) {
+	res.redirect('/Upload');
+});
+
+async function redirectD(req, res) {
+	res.send(await render(req, '특수 기능', '<p>최상단의 [특수 기능] 혹은 [도구] 메뉴를 통해 기능을 볼 수 있습니다.</p>'));
+}
+
+wiki.get('/other', redirectD);
+wiki.get('/Special', redirectD);
+
+async function redirectE(req, res) {
+	res.send(await render(req, '사용자 도구', '<p>최상단의 아바타 혹은 이름을 누르면 사용자 도구를 볼 수 있습니다.</p>'));
+}
+
+wiki.get('/member', redirectE);
+wiki.get('/user', redirectE);
+
+wiki.get('/please', function redirectF(req, res) {
+	res.redirect('/NeededPages');
+});
+
+wiki.get('/old_page', function redirectG(req, res) {
+	res.redirect('/OldPages');
+});
+
+wiki.get('/admin/ipacl', function redirectH(req, res) {
+	res.redirect('/admin/ban_users?usertype=ip');
+});
+
+wiki.get('/admin/suspend_account', function redirectI(req, res) {
+	res.redirect('/admin/ban_users?usertype=author');
+});
+
+wiki.get(/^\/record\/(.*)$/, async function redirectJ(req, res) {
+	const username = req.params[0];
+	
+	res.status(300).send(`
+		<script>
+			if(confirm('계정이면 <예>, IP이면 <아니오>')) {
+				location.href = "/contribution/author/${encodeURIComponent(username)}/document";
+			} else {
+				location.href = "/contribution/ip/${encodeURIComponent(username)}/document";
+			}
+		</script>
+	`);
+});
+
 function redirectToFrontPage(req, res) {
-	res.redirect('/w/' + config.getString('frontpage'));
+	res.redirect('/w/' + config.getString('frontpage', 'FrontPage'));
 }
 
 wiki.get('/w', redirectToFrontPage);
 
 wiki.get('/', redirectToFrontPage);
 
-wiki.get('/SQL', async function executeSQL(req, res) {
+wiki.get('/ExecuteSQL', async function executeSQL(req, res) {
 	if(config.getString('wiki.sql_execution_disabled', true)) {
 		res.send(await showError(req, 'disabled_feature'));
 		return;
@@ -1003,7 +1195,7 @@ wiki.get('/SQL', async function executeSQL(req, res) {
 			
 			<div class=form-group>
 				<label>터미널의 PIN: </label><br>
-				<input type=password name=sql class=form-control>
+				<input type=password name=pin class=form-control>
 			</div>
 			
 			<div class=form-group>
@@ -1016,6 +1208,13 @@ wiki.get('/SQL', async function executeSQL(req, res) {
 		</form>
 	`));
 });
+
+wiki.get(/\/skins(.*)/, async function skinRootExplorer(req, res) {
+	const path = ('./skins' + req.params[0]).replace(/\/$/, '');
+	await fileExplorer(path, req, res);
+});
+
+function mmmmmmmmmmmmmm() { return 0; }
 
 wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	const title = req.params[0];
@@ -1030,6 +1229,8 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	var httpstat = 200;
 	var viewname = 'wiki';
 	var error = false;
+	
+	var isUserDoc = false;
 	
 	var lstedt = undefined;
 	
@@ -1065,10 +1266,13 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 		`;
 	}
 	
+	if(title.startsWith('사용자:')) isUserDoc = true;
+	
 	res.status(httpstat).send(await render(req, title, content, {
 		star_count: 0,
 		starred: false,
-		date: lstedt
+		date: lstedt,
+		user: isUserDoc
 	}, _, error, viewname));
 });
 
@@ -1941,7 +2145,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
 						<span class=num>
 							<a id="${rs['id']}">#${rs['id']}</a>&nbsp;
-						</span> ${ip_pas(rs['username'], rs['ismember'])} ${hbtn} <span style="float: right;">${generateTime(toDate(rs['time']), timeFormat)}</span>
+						</span> ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn} <span style="float: right;">${generateTime(toDate(rs['time']), timeFormat)}</span>
 					</div>
 					
 					<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">
@@ -3208,6 +3412,11 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 		</style>
 	`;
 	
+	if(!req.query['nojs'] && compatMode(req)) {
+		res.redirect('/acl/' + encodeURIComponent(title) + '?nojs=1');
+		return;
+	}
+	
 	if(req.query['nojs'] == '1' && getperm('acl', ip_check(req))) {
 		// action type mode value not
 		content += `
@@ -3335,8 +3544,7 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 	}
 	
 	if(!getperm('acl', ip_check(req))) {
-		res.redirect('/');
-		
+		res.send(await showError(req, 'insufficient_privileges'));
 		return;
 	}
 	
@@ -3507,6 +3715,814 @@ wiki.post('/vote/:num', async function submitVote(req, res) {
 	processVotes(req, 'post');
 });
 
+/*
+wiki.get('/httpstatus', function(req, res) {
+	res.status(req.query['code'] ? req.query['code'] : '200').send(`
+		<form method=get>
+			<label>HTTP 코드: </label> <input type=text name=code>
+			<button type=submit>이동</button>
+		</form>
+	`);
+});
+*/
+
+wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
+	const from = req.query['from'];
+	
+	if(!getperm('ban_users', ip_check(req))) {
+		res.send(await showError(req, 'insufficient_privileges'));
+		return;
+	}
+	
+	var content = `
+		<form method=post class=settings-section>
+			<div class=form-group>
+				<label>이름 혹은 CIDR:</label><br>
+				<input value="${req.query['username'] ? html.escape(req.query['username']) : ''}" type=text name=username id=usernameInput class=form-control>
+			</div>
+			
+			<div class=form-group>
+				<label>사용자 종류:</label><br>
+				<select name=usertype class=form-control>
+					<option ${req.query['usertype'] == 'ip' ? 'selected' : ''} value=ip>IP 주소</option>
+					<option ${req.query['usertype'] == 'author' ? 'selected' : ''} value=author>계정</option>
+				</select>
+			</div>
+			
+			<div class=form-group>
+				<label>접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[?]</a></sup>:</label><br>
+				<div class=checkbox>
+					<input ${req.query['blockview'] == '1' ? 'checked' : ''} type=checkbox name=blockview>
+				</div>
+			</div>
+			
+			<div class=form-group>
+				<label>로그인 시 차단하지 않음<sup><a title="IP 주소를 차단할 때에만 유효한 설정입니다. 로그인하면 편집할 수 있습니다.">[?]</a></sup>:</label><br>
+				<div class=checkbox>
+					<input ${req.query['al'] == '1' ? 'checked' : ''} type=checkbox name=al>
+				</div>
+			</div>
+			
+			<div class=form-group>
+				<label>차단 만료일:</label><br>
+				
+				<!-- placeholder: 구버전 브라우저 배려 -->
+				<input value="${req.query['expirationdate'] ? html.escape(req.query['expirationdate']) : ''}" type=date name=expiration-date placeholder="YYYY-MM-DD" class=form-control style="display: inline-block; width: auto;">
+				<input value="${req.query['expirationtime'] ? html.escape(req.query['expirationtime']) : ''}" type=time name=expiration-time placeholder="HH:MM" class=form-control style="display: inline-block; width: auto;">
+			</div>
+			
+			<div class=btns>
+				<button type=submit class="btn btn-info" style="width: 120px;">확인</button>
+			</div>
+		</form>
+		
+		<table class="table table-hover">
+			<colgroup>
+				<col>
+				<col style="width: 140px;">
+				<col style="width: 140px;">
+				<col style="width: 140px;">
+				<col style="width: 60px;">
+				<col style="width: 60px;">
+				<col style="width: 60px;">
+				<col style="width: 50px;">
+			</colgroup>
+			
+			<thead>
+				<tr>
+					<td><strong>이름</strong></td>
+					<td><strong>차단자</strong></td>
+					<td><strong>차단일</strong></td>
+					<td><strong>만료일</strong></td>
+					<td><strong>유형</strong></td>
+					<td><strong>접속차단</strong></td>
+					<td><strong>AL</strong></td>
+					<td><strong>해제</strong></td>
+				</tr>
+			</thead>
+			
+			<tbody id>
+	`;
+	
+	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
+	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
+	
+	if(from) {
+		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview from banned_users \
+								where username >= ? order by username limit 100", [from]);
+
+	} else {
+		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview from banned_users \
+								order by username asc limit 100");
+	}
+	
+	for(var row of curs.fetchall()) {
+		content += `
+			<tr>
+				<td>${html.escape(row['username'])}</td>
+				<td>${html.escape(row['blocker'])}</td>
+				<td>${generateTime(row['startingdate'])}</td>
+				<td>${row['endingdate']}</td>
+				<td>${row['ismember'] == 'ip' ? 'IP' : '계정'}</td>
+				<td>${row['blockview'] == '1' ? '예' : '아니오'}</td>
+				<td>${row['al'] == '1' ? '예' : '아니오'}</td>
+				<td>
+					<form method=post action="/admin/unban_users" onsubmit="사용자를 차단해제하시겠습니까?">
+						<input type=hidden name=username value="${html.escape(row['username'])}">
+						<input type=hidden name=usertype value="${html.escape(row['ismember'])}">
+						
+						<button type=submit class="btn btn-danger btn-sm">해제</button>
+					</form>
+				</td>
+			</tr>
+		`;
+	}
+	
+	content += `
+			</tbody>
+		</table>
+		
+		${navbtn(0, 0, 0, 0)}
+	`;
+	
+	res.send(await render(req, '사용자 차단', content, _, _, _, 'ban_users'));
+});
+
+wiki.post('/admin/ban_users', async function banUser(req, res) {
+	const username         = req.body['username'];
+	const usertype         = req.body['usertype'];
+	const blockview        = req.body['blockview'];
+	const al               = req.body['al'];
+	const expirationDate   = req.body['expiration-date'];
+	const expirationTime   = req.body['expiration-time'];
+	const expirationString = `${expirationDate} ${expirationTime}:00`;
+	
+	if(!getperm('ban_users', ip_check(req))) {
+		res.send(await showError(req, 'insufficient_privileges'));
+		return;
+	}
+	
+	if(!username || !usertype || !expirationDate || !expirationTime) {
+		res.send(await showError(req, 'invalid_request_body'));
+		return;
+	}
+	
+	if(!['author', 'ip'].includes(usertype) || !stringInFormat(/^\d{1,}[-]\d{2,2}[-]\d{2,2}$/, expirationDate) || !stringInFormat(/^\d{2,2}[:]\d{2,2}$/, expirationTime)) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
+	
+	if(isNaN(Date.parse(expirationString))) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
+	
+	const expiration = new Date(expirationString).getTime();
+	const startTime  = new Date().getTime();
+	
+	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
+	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
+	
+	curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview) \
+					values (?, ?, ?, ?, ?, ?, ?)", [
+						username, ip_check(req), startTime, expiration, usertype, al, blockview
+					]);
+	
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al) \
+					values (?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview
+					]);
+	
+	res.redirect('/admin/ban_users');
+});
+
+function mmmmmmmmmmmmmmm() { return 0; }
+
+wiki.get(/\/api\/v1\/w\/(.*)/, async function API_viewDocument_v1(req, res) {
+	const title = req.params[0];
+	
+	if(title.replace(/\s/g, '') === '') {
+		res.status(400).json({
+			title: title,
+			state: 'invalid_document',
+			content: ''
+		});
+		return;
+	}
+	
+	await curs.execute("select content from documents where title = ?", [title]);
+	const rawContent = curs.fetchall();
+
+	var content = '';
+	
+	var httpstat = 200;
+	var viewname = 'wiki';
+	var error = false;
+	
+	var isUserDoc = false;
+	
+	var lstedt = undefined;
+	
+	try {
+		if(!await getacl(req, title, 'read')) {
+			httpstat = 403;
+			error = true;
+			
+			res.status(httpstat).json({
+				title: title,
+				state: 'insufficient_privileges_read',
+				content: ''
+			});
+			
+			return;
+		} else {
+			content = markdown(rawContent[0]['content']);
+			
+			if(title.startsWith("사용자:") && getperm('admin', title.replace(/^사용자[:]/, ''))) {
+				content = `
+					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'red\';" onmouseout="this.style.borderTopColor=\'orange\';">
+						<span style="font-size: 14pt;">이 사용자는 특수 권한을 가지고 있습니다.</span>
+					</div>
+				` + content;
+			}
+		}
+	} catch(e) {
+		viewname = 'notfound';
+		
+		httpstat = 404;
+		content = '';
+	}
+	
+	res.status(httpstat).json({
+		title: title,
+		state: viewname,
+		content: content
+	});
+});
+
+wiki.get(/\/api\/v2\/w\/(.*)/, async function API_viewDocument_v2(req, res) {
+	const title = req.params[0];
+	const rev = req.query['rev'];
+	
+	if(title.replace(/\s/g, '') === '') {
+		res.status(400).json({
+			title: title,
+			state: 'invalid_document',
+			content: ''
+		});
+		return;
+	}
+	
+	if(rev) {
+		await curs.execute("select content from history where title = ? and rev = ?", [title, rev]);
+	} else {
+		await curs.execute("select content from documents where title = ?", [title]);
+	}
+	const rawContent = curs.fetchall();
+
+	var content = '';
+	
+	var httpstat = 200;
+	var viewname = 'wiki';
+	var error = false;
+	
+	var isUserDoc = false;
+	
+	var lstedt = undefined;
+	
+	try {
+		if(!await getacl(req, title, 'read')) {
+			httpstat = 403;
+			error = true;
+			
+			res.status(httpstat).json({
+				title: title,
+				state: 'insufficient_privileges_read',
+				content: ''
+			});
+			
+			return;
+		} else {
+			content = markdown(rawContent[0]['content']);
+			
+			if(title.startsWith("사용자:") && getperm('admin', title.replace(/^사용자[:]/, ''))) {
+				content = `
+					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'red\';" onmouseout="this.style.borderTopColor=\'orange\';">
+						<span style="font-size: 14pt;">이 사용자는 특수 권한을 가지고 있습니다.</span>
+					</div>
+				` + content;
+			}
+			
+			await curs.execute("select time from history where title = ? order by cast(rev as integer) desc limit 1", [title]);
+			lstedt = Number(curs.fetchall()[0]['time']);
+		}
+	} catch(e) {
+		viewname = 'notfound';
+		
+		httpstat = 404;
+		content = '';
+	}
+	
+	res.status(httpstat).json({
+		title: title,
+		state: viewname,
+		content: content,
+		last_edited: lstedt
+	});
+});
+
+wiki.get(/\/api\/v1\/raw\/(.*)/, async function API_viewRaw_v1(req, res) {
+	const title = req.params[0];
+	
+	if(title.replace(/\s/g, '') === '') {
+		res.status(400).json({
+			title: title,
+			state: 'invalid_document',
+			content: ''
+		});
+		return;
+	}
+	
+	await curs.execute("select content from documents where title = ?", [title]);
+	const rawContent = curs.fetchall();
+
+	var content = '';
+	
+	var httpstat = 200;
+	var viewname = 'wiki';
+	var error = false;
+	
+	var isUserDoc = false;
+	
+	var lstedt = undefined;
+	
+	try {
+		if(!await getacl(req, title, 'read')) {
+			httpstat = 403;
+			error = true;
+			
+			res.status(httpstat).json({
+				title: title,
+				state: 'insufficient_privileges_read',
+				content: ''
+			});
+			
+			return;
+		} else {
+			content = rawContent[0]['content'];
+		}
+	} catch(e) {
+		viewname = 'notfound';
+		
+		httpstat = 404;
+		content = '';
+	}
+	
+	res.status(httpstat).json({
+		title: title,
+		state: viewname,
+		content: content
+	});
+});
+
+wiki.get(/\/api\/v2\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
+	const title = req.params[0];
+	const rev = req.query['rev'];
+	
+	if(title.replace(/\s/g, '') === '') {
+		res.status(400).json({
+			title: title,
+			state: 'invalid_document',
+			content: ''
+		});
+		return;
+	}
+	
+	if(rev) {
+		await curs.execute("select content from history where title = ? and rev = ?", [title, rev]);
+	} else {
+		await curs.execute("select content from documents where title = ?", [title]);
+	}
+	const rawContent = curs.fetchall();
+
+	var content = '';
+	
+	var httpstat = 200;
+	var viewname = 'wiki';
+	var error = false;
+	
+	var isUserDoc = false;
+	
+	var lstedt = undefined;
+	
+	try {
+		if(!await getacl(req, title, 'read')) {
+			httpstat = 403;
+			error = true;
+			
+			res.status(httpstat).json({
+				title: title,
+				state: 'insufficient_privileges_read',
+				content: ''
+			});
+			
+			return;
+		} else {
+			content = rawContent[0]['content'];
+		}
+	} catch(e) {
+		viewname = 'notfound';
+		
+		httpstat = 404;
+		content = '';
+	}
+	
+	res.status(httpstat).json({
+		title: title,
+		state: viewname,
+		content: content
+	});
+});
+
+wiki.get(/\/api\/v1\/users\/(.*)/, async function API_userInfo_v1(req, res) {
+	const username = req.params[0];
+	
+	res.json({
+		username: username
+	});
+});
+
+wiki.get(/\/api\/v2\/users\/(.*)/, async function API_userInfo_v2(req, res) {
+	const username = req.params[0];
+	
+	await curs.execute("select username from users where username = ?", [username]);
+	
+	if(!curs.fetchall().length) {
+		res.status(404).json({
+			username: username,
+			state: 'invalid_user'
+		});
+		return;
+	}
+	
+	var ret = {
+		username: username,
+		state: 'ok'
+	};
+	
+	await curs.execute("select time from history where rev = '1' and title = ?", ['사용자:' + username]);
+	ret['join_timestamp'] = curs.fetchall()[0]['time'];
+	
+	await curs.execute("select username from history where username = ?", [username]);
+	ret['contribution_count'] = curs.fetchall().length;
+	
+	ret['permissions'] = [];
+	
+	ret['banned'] = await isBanned(req, 'author', username);
+	
+	for(var perm of perms) {
+		if(getperm(perm, username)) ret['permissions'].push(perm);
+	}
+	
+	res.json(ret);
+});
+
+wiki.get(/\/api\/v1\/history\/(.*)/, async function API_viewHistory_v1(req, res) {
+	const title = req.params[0];
+	
+	const start = req.query['start'];
+	const end = req.query['end'];
+	
+	if(!start || !end || isNaN(atoi(start)) || isNaN(atoi(end))) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: 'URL에 시작 리비전과 끝 리비전을 start 및 end 키워드로 명시하십시오.'
+		});
+		return;
+	}
+	
+	if(atoi(start) > atoi(end)) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 리비전은 끝 리비전보다 클 수 없습니다.'
+		});
+		return;
+	}
+	
+	if(atoi(end) - atoi(start) > 100) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 리비전과 끝 리비전의 차이는 100 이하이여야 합니다.'
+		});
+		return;
+	}
+	
+	await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and cast(rev as integer) >= ? and cast(rev as integer) <= ? order by cast(rev as integer) desc limit 30",
+						[title, atoi(start), atoi(end)]);
+	var ret = {
+		title: title,
+		startrev: start,
+		endrev: end,
+		state: 'ok'
+	};
+	
+	var cnt = 0;
+	
+	for(var row of curs.fetchall()) {
+		ret[row['rev']] = {
+			rev: row['rev'],
+			timestamp: row['time'],
+			changes: row['changes'],
+			log: row['log'],
+			edit_request: row['iserq'] == '1' ? true : false,
+			edit_request_number: row['iserq'] == '1' ? row['erqnum'] : null,
+			advance: row['advance'],
+			contribution_type: row['ismember'],
+			username: row['username']
+		};
+		cnt++;
+	}
+	
+	ret['total'] = cnt;
+	
+	res.json(ret);
+});
+
+wiki.get(/\/api\/v2\/history\/(.*)/, async function API_viewHistory_v2(req, res) {
+	const title = req.params[0];
+	
+	const start = req.query['start'];
+	const end = req.query['end'];
+	
+	if(!start || !end || isNaN(atoi(start)) || isNaN(atoi(end))) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: 'URL에 시작 리비전과 끝 리비전을 start 및 end 키워드로 명시하십시오.'
+		});
+		return;
+	}
+	
+	if(atoi(start) > atoi(end)) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 리비전은 끝 리비전보다 클 수 없습니다.'
+		});
+		return;
+	}
+	
+	if(atoi(end) - atoi(start) > 100) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 리비전과 끝 리비전의 차이는 100 이하이여야 합니다.'
+		});
+		return;
+	}
+	
+	await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and cast(rev as integer) >= ? and cast(rev as integer) <= ? order by cast(rev as integer) desc limit 30",
+						[title, atoi(start), atoi(end)]);
+	var ret = {};
+	
+	var cnt = 0;
+	
+	for(var row of curs.fetchall()) {
+		ret[row['rev']] = {
+			rev: row['rev'],
+			timestamp: row['time'],
+			changes: row['changes'],
+			log: row['log'],
+			edit_request: row['iserq'] == '1' ? true : false,
+			edit_request_number: row['iserq'] == '1' ? row['erqnum'] : null,
+			advance: row['advance'],
+			contribution_type: row['ismember'],
+			username: row['username']
+		};
+		cnt++;
+	}
+	
+	res.json({
+		title: title,
+		startrev: start,
+		endrev: end,
+		state: 'ok',
+		total: cnt,
+		history: ret
+	});
+});
+
+wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
+	const tnum = req.params[0];
+	
+	const start = req.query['start'];
+	const end = req.query['end'];
+	
+	if(!start || !end || isNaN(atoi(start)) || isNaN(atoi(end))) {
+		res.json({
+			thread_id: tnum,
+			state: 'invalid_parameters',
+			history: null,
+			description: 'URL에 시작 레스번호와 끝 레스번호를 start 및 end 키워드로 명시하십시오.'
+		});
+		return;
+	}
+	
+	if(atoi(start) > atoi(end)) {
+		res.json({
+			thread_id: tnum,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 번호는 끝 번호보다 클 수 없습니다.'
+		});
+		return;
+	}
+	
+	if(atoi(end) - atoi(start) > 2000) {
+		res.json({
+			thread_id: tnum,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 레스번호와 끝 레스번호의 차이는 2,000 이하이여야 합니다.'
+		});
+		return;
+	}
+	
+	await curs.execute("select id from res where tnum = ?", [tnum]);
+	
+	const rescount = curs.fetchall().length;
+	
+	if(!rescount) { 
+		res.status(400).json({
+			thread_id: tnum,
+			state: 'notfound',
+			description: '토론을 찾을 수 없습니다.'
+		});
+	}
+	
+	await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
+	const fstusr = curs.fetchall()[0]['username'];
+	
+	await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
+	const title = curs.fetchall()[0]['title'];
+	const topic = curs.fetchall()[0]['topic'];
+	const status = curs.fetchall()[0]['status'];
+	
+	await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype from res where tnum = ? and (cast(id as integer) >= ? and cast(id as integer) <= ?) order by cast(id as integer) asc", [tnum, Number(start), Number(end)]);
+
+	content = '';
+	var ret = {
+		title: title,
+		topic: topic,
+		status: status,
+		thread_id: tnum
+	};
+	
+	for(rs of curs.fetchall()) {
+		ret[rs['id']] = {
+			id: rs['id'],
+			hidden: rs['hidden'] == '1' ? true : false,
+			hider: rs['hidden'] == '1' ? rs['hider'] : null,
+			type: rs['status'] == '1' ? 'status' : 'normal',
+			contribution_type: rs['ismember'],
+			status_type: rs['status'] == '1' ? rs['stype'] : null,
+			timestamp: rs['time'],
+			username: rs['username'],
+			content: rs['hidden'] == '1' ? (
+								getperm('hide_thread_comment', ip_check(req))
+								? markdown(rs['content'])
+								: ''
+							  ) : (
+								markdown(rs['content'])
+							),
+			raw: rs['hidden'] == '1' ? (
+								getperm('hide_thread_comment', ip_check(req))
+								? rs['content']
+								: ''
+							  ) : (
+								rs['content']
+							),
+			first_author: rs['username'] == fstusr ? true : false
+		};
+	}
+	
+	return res.json(ret);
+});
+
+wiki.get(/\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) {
+	const tnum = req.params[0];
+	
+	const start = req.query['start'];
+	const end = req.query['end'];
+	
+	if(!start || !end || isNaN(atoi(start)) || isNaN(atoi(end))) {
+		res.json({
+			thread_id: tnum,
+			state: 'invalid_parameters',
+			history: null,
+			description: 'URL에 시작 레스번호와 끝 레스번호를 start 및 end 키워드로 명시하십시오.'
+		});
+		return;
+	}
+	
+	if(atoi(start) > atoi(end)) {
+		res.json({
+			thread_id: tnum,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 번호는 끝 번호보다 클 수 없습니다.'
+		});
+		return;
+	}
+	
+	if(atoi(end) - atoi(start) > 2000) {
+		res.json({
+			thread_id: tnum,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 레스번호와 끝 레스번호의 차이는 2,000 이하이여야 합니다.'
+		});
+		return;
+	}
+	
+	await curs.execute("select id from res where tnum = ?", [tnum]);
+	
+	const rescount = curs.fetchall().length;
+	
+	if(!rescount) { 
+		res.status(400).json({
+			thread_id: tnum,
+			state: 'notfound',
+			description: '토론을 찾을 수 없습니다.'
+		});
+	}
+	
+	await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
+	const fstusr = curs.fetchall()[0]['username'];
+	
+	await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
+	const title = curs.fetchall()[0]['title'];
+	const topic = curs.fetchall()[0]['topic'];
+	const status = curs.fetchall()[0]['status'];
+	
+	await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype, isadmin from res where tnum = ? and (cast(id as integer) >= ? and cast(id as integer) <= ?) order by cast(id as integer) asc", [tnum, Number(start), Number(end)]);
+
+	content = '';
+	var ret = {};
+	var cnt = 0;
+	for(rs of curs.fetchall()) {
+		ret[rs['id']] = {
+			id: rs['id'],
+			hidden: rs['hidden'] == '1' ? true : false,
+			hider: rs['hidden'] == '1' ? rs['hider'] : null,
+			type: rs['status'] == '1' ? 'status' : 'normal',
+			contribution_type: rs['ismember'],
+			status_type: rs['status'] == '1' ? rs['stype'] : null,
+			timestamp: rs['time'],
+			username: rs['username'],
+			content: rs['hidden'] == '1' ? (
+								getperm('hide_thread_comment', ip_check(req))
+								? markdown(rs['content'])
+								: ''
+							  ) : (
+								markdown(rs['content'])
+							),
+			raw: rs['hidden'] == '1' ? (
+								getperm('hide_thread_comment', ip_check(req))
+								? rs['content']
+								: ''
+							  ) : (
+								rs['content']
+							),
+			first_author: rs['username'] == fstusr ? true : false,
+			admin: rs['isadmin'] == '1' ? true : false
+		};
+		cnt++;
+	}
+	
+	return res.json({
+		title: title,
+		topic: topic,
+		status: status,
+		thread_id: tnum,
+		total: cnt,
+		res: ret,
+		startres: start,
+		endres: end
+	});
+});
+
 wiki.use(function(req, res, next) {
     return res.status(404).send(`
 		접속한 페이지가 없음.
@@ -3547,3 +4563,22 @@ if(firstrun) {
 	})();
 }
 
+const net = require('net');
+const telnet = net.createServer();
+
+telnet.on('connection', async function telnetHome(client) {
+	const readline = require('readline');
+	const rl = readline.createInterface({
+		input: client,
+		output: client
+	});
+	
+	rl.question('문서 이름: ', async answer => {
+		client.write('\n');
+		
+		await curs.execute("select content from documents where title = ?", [answer]);
+		client.write(curs.fetchall()[0]['content']);
+	});
+});
+
+telnet.listen(23);
