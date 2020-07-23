@@ -4,24 +4,28 @@
 */
 
 $(function() {
-	$('div.vertical-tabs div.tab-list').show();
-	$('div.vertical-tabs div.tab-list').css({'width': '120px', 'float': 'left'});
-	$('div.vertical-tabs div.tab-content').css({'width': 'calc(100% - 121px)', 'float': 'right'});
-	$('div.vertical-tabs div.tab-content div.tab-pane').hide();
-	$('div.vertical-tabs div.tab-content div.tab-pane')[0].style.display = 'block';
-	$('div.vertical-tabs div.tab-content h2.tab-page-title').hide();
-	$('div.vertical-tabs div.tab-list div.vertical-tab').removeAttr('active');
-	$('div.vertical-tabs div.tab-list div.vertical-tab')[0].setAttribute('active', '');
-	
-	$('div.vertical-tabs div.tab-list div.vertical-tab').click(function() {
+	if($(window).width() >= 460) {  /* 모니터 1600*1200인데 최대화할 때 너비 1585로 나옴*/
+		$('div.vertical-tabs div.tab-list').show();
+		$('div.vertical-tabs div.tab-list').css({'width': '120px', 'float': 'left'});
+		$('div.vertical-tabs div.tab-content').css({'width': 'calc(100% - 121px)', 'float': 'right'});
+		$('div.vertical-tabs div.tab-content div.tab-page').hide();
+		$('div.vertical-tabs div.tab-content div.tab-page')[0].style.display = 'block';
+		$('div.vertical-tabs div.tab-content h2.tab-page-title').hide();
 		$('div.vertical-tabs div.tab-list div.vertical-tab').removeAttr('active');
-		$(this).attr('active', '');
+		$('div.vertical-tabs div.tab-list div.vertical-tab')[0].setAttribute('active', '');
 		
-		$('div.vertical-tabs div.tab-content div.tab-pane').hide();
-		$('div.vertical-tabs div.tab-content div.tab-pane[id="' + $(this).attr('data-paneid') + '"]').show();
-	});
-	
-	$('div#config-apply-button').remove();
+		$('div.vertical-tabs, div.vertical-tabs div.tab-content, div.vertical-tabs div.tab-list').css('height', '440px');
+		
+		$('div.vertical-tabs div.tab-list div.vertical-tab').click(function() {
+			$('div.vertical-tabs div.tab-list div.vertical-tab').removeAttr('active');
+			$(this).attr('active', '');
+			
+			$('div.vertical-tabs div.tab-content div.tab-page').hide();
+			$('div.vertical-tabs div.tab-content div.tab-page[id="' + $(this).attr('data-paneid') + '"]').show();
+		});
+		
+		$('div#config-apply-button').remove();
+	}
 	
 	function nevermind() {
 		return null;
