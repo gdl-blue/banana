@@ -1028,6 +1028,7 @@ function compatMode(req) {
 function generateCaptcha(req, cnt = 3) {
 	if(ip_check(req) in botlist) return '';
 	if(permlist[ip_check(req)] && (permlist[ip_check(req)].includes('bot') || permlist[ip_check(req)].includes('no_captcha'))) return '';
+	if(config.getString('enable_captcha', '1') == '0') return '';
 	
 	const fst = atoi(rndval('017', 1));
 	
@@ -1127,6 +1128,7 @@ function generateCaptcha(req, cnt = 3) {
 function validateCaptcha(req) {
 	if(ip_check(req) in botlist) return true;
 	if(permlist[ip_check(req)].includes('bot') || permlist[ip_check(req)].includes('no_captcha')) return true;
+	if(config.getString('enable_captcha', '1') == '0') return true;
 	
 	try {
 		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
@@ -3929,13 +3931,13 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 	var dsop = '';
 	
 	for(skin of getSkins()) {
-		dsop += `<option value="${skin}" ${skin == defskin ? 'selected', ''}>${skin}</option>`;
+		dsop += `<option value="${skin}" ${skin == defskin ? 'selected' : ''}>${skin}</option>`;
 	}
 	
 	var dslop = '';
 	
 	for(skin of getSkins()) {
-		dslop += `<option value="${skin}" ${skin == deflskin ? 'selected', ''}>${skin}</option>`;
+		dslop += `<option value="${skin}" ${skin == deflskin ? 'selected' : ''}>${skin}</option>`;
 	}
 	
 	var content = `
@@ -4174,7 +4176,7 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 	
 	for(settingi of settings) {
 		if(settingi.startsWith('!')) {
-			const setting = settingi.startsWith('!') ? settingi.replace(/^[!]/, '');
+			const setting = settingi.replace(/^[!]/, '');
 			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
 			wikiconfig[setting] = req.body[setting] ? '1' : '0';
 		} else {
@@ -4873,7 +4875,7 @@ if(firstrun) {
 		print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
 		
 		// 활성화된 경우 텔넷 서버 열기
-		if(wikiconfig['allow_telnet'] == '1') {
+		if(config.getString('allow_telnet', '0') == '1') {
 			const net = require('net');
 			const telnet = net.createServer();
 
