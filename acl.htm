@@ -1,0 +1,112 @@
+<title>ACL</title>
+<meta charset=euc-kr>
+
+<style>
+	.form-group {
+		margin-bottom: 40px;
+	}
+	
+	.form-control {
+		padding: 7px 10px 7px 10px;
+		border-radius: 5px;
+		width: 100%;
+		border: 1px solid #ccc;
+	}
+	
+	.form-control[disabled], .form-control[readonly] {
+		background-color: #eceeef
+	}
+	
+	.form-control:focus {
+		border-color: #00c8c8;
+	}
+</style>
+
+<script src="https://code.jquery.com/jquery-1.8.0.min.js"></script>
+
+<script>
+	$(function() {
+		$('div.acl-controller button.addbtn').click(function() {
+			const addbtn = $(this);
+		
+			$.ajax({
+				type: "POST",
+				data: {
+					'action': addbtn.parent().parent().parent().attr('data-action'),
+					'type': addbtn.parent().parent().parent().attr('data-acltype'),
+					'value': addbtn.parent().prev().val(),
+					'mode': 'add'
+				},
+				dataType: 'text',
+				success: function aclAddSuccess(res) {
+					addbtn.parent().parent().next().html(res);
+				},
+				error: function aclAddFail(e) {
+					alert('ACL 추가에 실패했습니다.');
+				}
+			});
+		});
+		
+		$('div.acl-controller button.delbtn').click(function() {
+			const delbtn = $(this);
+		
+			$.ajax({
+				type: "POST",
+				data: {
+					'action': delbtn.parent().parent().parent().attr('data-action'),
+					'type': delbtn.parent().parent().parent().attr('data-acltype'),
+					'value': delbtn.parent().prev().val(),
+					'mode': 'remove'
+				},
+				dataType: 'text',
+				success: function aclRemoveSuccess(res) {
+					delbtn.parent().parent().next().html(res);
+				},
+				error: function aclAddFail(e) {
+					alert('ACL 삭제에 실패했습니다.');
+				}
+			});
+		});
+	});
+</script>
+
+<h3 class=wiki-heading>읽기</h3>
+<div class=wiki-heading-content>
+	<div style="width: 48%; float: left;" class=acl-list-form data-acltype=read data-action=allow>
+		<label>허용 대상: </label><br>
+		<div class=acl-controller>
+			<select style="width: auto; display: inline;" type=text class="form-control acl-value">
+				<option value=any>모두</option>
+			</select>
+			
+			<label><input type=checkbox name=not>의 반대</label>
+		
+			<span style="float: right;">
+				<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
+				<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
+			</span>
+		</div>
+		
+		<select size=16 class="form-control acl-list">
+			
+		</select>
+	</div>
+	
+	<div style="width: 48%; float: right;" class=acl-list-form data-acltype=read data-action=deny>
+		<label>거부 대상: </label><br>
+		<div class=acl-controller>
+			<select style="width: calc(100% - 120px);" type=text class="form-control acl-value">
+				<option value=any>모두</option>
+			</select>
+		
+			<span style="float: right;">
+				<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
+				<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
+			</span>
+		</div>
+		
+		<select size=16 class="form-control acl-list">
+			
+		</select>
+	</div>
+</div>

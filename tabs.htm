@@ -1,0 +1,125 @@
+<meta charset=euc-kr>
+<title>세로 탭 예제</title>
+
+<style>
+	.form-group {
+		margin-bottom: 40px;
+	}
+	
+	.form-control {
+		padding: 7px 10px 7px 10px;
+		border-radius: 5px;
+		width: 100%;
+		border: 1px solid #ccc;
+	}
+	
+	.form-control[disabled], .form-control[readonly] {
+		background-color: #eceeef
+	}
+	
+	.form-control:focus {
+		border-color: #00c8c8;
+	}
+	
+	div.vertical-tabs div.tabs div.tab {
+		padding: 7px;
+	}
+	
+	div.vertical-tabs div.tabs div.tab[active] {
+		background: linear-gradient(to bottom, rgb(164, 193, 227) 0%, rgb(107, 148, 195) 51%, rgb(80, 126, 178) 50%, rgb(68, 116, 171) 100%);
+		color: white;
+	}
+	
+	/* https://stackoverflow.com/questions/14294476/add-arrow-shaped-to-active-tab */
+	div.vertical-tabs div.tabs div.tab[active]::after {
+		content: "";
+		position: absolute;
+		bottom: -15px;
+		left: 50px;
+		border-width: 15px 15px 0;
+		border-style: solid;
+		border-color: #f3961c transparent;
+		display: block;
+		width: 0;
+	}
+	
+	div.vertical-tabs div.tabs div.tab[active]::after {
+		top: auto;
+		left: auto;
+		bottom: auto;
+		border-width: 10px 0 10px 10px;
+		border-color: transparent rgb(80, 126, 178);
+		margin-top: -19px;
+		margin-left: 113px;
+	}
+	
+	div.vertical-tabs {
+		border: 1px solid #ddd;
+		border-radius: 5px;
+	}
+	
+	div.vertical-tabs, div.vertical-tabs div.tab-content, div.vertical-tabs div.tabs {
+		height: 300px;
+	}
+	
+	div.vertical-tabs div.tabs {
+		border-right: 1px solid #ddd;
+		background: linear-gradient(to bottom, #eceeef, #fff);
+	}
+	
+	div.vertical-tabs div.tabs div.tab {
+		border-bottom: 1px solid #ddd;
+	}
+	
+	div.vertical-tabs div.tab-content {
+		padding-left: 20px;
+		background: linear-gradient(to bottom, rgb(242, 248, 254), rgb(222, 232, 243), #fff);
+	}
+</style>
+
+<script src="https://code.jquery.com/jquery-1.8.0.min.js"></script>
+
+<script>
+	$(function() {
+		$('div.vertical-tabs div.tabs').show();
+		$('div.vertical-tabs div.tabs').css({'width': '120px', 'float': 'left'});
+		$('div.vertical-tabs div.tab-content').css({'width': 'calc(100% - 141px)', 'float': 'right'});
+		$('div.vertical-tabs div.tab-content div.tab-pane').hide();
+		$('div.vertical-tabs div.tab-content div.tab-pane')[0].style.display = '';
+		$('div.vertical-tabs div.tab-content h2.tab-page-title').hide();
+		$('div.vertical-tabs div.tabs div.tab').removeAttr('active');
+		$('div.vertical-tabs div.tabs div.tab')[0].setAttribute('active', '');
+		
+		$('div.vertical-tabs div.tabs div.tab').click(function() {
+			$('div.vertical-tabs div.tabs div.tab').removeAttr('active');
+			$(this).attr('active', '');
+			
+			$('div.vertical-tabs div.tab-content div.tab-pane').hide();
+			$('div.vertical-tabs div.tab-content div.tab-pane[id="' + $(this).attr('data-paneid') + '"]').show();
+		});
+	});
+</script>
+
+<form method=post>
+	<div class=vertical-tabs>
+		<div class=tabs style="display: none;">
+			<div class=tab data-paneid=1>탭 1</div>
+			<div class=tab data-paneid=2>탭 2</div>
+			<div class=tab data-paneid=3>탭 3</div>
+		</div>
+		
+		<div class=tab-content>
+			<div class=tab-pane id=1>
+				탭 1 내용
+			</div>
+			
+			<div class=tab-pane id=2>
+				탭 2 내용
+			</div>
+			
+			<div class=tab-pane id=3>
+				탭 3 내용
+			</div>
+		</div>
+	</div>
+</form>
