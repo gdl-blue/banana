@@ -75,6 +75,14 @@ const find = (obj, fnc) => {
 	return -1;
 }
 
+// https://stackoverflow.com/questions/1183872/put-a-delay-in-javascript
+function timeout(ms) {
+	var s = new Date().getTime();
+	for (var i=0; i<1e7; i++) {
+		if(new Date().getTime() - s > ms) break;
+	}
+}
+
 const perms = [
 	'admin', 'suspend_account', 'developer', 'update_thread_document', 'ipacl',
 	'update_thread_status', 'update_thread_topic', 'hide_thread_comment', 'grant',
@@ -266,11 +274,12 @@ catch(e) {
 		hostconfig = {
 			host: input("호스트 주소: "),
 			port: input("포트 번호: "),
-			skin: input("기본 스킨 이름: "),
 			secret: input("세션 비밀 키: ")
 		};
 		
-		print("잠시만 기다려 주세요~^^");
+		const defskin = input("기본 스킨 이름: ");
+		
+		print("\n기본 설정을 구성하고 있습니다. 잠시만 기다려 주세요~^^");
 		
 		const tables = {
 			'documents': ['title', 'content'],
@@ -321,28 +330,32 @@ catch(e) {
 			await curs.execute(sql);
 		}
 		
-		setTimeout(async () => {
-			const fcates = ['동물', '게임', '컴퓨터', '요리', '탈것', '전화기', '기계', '광고', '도구', '만화/애니메이션', '아이콘/기호'];
-			const flices = ['CC BY', 'CC BY-NC', 'CC BY-NC-ND', 'CC BY-NC-SA', 'CC BY-ND', 'CC BY-SA', 'CC-0', 'PD-author', 'PD-self', 'PD-software'];
-			const bcates = {
-				'문의': ['대기', '완료'],
-				'신고': ['대기', '완료'],
-			};
-			
-			for(var cate of fcates) {
-				await curs.execute("insert into filecategories (category, creator) values (?, '')", [cate]);
-			}
-			
-			for(var lice of flices) {
-				await curs.execute("insert into filelicenses (license, creator) values (?, '')", [lice]);
-			}
-			
-			await fs.writeFile('config.json', JSON.stringify(hostconfig), 'utf8', (e) => { beep(2); });
-			
-			setTimeout(async () => {
-				print("\n설정이 완료되었습니다. 5초 후에 엔진을 다시 시작하십시오.");
-			}, 5000);
-		}, 5000);
+		timeout(5000);
+		
+		const fcates = ['동물', '게임', '컴퓨터', '요리', '탈것', '전화기', '기계', '광고', '도구', '만화/애니메이션', '아이콘/기호'];
+		const flices = ['CC BY', 'CC BY-NC', 'CC BY-NC-ND', 'CC BY-NC-SA', 'CC BY-ND', 'CC BY-SA', 'CC-0', 'PD-author', 'PD-self', 'PD-software'];
+		const bcates = {
+			'문의': ['대기', '완료'],
+			'신고': ['대기', '완료'],
+		};
+		
+		for(var cate of fcates) {
+			await curs.execute("insert into filecategories (category, creator) values (?, '')", [cate]);
+		}
+		
+		for(var lice of flices) {
+			await curs.execute("insert into filelicenses (license, creator) values (?, '')", [lice]);
+		}
+		
+		fs.writeFileSync('config.json', JSON.stringify(hostconfig), 'utf8');
+		
+		timeout(5000);
+		
+		curs.execute("insert into config (key, value) values ('default_skin', ?)", [defskin]);
+		
+		timeout(5000);
+		
+		print("\n설정이 완료되었습니다. 5초 후에 엔진을 다시 시작하십시오.");
 	})();
 }
 
@@ -829,6 +842,17 @@ const html = {
 		
 		return content;
 	}
+}
+
+function getSkins() {
+	var retval = [];
+	
+	// 밑의 fileExplorer 함수에 출처 적음.
+	for(dir of fs.readdirSync('./skins', { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
+		retval.push(dir);
+	}
+	
+	return retval;
 }
 
 function mmmmmmmmmmmmmmn() { return 0; }
@@ -3899,6 +3923,21 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 		return;
 	}
 	
+	const defskin = config.getString('default_skin', 'buma');
+	const deflskin = config.getString('default_legacy_skin', 'buma');
+	
+	var dsop = '';
+	
+	for(skin of getSkins()) {
+		dsop += `<option value="${skin}" ${skin == defskin ? 'selected', ''}>${skin}</option>`;
+	}
+	
+	var dslop = '';
+	
+	for(skin of getSkins()) {
+		dslop += `<option value="${skin}" ${skin == deflskin ? 'selected', ''}>${skin}</option>`;
+	}
+	
 	var content = `
 		<form method=post>
 			<div class=vertical-tabs>
@@ -3966,14 +4005,14 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 						<div class=form-group>
 							<label>기본 스킨: </label><br>
 							<select class=form-control name=default_skin>
-								<option value>(컬렉션)</option>
+								${dsop}
 							</select>
 						</div>
 						
 						<div class=form-group>
 							<label>호환용 기본 스킨: </label><br>
 							<select class=form-control name=default_skin_legacy>
-								<option value>(컬렉션)</option>
+								${dslop}
 							</select>
 						</div>
 						
@@ -3982,7 +4021,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 						</div>
 						
 						<div class=form-group>
-							<label><input type=checkbox name=enable_theseed_skins checked disabled> the seed용으로 만들어진 스킨 지원</label><br>
+							<label><input type=checkbox name=enable_theseed_skins checked disabled> the seed용으로 만들어진 스킨 지원<sup><a title="swig 기반 스킨만 지원하며 현재 사용 중인 Nuxt.js 기반 스킨은 지원하지 않습니다.">[!]</a></sup></label><br>
 							<label><input type=checkbox name=enable_opennamu_skins ${config.getString('enable_opennamu_skins', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
 							<label><input type=checkbox name=enable_custom_skins ${config.getString('', '0') == '1' ? 'checked' : ''}> 사용자가 직접 레이아웃을 만들어 스킨으로 사용할 수 있도록 허용</label><br>
 						</div>
@@ -4049,12 +4088,12 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 						
 						<div class=form-group>
 							<label>가입 인증 우편 내용:</label>
-							<textarea rows=15 name=registeration_verification class=form-control>${config.getString('registeration_verification', '안녕하십니까,\n$WIKINAME 가입 인증 메일입니다.\n\n저희 위키에 가입하시려면 다음 링크를 누르시면 됩니다^^\n<a href="$ADDRESS">[가입하기]</a>\n\n가입하시고, 즐거운 위키 편집 되시기 바랍니다~')}</textarea>
+							<textarea rows=15 name=registeration_verification class=form-control>${config.getString('registeration_verification', '안녕하십니까!\n$WIKINAME 가입 인증 메일입니다.\n\n저희 위키에 가입하시려면 다음 링크를 누르시면 됩니다^^\n<a href="$ADDRESS">[가입하기]</a>\n\n가입하시고, 즐거운 위키 편집 되시기 바랍니다~')}</textarea>
 						</div>
 						
 						<div class=form-group>
 							<label>비밀번호 찾기 인증 우편 내용:</label>
-							<textarea rows=15 name=password_recovery class=form-control>${config.getString('password_recovery', '안녕하십니까,\n혹시 $WIKINAME에서 아이디나 비밀번호를 잊어버리셨나요?\n\n사용자 이름은 $USERNAME이며, 비밀번호를 재설정하려면 다음 링크를 누르시면 됩니다~\n<a href="$ADDRESS">[재설정]</a>\n\n계정을 복구하시고 즐거운 하루 되세요~^^')}</textarea>
+							<textarea rows=15 name=password_recovery class=form-control>${config.getString('password_recovery', '안녕하십니까!\n혹시 $WIKINAME에서 아이디나 비밀번호를 잊어버리셨나요?\n\n사용자 이름은 $USERNAME이며, 비밀번호를 재설정하려면 다음 링크를 누르시면 됩니다~\n<a href="$ADDRESS">[재설정]</a>\n\n계정을 복구하시고 즐거운 하루 되세요~^^')}</textarea>
 						</div>
 					</div>
 					
@@ -4097,7 +4136,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 						<label><input type=checkbox name=allow_telnet ${config.getString('allow_telnet', '0') == '1' ? 'checked' : ''}> 사용자가 텔넷(포트 23)을 통하여 문서 및 게시판을 열람할 수 있도록 허용</label><br>
 						<label><input type=checkbox name=enable_captcha checked ${config.getString('enable_captcha', '1') == '1' ? 'checked' : ''}> 보안문자 사용</label><br>
 						<label><input type=checkbox name=ip2md5 ${config.getString('ip2md5', '0') == '1' ? 'checked' : ''}> IP 주소를 표시하지 않고 MD5로 암호화한 후 앞의 6자리 표시</label><br>
-						<label><input type=checkbox name=denial ${config.getString('denial', '0') == '1' ? 'checked' : ''}> 서비스 거부 공격(빠른 반복 새로고침 등) 의심 시 해당 IP에서 오는 요청을 처리해주지 않음</label><br>
+						<label><input type=checkbox name=denial ${config.getString('denial', '0') == '1' ? 'checked' : ''}> 서비스 거부 공격(빠른 반복 새로고침 등) 의심 시 1시간 동안 해당 IP에서 오는 요청을 처리해주지 않음</label><br>
 						<label><input type=checkbox name=no_login_history ${config.getString('no_login_history', '0') == '1' ? 'checked' : ''}> 로그인 내역을 기록하지 않음</label><br><br>
 					</div>
 					
@@ -4116,11 +4155,36 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 		</form>
 	`;
 	
-	res.send(await render(req, config.getString('site_name', 'Wiki') + ' 등록 정보', content));
+	res.send(await render(req, config.getString('site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])) + ' 등록 정보', content));
 });
 
 wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
+	// 소유자 전용 페이지이므로 딱히 취약점 가드를 할 필요가 있을까.
 	
+	var settings = [
+		'site_name', 'max_users', 'frontpage', 'edit_warning', 'footer_text', '!enable_apiv1', '!enable_apiv2',
+		'!enable_apipost', 'default_skin', 'default_skin_legacy', '!default_skin_only', '!enable_theseed_skins',
+		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled', '!disable_star',
+		'!disable_random', '!disable_search', '!disable_discuss', '!disable_history', '!disable_recentchanges',
+		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
+		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
+		'file_extensions', 'email_whitelist', 'site_notice', 'edit_notice', 'discussion_notice', '!allow_telnet',
+		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history'
+	];
+	
+	for(settingi of settings) {
+		if(settingi.startsWith('!')) {
+			const setting = settingi.startsWith('!') ? settingi.replace(/^[!]/, '');
+			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
+			wikiconfig[setting] = req.body[setting] ? '1' : '0';
+		} else {
+			const setting = settingi;
+			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
+			wikiconfig[setting] = req.body[setting];
+		}
+	}
+	
+	res.redirect('/admin/config');
 });
 
 function mmmmmmmmmmmmmmm() { return 0; }
@@ -4807,29 +4871,32 @@ if(firstrun) {
 		
 		const server = wiki.listen(hostconfig['port']); // 서버실행
 		print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
+		
+		// 활성화된 경우 텔넷 서버 열기
+		if(wikiconfig['allow_telnet'] == '1') {
+			const net = require('net');
+			const telnet = net.createServer();
+
+			telnet.on('connection', async function telnetHome(client) {
+				client.setEncoding('utf8');
+				
+				const readline = require('readline');
+				const rl = readline.createInterface({
+					input: client,
+					output: client
+				});
+				
+				rl.question('문서 이름: ', async answer => {
+					client.write('\n');
+					
+					await curs.execute("select content from documents where title = ?", [answer]);
+					client.write(curs.fetchall()[0]['content']);
+				});
+			});
+
+			telnet.listen(23);
+		}
 	})();
 }
-
-const net = require('net');
-const telnet = net.createServer();
-
-telnet.on('connection', async function telnetHome(client) {
-	client.setEncoding('utf8');
-	
-	const readline = require('readline');
-	const rl = readline.createInterface({
-		input: client,
-		output: client
-	});
-	
-	rl.question('문서 이름: ', async answer => {
-		client.write('\n');
-		
-		await curs.execute("select content from documents where title = ?", [answer]);
-		client.write(curs.fetchall()[0]['content']);
-	});
-});
-
-telnet.listen(23);
 
 }};
