@@ -2973,8 +2973,20 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 	
 	const captcha = generateCaptcha(req, 1);
 	
+	await curs.execute("select username from users");
+	const maxusercount = atoi(config.getString('max_users', '-1'));
+	
+	if(maxusercount != -1 && curs.fetchall().length >= maxusercount) {
+		res.send(await showError(req, 'user_count_reached_maximum'));
+		return;
+	}
+	
 	res.send(await render(req, '계정 만들기', `
 		<form method=post class=signup-form>
+			<div class=form-group>
+				<textarea class=form-control readonly rows=15>${config.getString('privacy', '')}</textarea>
+			</div>
+		
 			<div class=form-group>
 				<label>전자우편 주소:</label><br>
 				<input type=email name=email class=form-control>
@@ -2997,6 +3009,14 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 });
 
 wiki.post('/member/signup', async function emailConfirmation(req, res) {
+	await curs.execute("select username from users");
+	const maxusercount = atoi(config.getString('max_users', '-1'));
+	
+	if(maxusercount != -1 && curs.fetchall().length >= maxusercount) {
+		res.send(await showError(req, 'user_count_reached_maximum'));
+		return;
+	}
+	
 	var desturl = req.query['redirect'];
 	if(!desturl) desturl = '/';
 	
@@ -3054,6 +3074,14 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 	await curs.execute("delete from account_creation where cast(time as integer) < ?", [Number(getTime()) - 86400000]);
 	
+	await curs.execute("select username from users");
+	const maxusercount = atoi(config.getString('max_users', '-1'));
+	
+	if(maxusercount != -1 && curs.fetchall().length >= maxusercount) {
+		res.send(await showError(req, 'user_count_reached_maximum'));
+		return;
+	}
+	
 	const key = req.params['key'];
 	await curs.execute("select key from account_creation where key = ?", [key]);
 	if(!curs.fetchall().length) {
@@ -3109,6 +3137,14 @@ wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 
 wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	await curs.execute("delete from account_creation where cast(time as integer) < ?", [Number(getTime()) - 86400000]);
+	
+	await curs.execute("select username from users");
+	const maxusercount = atoi(config.getString('max_users', '-1'));
+	
+	if(maxusercount != -1 && curs.fetchall().length >= maxusercount) {
+		res.send(await showError(req, 'user_count_reached_maximum'));
+		return;
+	}
 	
 	const key = req.params['key'];
 	await curs.execute("select key from account_creation where key = ?", [key]);
