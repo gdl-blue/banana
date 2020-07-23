@@ -4,6 +4,25 @@
 */
 
 $(function() {
+	$('div.vertical-tabs div.tab-list').show();
+	$('div.vertical-tabs div.tab-list').css({'width': '120px', 'float': 'left'});
+	$('div.vertical-tabs div.tab-content').css({'width': 'calc(100% - 121px)', 'float': 'right'});
+	$('div.vertical-tabs div.tab-content div.tab-pane').hide();
+	$('div.vertical-tabs div.tab-content div.tab-pane')[0].style.display = 'block';
+	$('div.vertical-tabs div.tab-content h2.tab-page-title').hide();
+	$('div.vertical-tabs div.tab-list div.vertical-tab').removeAttr('active');
+	$('div.vertical-tabs div.tab-list div.vertical-tab')[0].setAttribute('active', '');
+	
+	$('div.vertical-tabs div.tab-list div.vertical-tab').click(function() {
+		$('div.vertical-tabs div.tab-list div.vertical-tab').removeAttr('active');
+		$(this).attr('active', '');
+		
+		$('div.vertical-tabs div.tab-content div.tab-pane').hide();
+		$('div.vertical-tabs div.tab-content div.tab-pane[id="' + $(this).attr('data-paneid') + '"]').show();
+	});
+	
+	$('div#config-apply-button').remove();
+	
 	function nevermind() {
 		return null;
 	}
@@ -89,14 +108,12 @@ $(function() {
 			success: function aclRemoveSuccess(res) {
 				delbtn.parent().parent().next().html(res);
 			},
-			error: function aclAddFail(e) {
+			error: function aclRemoveFail(e) {
 				alert('ACL 삭제에 실패했습니다.');
 			}
 		});
 	});
 	
-	/* theseed.js 참고 안하고 처음부터 작성 */
-	/* 그런데 어째 이게 더 느린 느낌이지 */
 	const allLoadingRes = 'div.res-wrapper.res-loading[data-locked="false"]';
 	const loadingRes = 'div.res-wrapper.res-loading[data-visible="true"][data-locked="false"]';
 	
@@ -137,7 +154,9 @@ $(function() {
 							res.remove();
 						});
 					},
-					error: nevermind
+					error: function(e) {
+						history.go(0);
+					}
 				});
 			}
 		});
@@ -157,16 +176,6 @@ $(function() {
 				success: function(d) {
 					submitBtn.removeAttr('disabled');
 					$('textarea[name="text"]').val('');
-					
-					const data = $(d);
-					
-					data.each(function() {
-						const itm = $(this);
-						const res = $('div.res-wrapper.res-loading[data-id="' + itm.attr('data-id') + '"]');
-						
-						res.after(itm);
-						res.remove();
-					});
 				},
 				error: function(d) {
 					submitBtn.removeAttr('disabled');
@@ -250,7 +259,7 @@ $(function() {
 					
 					for(var i=rescount+1; i<=tid; i++, rescount++) {
 						$('div.res-wrapper[data-id="' + itoa(rescount) + '"]').after($(
-							'<div class="res-wrapper res-loading" data-id="' + itoa(i) + '" data-locked="false" data-visible=false>' +
+							'<div class="res-wrapper res-loading" data-id="' + itoa(i) + '" data-locked=false data-visible=false>' +
 								'<div class="res res-type-normal">' +
 									'<div class="r-head">' + 
 										'<span class="num"><a id="' + itoa(i) + '">#' + itoa(i) + '</a>&nbsp;</span>' +
