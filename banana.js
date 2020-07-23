@@ -239,6 +239,7 @@ const fs = require('fs');
 
 var wikiconfig = {};
 var permlist = {};
+var botlist = {};
 
 var firstrun = 1;
 var hostconfig;
@@ -257,6 +258,8 @@ catch(e) {
 			skin: input("기본 스킨 이름: "),
 			secret: input("세션 비밀 키: ")
 		};
+		
+		print("잠시만 기다려 주세요~^^");
 		
 		const tables = {
 			'documents': ['title', 'content'],
@@ -289,7 +292,8 @@ catch(e) {
 			'bbs_posts': ['userid', 'boardid', 'title', 'content', 'category', 'id', 'time'],
 			'bbs_categories': ['name', 'id'],
 			'bbs_comments': ['userid', 'postid', 'content', 'id', 'deleted', 'edited', 'time'],
-			'bbs_ids': ['id']
+			'bbs_ids': ['id'],
+			'bots': ['username', 'token', 'owner']
 		};
 		
 		for(var table in tables) {
@@ -924,12 +928,12 @@ function dropSourceCode(req, res) {
 wiki.get('/index.js', dropSourceCode);
 
 wiki.get('/js/:filepath', function dropJS(req, res) {
-	const filepath = req.param('filepath');
+	const filepath = req.params['filepath'];
 	res.sendFile(filepath, { root: "./js" });
 });
 
 wiki.get('/css/:filepath', function dropCSS(req, res) {
-	const filepath = req.param('filepath');
+	const filepath = req.params['filepath'];
 	res.sendFile(filepath, { root: "./css" });
 });
 
@@ -983,6 +987,9 @@ function compatMode(req) {
 }
 
 function generateCaptcha(req, cnt = 3) {
+	if(ip_check(req) in botlist) return '';
+	if(permlist[ip_check(req)] && (permlist[ip_check(req)].includes('bot') || permlist[ip_check(req)].includes('no_captcha'))) return '';
+	
 	const fst = atoi(rndval('017', 1));
 	
 	var numbers = [];
@@ -1108,6 +1115,19 @@ function generateCaptcha(req, cnt = 3) {
 			</div>
 		</div>
 	`;
+}
+
+function validateCaptcha(req) {
+	if(ip_check(req) in botlist) return true;
+	if(permlist[ip_check(req)].includes('bot') || permlist[ip_check(req)].includes('no_captcha')) return true;
+	
+	try {
+		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
+			return false;
+		}
+	} catch(e) {
+		return false;
+	}
 }
 
 wiki.get('/recent_changes', function redirectA(req, res) {
@@ -1513,8 +1533,6 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where not title like '사용자:%' order by cast(time as integer) desc limit 100");
 	}
-	
-	if(!curs.fetchall().length) return await showError(req, 'document_dont_exists');
 	
 	var content = `
 		<ol class="breadcrumb link-nav">
@@ -2183,7 +2201,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 }
 
 wiki.get('/thread/:tnum', async function viewThread(req, res) {
-	const tnum = req.param("tnum");
+	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2330,7 +2348,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 		}
 	}
 	
-	const tnum = req.param("tnum");
+	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2373,8 +2391,8 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 });
 
 wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
-	const tnum = req.param("tnum");
-	const tid = req.param("id");
+	const tnum = req.params["tnum"];
+	const tid = req.params["id"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2404,8 +2422,8 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 });
 
 wiki.get('/admin/thread/:tnum/:id/show', async function showHiddenComment(req, res) {
-	const tnum = req.param("tnum");
-	const tid = req.param("id");
+	const tnum = req.params["tnum"];
+	const tid = req.params["id"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2425,8 +2443,8 @@ wiki.get('/admin/thread/:tnum/:id/show', async function showHiddenComment(req, r
 });
 
 wiki.get('/admin/thread/:tnum/:id/hide', async function hideComment(req, res) {
-	const tnum = req.param("tnum");
-	const tid = req.param("id");
+	const tnum = req.params["tnum"];
+	const tid = req.params["id"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2446,7 +2464,7 @@ wiki.get('/admin/thread/:tnum/:id/hide', async function hideComment(req, res) {
 });
 
 wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, res) {
-	const tnum = req.param("tnum");
+	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2473,7 +2491,7 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 });
 
 wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(req, res) {
-	const tnum = req.param("tnum");
+	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2503,7 +2521,7 @@ wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(re
 });
 
 wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res) {
-	const tnum = req.param("tnum");
+	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2533,7 +2551,7 @@ wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res
 });
 
 wiki.get('/admin/thread/:tnum/delete', async function deleteThread(req, res) {
-	const tnum = req.param("tnum");
+	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2559,7 +2577,7 @@ wiki.get('/admin/thread/:tnum/delete', async function deleteThread(req, res) {
 });
 
 wiki.post('/notify/thread/:tnum', async function notifyEvent(req, res) {
-	var tnum = req.param("tnum");
+	var tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -2631,15 +2649,7 @@ wiki.post('/member/login', async function authUser(req, res) {
 	var   id = req.body['username'];
 	const pw = req.body['password'];
 	
-	try {
-		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
-			res.send(await showError(req, 'invalid_captcha_number'));
-			return;
-		}
-	} catch(e) {
-		res.send(await showError(req, 'captcha_check_fail'));
-		return;
-	}
+	if(!validateCaptcha){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
 	const captcha = generateCaptcha(req, 3);
 	
@@ -2882,15 +2892,7 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
-	try {
-		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
-			res.send(await showError(req, 'invalid_captcha_number'));
-			return;
-		}
-	} catch(e) {
-		res.send(await showError(req, 'captcha_check_fail'));
-		return;
-	}
+	if(!validateCaptcha){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
 	const captcha = generateCaptcha(req, 1);
 	
@@ -2942,7 +2944,7 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 	await curs.execute("delete from account_creation where cast(time as integer) < ?", [Number(getTime()) - 86400000]);
 	
-	const key = req.param('key');
+	const key = req.params['key'];
 	await curs.execute("select key from account_creation where key = ?", [key]);
 	if(!curs.fetchall().length) {
 		res.send(await showError(req, 'invalid_signup_key'));
@@ -2998,7 +3000,7 @@ wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	await curs.execute("delete from account_creation where cast(time as integer) < ?", [Number(getTime()) - 86400000]);
 	
-	const key = req.param('key');
+	const key = req.params['key'];
 	await curs.execute("select key from account_creation where key = ?", [key]);
 	if(!curs.fetchall().length) {
 		res.send(await showError(req, 'invalid_signup_key'));
@@ -3015,15 +3017,7 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	const pw = req.body['password'];
 	const pw2 = req.body['password_check'];
 	
-	try {
-		if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
-			res.send(await showError(req, 'invalid_captcha_number'));
-			return;
-		}
-	} catch(e) {
-		res.send(await showError(req, 'captcha_check_fail'));
-		return;
-	}
+	if(!validateCaptcha){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
 	const captcha = generateCaptcha(req, 2);
 	
@@ -3601,7 +3595,7 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 
 /*
 function processVotes(req, rtype) {
-	const num = req.param('num');
+	const num = req.params['num'];
 	
     await curs.execute("select num, name, start, end, required_date, options, mode from vote where num = ?", [num]);
     const dbData = curs.fetchall();
@@ -3752,7 +3746,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			</div>
 			
 			<div class=form-group>
-				<label>접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[?]</a></sup>:</label><br>
+				<label>접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[!]</a></sup>:</label><br>
 				<div class=checkbox>
 					<input ${req.query['blockview'] == '1' ? 'checked' : ''} type=checkbox name=blockview>
 				</div>
@@ -3768,9 +3762,17 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			<div class=form-group>
 				<label>차단 만료일:</label><br>
 				
-				<!-- placeholder: 구버전 브라우저 배려 -->
-				<input value="${req.query['expirationdate'] ? html.escape(req.query['expirationdate']) : ''}" type=date name=expiration-date placeholder="YYYY-MM-DD" class=form-control style="display: inline-block; width: auto;">
-				<input value="${req.query['expirationtime'] ? html.escape(req.query['expirationtime']) : ''}" type=time name=expiration-time placeholder="HH:MM" class=form-control style="display: inline-block; width: auto;">
+				<label><input type=radio name=permanant value=true onclick="$('input[group=expiration]').attr('disabled', '');"> 무기한</label><br>
+				<label>
+					<input type=radio name=permanant value=false onclick="$('input[group=expiration]').removeAttr('disabled');" checked> 만료일 지정
+					
+					<div style="margin-left: 40px;">
+						<!-- placeholder: 구버전 브라우저 배려 -->
+						<input group=expiration value="${req.query['expirationdate'] ? html.escape(req.query['expirationdate']) : ''}" type=date name=expiration-date placeholder="YYYY-MM-DD" class=form-control style="display: inline-block; width: auto;">
+						<input group=expiration value="${req.query['expirationtime'] ? html.escape(req.query['expirationtime']) : ''}" type=time name=expiration-time placeholder="HH:MM" class=form-control style="display: inline-block; width: auto;"><br>
+						<label><input group=expiration type=checkbox name=fakepermanant> 무기한으로 표시<sup><a title="실제로는 기한을 지정하지만 무기한으로 표시합니다. VPN IP 차단을 목적으로 하는 반달을 차단할 때 사용하면 좋습니다.">[?]</a></sup></label>
+					</div>
+				</label>
 			</div>
 			
 			<div class=btns>
@@ -3898,45 +3900,206 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	res.redirect('/admin/ban_users');
 });
 
+// 나무픽스 호환용
+wiki.post('/admin/ipacl', async function postIPACL(req, res) {
+	// 나중에 작성 예정
+});
+
+// 나무픽스 호환용
+wiki.post('/admin/suspend_account', async function suspendAccount(req, res) {
+	// 나중에 작성 예정
+});
+
 wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 	if(!getperm('developer', ip_check(req))) {
 		res.send(await showError(req, 'insufficient_privileges'));
 		return;
 	}
 	
-	async function switchCtrl(name, def) {
-		await curs.execute("select value from config where key = ?", [name]);
-		var val;
-		try {
-			val = curs.fetchall()[0]['value'];
-		} catch(e) {
-			val = def;
-		}
-		
-		if(compatMode(req)) {
-			return `<input name="${name}" type=checkbox${val == '1' ? ' checked' : ''}>`;
-		} else {
-			return `<input name="${name}" type=range min=0 max=1 style="width: 30px;" value="${val == '1' ? '1' : '0'}"`;
-		}
-	}
-	
 	var content = `
+		<style>
+			div.vertical-tabs div.tab-list div.vertical-tab {
+				padding: 7px;
+			}
+			
+			div.vertical-tabs div.tab-list div.vertical-tab[active] {
+				background: linear-gradient(to bottom, rgb(164, 193, 227) 0%, rgb(107, 148, 195) 51%, rgb(80, 126, 178) 50%, rgb(68, 116, 171) 100%);
+				color: white;
+			}
+			
+			/* https://stackoverflow.com/questions/14294476/add-arrow-shaped-to-active-tab */
+			div.vertical-tabs div.tab-list div.vertical-tab[active]::after {
+				content: "";
+				position: absolute;
+				bottom: -15px;
+				left: 50px;
+				border-width: 15px 15px 0;
+				border-style: solid;
+				border-color: #f3961c transparent;
+				display: block;
+				width: 0;
+			}
+			
+			div.vertical-tabs div.tab-list div.vertical-tab[active]::after {
+				top: auto;
+				left: auto;
+				bottom: auto;
+				border-width: 10px 0 10px 10px;
+				border-color: transparent rgb(80, 126, 178);
+				margin-top: -18px;
+				margin-left: 112px;
+			}
+			
+			div.vertical-tabs {
+				border: 1px solid #ddd;
+				border-radius: 5px;
+			}
+			
+			div.vertical-tabs, div.vertical-tabs div.tab-content, div.vertical-tabs div.tab-list {
+				height: 420px;
+			}
+			
+			div.vertical-tabs div.tab-list {
+				border-right: 1px solid #ddd;
+				background: linear-gradient(to bottom, #eceeef, #fff);
+				overflow-y: auto;
+			}
+			
+			div.vertical-tabs div.tab-list div.vertical-tab {
+				border-bottom: 1px solid #ddd;
+			}
+			
+			div.vertical-tabs div.tab-content {
+				padding-left: 20px;
+				background: linear-gradient(to bottom, rgb(242, 248, 254), rgb(222, 232, 243), #fff);
+				overflow-y: auto;
+			}
+		</style>
+	
 		<form method=post>
-			<div class=form-group>
-				<label>API 설정:</label><br>
-				<table>
-					<tbody>
-						<tr>
-							<td>
-								버전 1 ${await switchCtrl('apiv1', '1')}
-							</td>
-							
-							<td>
-								버전 2 ${await switchCtrl('apiv2', '1')}
-							</td>
-						</tr>
-					</tbody>
-				</table>
+			<div class=vertical-tabs>
+				<div class=tab-list style="display: none;">
+					<div class=vertical-tab data-paneid=general>위키 구성</div>
+					<div class=vertical-tab data-paneid=api>API</div>
+					<div class=vertical-tab data-paneid=skins>스킨</div>
+					<div class=vertical-tab data-paneid=features>특수 기능</div>
+					<div class=vertical-tab data-paneid=tos>지침</div>
+					<div class=vertical-tab data-paneid=misc>기타</div>
+					<div class=vertical-tab data-paneid=applying>
+						<button type=submit style="background: transparent; border: none; font-size: initial; color: inherit; padding: 7px; margin: -7px; width: 100%; text-align: inherit;">적용!</button>
+					</div>
+				</div>
+				
+				<div class=tab-content>
+					<div class=tab-pane id=general>
+						<h2 class=tab-page-title>위키 구성</h2>
+					
+						<div class=form-group>
+							<label>위키 이름: </label><br>
+							<input type=text class=form-control name=site_name value="">
+						</div>
+					
+						<div class=form-group>
+							<label>최대 사용자 수: <sub>(-1: 무제한; 현재 사용자 수 이하로 설정하면 더 이상 사용자가 가입할 수 없음)</sub></label><br>
+							<input type=number class=form-control name=max_users value=-1 min=-1>
+						</div>
+					
+						<div class=form-group>
+							<label>대문 문서: </label><br>
+							<input type=text class=form-control name=frontpage value="대문">
+						</div>
+					
+						<div class=form-group>
+							<label>편집 안내문: </label><br>
+							<textarea class=form-control name=edit_warning></textarea>
+						</div>
+					
+						<div class=form-group>
+							<label>화면 하단 안내문: </label><br>
+							<textarea class=form-control name=footer_text></textarea>
+						</div>
+					
+						<div class=form-group>
+							<label>공지: </label><br>
+							<input type=text class=form-control name=sitenotice placeholder="공지 없음">
+						</div>
+					
+						<div class=form-group>
+							<label>ACL 종류: <sub>(이 설정 변경은 모든 문서의 ACL을 초기화합니다.)</sub></label><br>
+							<label><input type=radio name=acl-type value=user-based> 사용자 중심 - 사용자별로 문서에 대해 할 수 있는 작업을 지정합니다.</label><br>
+							<label><input type=radio name=acl-type value=action-based checked> 작업 중심 - 문서에 대한 작업을 어떤 사용자가 할 수 있는지 지정합니다.</label><br>
+							<label><input type=radio name=acl-type value=basic> 간단 모드 - 처음 사용자가 쉽게 다룰 수 있으며, 미디어위키, 오픈나무, 클래식 the seed 등의 위키엔진에서 널리 사용됩니다.</label><br>
+							<label><input type=radio name=acl-type value=the-seed disabled> the seed 스타일 - the seed 방식을 사용합니다. 이 방식은 제공될 수 없습니다.</label><br>
+							<label><input type=radio name=acl-type value=none> 없음 - ACL을 지정할 수 없게 합니다. 모든 문서에 모든 사용자가 기여할 수 있습니다. 예외적으로 사용자 문서는 본인 및 관리자만이 편집할 수 있습니다. 차단된 사용자는 제외됩니다.</label>
+						</div>
+					</div>
+					
+					<div class=tab-pane id=api>
+						<h2 class=tab-page-title>API</h2>
+					
+						<label><input type=checkbox name=enable-apiv1 checked> API 버전1 사용</label><br>
+						<label><input type=checkbox name=enable-apiv2 checked> API 버전2 사용</label><br>
+					</div>
+					
+					<div class=tab-pane id=skins>
+						<h2 class=tab-page-title>스킨</h2>
+						
+						<div class=form-group>
+							<label>기본 스킨: </label><br>
+							<select class=form-control name=default_skin>
+								<option value>(컬렉션)</option>
+							</select>
+						</div>
+						
+						<div class=form-group>
+							<label>호환성 기본 스킨: </label><br>
+							<select class=form-control name=default_skin_legacy>
+								<option value>(컬렉션)</option>
+							</select>
+						</div>
+						
+						<div class=form-group>
+							<label><input type=checkbox name=default_skin_only> 기본 스킨을 제외한 스킨을 사용할 수 없음 (소유자는 사용 가능)</label>
+						</div>
+					</div>
+					
+					<div class=tab-pane id=features>
+						<h2 class=tab-page-title>특수 기능</h2>
+					
+						<label><input type=checkbox name=enable-sql> 위키 내에서 SQL 코드를 실행할 수 있음(소유자 전용)</label><br>
+						<label><input type=checkbox name=disable-star> 내 문서함 사용 안함</label><br>
+						<label><input type=checkbox name=disable-random> 임의 문서 탐색 사용 안함</label><br>
+						<label><input type=checkbox name=disable-search> 검색 사용 안함</label><br>
+						<label><input type=checkbox name=disable-discuss> 토론 사용 안함</label><br>
+						<label><input type=checkbox name=disable-recentchanges> 최근 변경 열람 금지</label><br>
+						<label><input type=checkbox name=disable-recentdiscuss> 최근 토론 열람 금지</label><br>
+						<label><input type=checkbox name=disable-contribution_list> 기여 목록 열람 금지</label><br>
+						<label><input type=checkbox name=enhanced_security> 보안 강화 구성 사용<sup><a title="로그인 시 복사-붙이기, 브라우저 저장 비밀번호 방식으로 로그인할 수 없으며, 마우스로만 로그인할 수 있습니다. ActiveX를 사용하므로 Internet Explorer에서만 로그인할 수 있습니다.">[?]</a></sup></label><br>
+					</div>
+					
+					<div class=tab-pane id=tos>
+						<h2 class=tab-page-title>지침</h2>
+					
+						<label>개인정보처리방침:</label>
+						<textarea name=privacy class=form-control rows=20></textarea>
+					</div>
+					
+					<div class=tab-pane id=misc>
+						<h2 class=tab-page-title>기타</h2>
+						
+						<label><input type=checkbox name=allow-telnet> 사용자가 텔넷(포트 23)을 통하여 문서 및 게시판을 열람할 수 있도록 허용</label><br>
+						<label><input type=checkbox name=no-login-history> 로그인 내역을 기록하지 않음</label><br><br>
+					</div>
+					
+					<div class=tab-pane id=applying style="display: none;">
+						<h2 class=tab-page-title>적용 중...</h2>
+						<p>설정을 적용하는 중입니다...</p>
+					</div>
+				</div>
+			</div>
+			
+			<div class=btns id=config-apply-button>
+				<button type=submit class="btn btn-primary" style="width: 100px;">적용하기!</button>
 			</div>
 		</form>
 	`;
@@ -4008,77 +4171,6 @@ wiki.get(/\/api\/v1\/w\/(.*)/, async function API_viewDocument_v1(req, res) {
 	});
 });
 
-wiki.get(/\/api\/v2\/w\/(.*)/, async function API_viewDocument_v2(req, res) {
-	const title = req.params[0];
-	const rev = req.query['rev'];
-	
-	if(title.replace(/\s/g, '') === '') {
-		res.status(400).json({
-			title: title,
-			state: 'invalid_document',
-			content: ''
-		});
-		return;
-	}
-	
-	if(rev) {
-		await curs.execute("select content from history where title = ? and rev = ?", [title, rev]);
-	} else {
-		await curs.execute("select content from documents where title = ?", [title]);
-	}
-	const rawContent = curs.fetchall();
-
-	var content = '';
-	
-	var httpstat = 200;
-	var viewname = 'wiki';
-	var error = false;
-	
-	var isUserDoc = false;
-	
-	var lstedt = undefined;
-	
-	try {
-		if(!await getacl(req, title, 'read')) {
-			httpstat = 403;
-			error = true;
-			
-			res.status(httpstat).json({
-				title: title,
-				state: 'insufficient_privileges_read',
-				content: ''
-			});
-			
-			return;
-		} else {
-			content = markdown(rawContent[0]['content']);
-			
-			if(title.startsWith("사용자:") && getperm('admin', title.replace(/^사용자[:]/, ''))) {
-				content = `
-					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'red\';" onmouseout="this.style.borderTopColor=\'orange\';">
-						<span style="font-size: 14pt;">이 사용자는 특수 권한을 가지고 있습니다.</span>
-					</div>
-				` + content;
-			}
-			
-			await curs.execute("select time from history where title = ? order by cast(rev as integer) desc limit 1", [title]);
-			lstedt = Number(curs.fetchall()[0]['time']);
-		}
-	} catch(e) {
-		viewname = 'notfound';
-		
-		httpstat = 404;
-		content = '';
-	}
-	
-	res.status(httpstat).json({
-		title: title,
-		state: viewname,
-		content: content,
-		last_edited: lstedt
-	});
-});
-
 wiki.get(/\/api\/v1\/raw\/(.*)/, async function API_viewRaw_v1(req, res) {
 	const title = req.params[0];
 	
@@ -4133,106 +4225,12 @@ wiki.get(/\/api\/v1\/raw\/(.*)/, async function API_viewRaw_v1(req, res) {
 	});
 });
 
-wiki.get(/\/api\/v2\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
-	const title = req.params[0];
-	const rev = req.query['rev'];
-	
-	if(title.replace(/\s/g, '') === '') {
-		res.status(400).json({
-			title: title,
-			state: 'invalid_document',
-			content: ''
-		});
-		return;
-	}
-	
-	if(rev) {
-		await curs.execute("select content from history where title = ? and rev = ?", [title, rev]);
-	} else {
-		await curs.execute("select content from documents where title = ?", [title]);
-	}
-	const rawContent = curs.fetchall();
-
-	var content = '';
-	
-	var httpstat = 200;
-	var viewname = 'wiki';
-	var error = false;
-	
-	var isUserDoc = false;
-	
-	var lstedt = undefined;
-	
-	try {
-		if(!await getacl(req, title, 'read')) {
-			httpstat = 403;
-			error = true;
-			
-			res.status(httpstat).json({
-				title: title,
-				state: 'insufficient_privileges_read',
-				content: ''
-			});
-			
-			return;
-		} else {
-			content = rawContent[0]['content'];
-		}
-	} catch(e) {
-		viewname = 'notfound';
-		
-		httpstat = 404;
-		content = '';
-	}
-	
-	res.status(httpstat).json({
-		title: title,
-		state: viewname,
-		content: content
-	});
-});
-
 wiki.get(/\/api\/v1\/users\/(.*)/, async function API_userInfo_v1(req, res) {
 	const username = req.params[0];
 	
 	res.json({
 		username: username
 	});
-});
-
-wiki.get(/\/api\/v2\/users\/(.*)/, async function API_userInfo_v2(req, res) {
-	const username = req.params[0];
-	
-	await curs.execute("select username from users where username = ?", [username]);
-	
-	if(!curs.fetchall().length) {
-		res.status(404).json({
-			username: username,
-			state: 'invalid_user'
-		});
-		return;
-	}
-	
-	var ret = {
-		username: username,
-		state: 'ok'
-	};
-	
-	await curs.execute("select time from history where rev = '1' and title = ?", ['사용자:' + username]);
-	ret['join_timestamp'] = curs.fetchall()[0]['time'];
-	
-	await curs.execute("select username from history where username = ?", [username]);
-	ret['contribution_count'] = curs.fetchall().length;
-	
-	ret['permissions'] = [];
-	
-	ret['banned'] = await isBanned(req, 'author', username);
-	
-	for(var perm of perms) {
-		if(getperm(perm, username)) ret['permissions'].push(perm);
-	}
-	
-	res.json(ret);
 });
 
 wiki.get(/\/api\/v1\/history\/(.*)/, async function API_viewHistory_v1(req, res) {
@@ -4301,74 +4299,6 @@ wiki.get(/\/api\/v1\/history\/(.*)/, async function API_viewHistory_v1(req, res)
 	ret['total'] = cnt;
 	
 	res.json(ret);
-});
-
-wiki.get(/\/api\/v2\/history\/(.*)/, async function API_viewHistory_v2(req, res) {
-	const title = req.params[0];
-	
-	const start = req.query['start'];
-	const end = req.query['end'];
-	
-	if(!start || !end || isNaN(atoi(start)) || isNaN(atoi(end))) {
-		res.json({
-			title: title,
-			state: 'invalid_parameters',
-			history: null,
-			description: 'URL에 시작 리비전과 끝 리비전을 start 및 end 키워드로 명시하십시오.'
-		});
-		return;
-	}
-	
-	if(atoi(start) > atoi(end)) {
-		res.json({
-			title: title,
-			state: 'invalid_parameters',
-			history: null,
-			description: '시작 리비전은 끝 리비전보다 클 수 없습니다.'
-		});
-		return;
-	}
-	
-	if(atoi(end) - atoi(start) > 100) {
-		res.json({
-			title: title,
-			state: 'invalid_parameters',
-			history: null,
-			description: '시작 리비전과 끝 리비전의 차이는 100 이하이여야 합니다.'
-		});
-		return;
-	}
-	
-	await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where title = ? and cast(rev as integer) >= ? and cast(rev as integer) <= ? order by cast(rev as integer) desc limit 30",
-						[title, atoi(start), atoi(end)]);
-	var ret = {};
-	
-	var cnt = 0;
-	
-	for(var row of curs.fetchall()) {
-		ret[row['rev']] = {
-			rev: row['rev'],
-			timestamp: row['time'],
-			changes: row['changes'],
-			log: row['log'],
-			edit_request: row['iserq'] == '1' ? true : false,
-			edit_request_number: row['iserq'] == '1' ? row['erqnum'] : null,
-			advance: row['advance'],
-			contribution_type: row['ismember'],
-			username: row['username']
-		};
-		cnt++;
-	}
-	
-	res.json({
-		title: title,
-		startrev: start,
-		endrev: end,
-		state: 'ok',
-		total: cnt,
-		history: ret
-	});
 });
 
 wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
@@ -4466,6 +4396,239 @@ wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
 	}
 	
 	return res.json(ret);
+});
+
+wiki.get(/\/api\/v2\/w\/(.*)/, async function API_viewDocument_v2(req, res) {
+	const title = req.params[0];
+	const rev = req.query['rev'];
+	
+	if(title.replace(/\s/g, '') === '') {
+		res.status(400).json({
+			title: title,
+			state: 'invalid_document',
+			content: ''
+		});
+		return;
+	}
+	
+	if(rev) {
+		await curs.execute("select content from history where title = ? and rev = ?", [title, rev]);
+	} else {
+		await curs.execute("select content from documents where title = ?", [title]);
+	}
+	const rawContent = curs.fetchall();
+
+	var content = '';
+	
+	var httpstat = 200;
+	var viewname = 'wiki';
+	var error = false;
+	
+	var isUserDoc = false;
+	
+	var lstedt = undefined;
+	
+	try {
+		if(!await getacl(req, title, 'read')) {
+			httpstat = 403;
+			error = true;
+			
+			res.status(httpstat).json({
+				title: title,
+				state: 'insufficient_privileges_read',
+				content: ''
+			});
+			
+			return;
+		} else {
+			content = markdown(rawContent[0]['content']);
+			
+			if(title.startsWith("사용자:") && getperm('admin', title.replace(/^사용자[:]/, ''))) {
+				content = `
+					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'red\';" onmouseout="this.style.borderTopColor=\'orange\';">
+						<span style="font-size: 14pt;">이 사용자는 특수 권한을 가지고 있습니다.</span>
+					</div>
+				` + content;
+			}
+			
+			await curs.execute("select time from history where title = ? order by cast(rev as integer) desc limit 1", [title]);
+			lstedt = Number(curs.fetchall()[0]['time']);
+		}
+	} catch(e) {
+		viewname = 'notfound';
+		
+		httpstat = 404;
+		content = '';
+	}
+	
+	res.status(httpstat).json({
+		title: title,
+		state: viewname,
+		content: content,
+		last_edited: lstedt
+	});
+});
+
+wiki.get(/\/api\/v2\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
+	const title = req.params[0];
+	const rev = req.query['rev'];
+	
+	if(title.replace(/\s/g, '') === '') {
+		res.status(400).json({
+			title: title,
+			state: 'invalid_document',
+			content: ''
+		});
+		return;
+	}
+	
+	if(rev) {
+		await curs.execute("select content from history where title = ? and rev = ?", [title, rev]);
+	} else {
+		await curs.execute("select content from documents where title = ?", [title]);
+	}
+	const rawContent = curs.fetchall();
+
+	var content = '';
+	
+	var httpstat = 200;
+	var viewname = 'wiki';
+	var error = false;
+	
+	var isUserDoc = false;
+	
+	var lstedt = undefined;
+	
+	try {
+		if(!await getacl(req, title, 'read')) {
+			httpstat = 403;
+			error = true;
+			
+			res.status(httpstat).json({
+				title: title,
+				state: 'insufficient_privileges_read',
+				content: ''
+			});
+			
+			return;
+		} else {
+			content = rawContent[0]['content'];
+		}
+	} catch(e) {
+		viewname = 'notfound';
+		
+		httpstat = 404;
+		content = '';
+	}
+	
+	res.status(httpstat).json({
+		title: title,
+		state: viewname,
+		content: content
+	});
+});
+
+wiki.get(/\/api\/v2\/users\/(.*)/, async function API_userInfo_v2(req, res) {
+	const username = req.params[0];
+	
+	await curs.execute("select username from users where username = ?", [username]);
+	
+	if(!curs.fetchall().length) {
+		res.status(404).json({
+			username: username,
+			state: 'invalid_user'
+		});
+		return;
+	}
+	
+	var ret = {
+		username: username,
+		state: 'ok'
+	};
+	
+	await curs.execute("select time from history where rev = '1' and title = ?", ['사용자:' + username]);
+	ret['join_timestamp'] = curs.fetchall()[0]['time'];
+	
+	await curs.execute("select username from history where username = ?", [username]);
+	ret['contribution_count'] = curs.fetchall().length;
+	
+	ret['permissions'] = [];
+	
+	ret['banned'] = await isBanned(req, 'author', username);
+	
+	for(var perm of perms) {
+		if(getperm(perm, username)) ret['permissions'].push(perm);
+	}
+	
+	res.json(ret);
+});
+
+wiki.get(/\/api\/v2\/history\/(.*)/, async function API_viewHistory_v2(req, res) {
+	const title = req.params[0];
+	
+	const start = req.query['start'];
+	const end = req.query['end'];
+	
+	if(!start || !end || isNaN(atoi(start)) || isNaN(atoi(end))) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: 'URL에 시작 리비전과 끝 리비전을 start 및 end 키워드로 명시하십시오.'
+		});
+		return;
+	}
+	
+	if(atoi(start) > atoi(end)) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 리비전은 끝 리비전보다 클 수 없습니다.'
+		});
+		return;
+	}
+	
+	if(atoi(end) - atoi(start) > 100) {
+		res.json({
+			title: title,
+			state: 'invalid_parameters',
+			history: null,
+			description: '시작 리비전과 끝 리비전의 차이는 100 이하이여야 합니다.'
+		});
+		return;
+	}
+	
+	await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and cast(rev as integer) >= ? and cast(rev as integer) <= ? order by cast(rev as integer) desc limit 30",
+						[title, atoi(start), atoi(end)]);
+	var ret = {};
+	
+	var cnt = 0;
+	
+	for(var row of curs.fetchall()) {
+		ret[row['rev']] = {
+			rev: row['rev'],
+			timestamp: row['time'],
+			changes: row['changes'],
+			log: row['log'],
+			edit_request: row['iserq'] == '1' ? true : false,
+			edit_request_number: row['iserq'] == '1' ? row['erqnum'] : null,
+			advance: row['advance'],
+			contribution_type: row['ismember'],
+			username: row['username']
+		};
+		cnt++;
+	}
+	
+	res.json({
+		title: title,
+		startrev: start,
+		endrev: end,
+		state: 'ok',
+		total: cnt,
+		history: ret
+	});
 });
 
 wiki.get(/\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) {
@@ -4571,6 +4734,20 @@ wiki.get(/\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) {
 	});
 });
 
+wiki.post(/\/api\/v2\/login/, async function API_botLogin_v2(req, res) {
+	await curs.execute("select username from bots where token = ?", [req.body['token']]);
+	if(curs.fetchall().length) {
+		res.session.username = curs.fetchall()[0]['username'];
+		res.json({
+			'status': 'success'
+		});
+	} else {
+		res.json({
+			'status': 'fail'
+		});
+	}
+});
+
 wiki.use(function(req, res, next) {
     return res.status(404).send(`
 		접속한 페이지가 없음.
@@ -4595,6 +4772,12 @@ if(firstrun) {
 		
 		for(var cfg of curs.fetchall()) {
 			wikiconfig[cfg['key']] = cfg['value'];
+		}
+		
+		await curs.execute("select username, token, owner from bots");
+		
+		for(var bot of curs.fetchall()) {
+			botlist[bot['username']] = bot;
 		}
 		
 		await curs.execute("select username, perm from perms order by username");
