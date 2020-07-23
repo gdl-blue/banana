@@ -536,65 +536,67 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	
 	templateVariables['user_document_discuss'] = user_document_discuss;
 	
-	// 오픈나무 스킨 호환용
-	templateVariables['imp'] = [
-		title,  // 페이지 제목 (imp[0])
-		[  // 위키 설정 (imp[1][x])
-			config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
-			config.getString('wiki.copyright_text', '') +  // 위키 
-			config.getString('wiki.footer_text', ''),      // 라이선스
-			'',  // 전역 CSS
-			'',  // 전역 JS
-			config.getString('wiki.logo_url', ''),  // 로고
-			'',  // 전역 <HEAD>
-			config.getString('wiki.site_notice', ''),  // 공지
-			getpermForSkin,  // 권한 유무 여부 함수
-			toDate(getTime())  // 시간
-		], 
-		[  // 사용자 정보 (imp[2][x])
-		   // --------------------------
-		   // return [0, 1, 2, 3, 4, 5, ip_check(), 
-		   //			admin_check(1), admin_check(3), admin_check(4), admin_check(5), 
-		   //           admin_check(6), admin_check(7), admin_check(), 
-		   //           toplst('사용자:' + ip_check()), ipa, ar, tr, cv, mycolor[0][0], str(spin)]
-		
-			'',  // 사용자 CSS
-			'',  // 사용자 JS
-			islogin(req) ? 1 : 0,  // 로그인 여부
-			'',  // 사용자 <HEAD>
-			'someone@example.com', // 전자우편 주소; 아직 이메일 추가기능도 미구현.,
-			islogin(req) ? ip_check(req) : '사용자',  // 사용자 이름
-			ip_check(req),  // 사용자/아이피 주소
-			getperm('suspend_account'),  // 차단 권한 유무(데프리케잇; imp[1][8] 사용)
-			0,  // 토론 권한 여부인데 세분화해서 쓰므로 안 씀
-			getperm('login_history'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
-			getperm('admin'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
-			0,  // 역사 숨기기였는데 구현 안함
-			getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
-			getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
-			user_document_discuss,  // 사용자 토론 존재여부
-			getperm('ipacl'),  // IPACL 권한 유무(데프리케잇; imp[1][8] 사용)
-			getperm('admin'),  // 중재자 권한인데 admin으로 통합
-			getperm('admin'),  // 호민관 권한인데 admin으로 통합
-			getperm('create_vote'),  // 투표추가 권한 유무(데프리케잇; imp[1][8] 사용)
-			'default',  // 스킨 색 구성표인데 스킨 선택도 안 만듬
-			'12345678'  // 지원 PIN인데 미구현
-		], 
-		[  // 기타 정보 (imp[3][x])
-			subtitle == '' ? 0 : subtitle,  // 페이지 부제목
-			!varlist['date'] ? 0 : varlist['date'],  // 마지막 수정 시간
-			['wiki', 'notfound'].includes(viewname)  // 별찜 여부
-			 ? (
-				varlist['starred'] ? 2 : (
-					islogin(req) ? 1 : 0
-				)
-			 ) : (
-				''
-			 )
-		]
-	];
-	templateVariables['data'] = content;
-	templateVariables['menu'] = menu;
+	if(config.getString('enable_opennamu_skins', '1') == '1') {
+		// 오픈나무 스킨 호환용
+		templateVariables['imp'] = [
+			title,  // 페이지 제목 (imp[0])
+			[  // 위키 설정 (imp[1][x])
+				config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
+				config.getString('wiki.copyright_text', '') +  // 위키 
+				config.getString('wiki.footer_text', ''),      // 라이선스
+				'',  // 전역 CSS
+				'',  // 전역 JS
+				config.getString('wiki.logo_url', ''),  // 로고
+				'',  // 전역 <HEAD>
+				config.getString('wiki.site_notice', ''),  // 공지
+				getpermForSkin,  // 권한 유무 여부 함수
+				toDate(getTime())  // 시간
+			], 
+			[  // 사용자 정보 (imp[2][x])
+			   // --------------------------
+			   // return [0, 1, 2, 3, 4, 5, ip_check(), 
+			   //			admin_check(1), admin_check(3), admin_check(4), admin_check(5), 
+			   //           admin_check(6), admin_check(7), admin_check(), 
+			   //           toplst('사용자:' + ip_check()), ipa, ar, tr, cv, mycolor[0][0], str(spin)]
+			
+				'',  // 사용자 CSS
+				'',  // 사용자 JS
+				islogin(req) ? 1 : 0,  // 로그인 여부
+				'',  // 사용자 <HEAD>
+				'someone@example.com', // 전자우편 주소; 아직 이메일 추가기능도 미구현.,
+				islogin(req) ? ip_check(req) : '사용자',  // 사용자 이름
+				ip_check(req),  // 사용자/아이피 주소
+				getperm('suspend_account'),  // 차단 권한 유무(데프리케잇; imp[1][8] 사용)
+				0,  // 토론 권한 여부인데 세분화해서 쓰므로 안 씀
+				getperm('login_history'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
+				getperm('admin'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
+				0,  // 역사 숨기기였는데 구현 안함
+				getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
+				getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
+				user_document_discuss,  // 사용자 토론 존재여부
+				getperm('ipacl'),  // IPACL 권한 유무(데프리케잇; imp[1][8] 사용)
+				getperm('admin'),  // 중재자 권한인데 admin으로 통합
+				getperm('admin'),  // 호민관 권한인데 admin으로 통합
+				getperm('create_vote'),  // 투표추가 권한 유무(데프리케잇; imp[1][8] 사용)
+				'default',  // 스킨 색 구성표인데 스킨 선택도 안 만듬
+				'12345678'  // 지원 PIN인데 미구현
+			], 
+			[  // 기타 정보 (imp[3][x])
+				subtitle == '' ? 0 : subtitle,  // 페이지 부제목
+				!varlist['date'] ? 0 : varlist['date'],  // 마지막 수정 시간
+				['wiki', 'notfound'].includes(viewname)  // 별찜 여부
+				 ? (
+					varlist['starred'] ? 2 : (
+						islogin(req) ? 1 : 0
+					)
+				 ) : (
+					''
+				 )
+			]
+		];
+		templateVariables['data'] = content;
+		templateVariables['menu'] = menu;
+	}
 	
 	if(islogin(req)) {
 		templateVariables['member'] = {
@@ -706,14 +708,17 @@ function ip_pas(ip = '', ismember = '', isadmin = null) {
 			return `<a href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a>`;
 		} else {
 			if(isadmin == '1') {
+				if(config.getString('ip2md5', '0') == '1') return '<strong>' + md5(ip).slice(0, 6) + '</strong>';
 				return `<strong><a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a></strong>`;
 			}
+			if(config.getString('ip2md5', '0') == '1') return md5(ip).slice(0, 6);
 			return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
 		}
 	} else {
 		if(ismember == 'author') {
 			return `<strong><a href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
 		} else {
+			if(config.getString('ip2md5', '0') == '1') return md5(ip).slice(0, 6);
 			return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
 		}
 	}
@@ -1200,7 +1205,6 @@ function redirectToFrontPage(req, res) {
 }
 
 wiki.get('/w', redirectToFrontPage);
-
 wiki.get('/', redirectToFrontPage);
 
 wiki.get('/ExecuteSQL', async function executeSQLPage(req, res) {
@@ -1522,6 +1526,11 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 });
 
 wiki.get('/RecentChanges', async function recentChanges(req, res) {
+	if(config.getString('disable_recentchanges', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	var flag = req.query['logtype'];
 	if(!flag) flag = 'all';
 	
@@ -1627,8 +1636,18 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 });
 
 wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function documentContribution(req, res) {
+	if(config.getString('disable_contribution_list', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const ismember = req.params[0];
 	const username = req.params[1];
+	
+	if(ismember == 'ip' && config.getString('ip2md5', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
 	
 	await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 				where cast(time as integer) >= ? and ismember = ? and username = ? order by cast(time as integer) desc", [
@@ -1719,6 +1738,11 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 });
 
 wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
+	if(config.getString('disable_recentdiscuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	var logtype = req.query['logtype'];
 	if(!logtype) logtype = 'all';
 	
@@ -1784,8 +1808,18 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 });
 
 wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussionLog(req, res) {
+	if(config.getString('disable_contribution_list', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const ismember = req.params[0];
 	const username = req.params[1];
+	
+	if(ismember == 'ip' && config.getString('ip2md5', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
 	
 	await curs.execute("select id, tnum, time, username, ismember from res \
 				where cast(time as integer) >= ? and ismember = ? and username = ? order by cast(time as integer) desc", [
@@ -1848,6 +1882,11 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 });
 
 wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
+	if(config.getString('disable_history', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const title = req.params[0];
 	const from = req.query['from'];
 	const until = req.query['until'];
@@ -1956,6 +1995,11 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 });
 
 wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const title = req.params[0];
 	
 	var state = req.query['state'];
@@ -2108,6 +2152,11 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 });
 
 wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const title = req.params[0];
 	
 	if(!await getacl(req, title, 'read')) {
@@ -2210,6 +2259,11 @@ async function getThreadData(req, tnum, tid = '-1') {
 }
 
 wiki.get('/thread/:tnum', async function viewThread(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
@@ -2347,6 +2401,11 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 });
 
 wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	if(!req.body['text']) {
 		if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
 			res.send(await showError(req, 'invalid_request_body'));
@@ -2400,6 +2459,11 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 });
 
 wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	const tid = req.params["id"];
 	
@@ -2431,6 +2495,11 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 });
 
 wiki.get('/admin/thread/:tnum/:id/show', async function showHiddenComment(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	const tid = req.params["id"];
 	
@@ -2452,6 +2521,11 @@ wiki.get('/admin/thread/:tnum/:id/show', async function showHiddenComment(req, r
 });
 
 wiki.get('/admin/thread/:tnum/:id/hide', async function hideComment(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	const tid = req.params["id"];
 	
@@ -2473,6 +2547,11 @@ wiki.get('/admin/thread/:tnum/:id/hide', async function hideComment(req, res) {
 });
 
 wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
@@ -2500,6 +2579,11 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 });
 
 wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
@@ -2530,6 +2614,11 @@ wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(re
 });
 
 wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
@@ -2560,6 +2649,11 @@ wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res
 });
 
 wiki.get('/admin/thread/:tnum/delete', async function deleteThread(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
@@ -2586,6 +2680,11 @@ wiki.get('/admin/thread/:tnum/delete', async function deleteThread(req, res) {
 });
 
 wiki.post('/notify/thread/:tnum', async function notifyEvent(req, res) {
+	if(config.getString('disable_discuss', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	var tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
@@ -2817,7 +2916,8 @@ wiki.post('/member/login', async function authUser(req, res) {
 		return;
 	}
 	
-	curs.execute("insert into login_history (username, ip) values (?, ?)", [id, ip_check(req, 1)]);
+	if(config.getString('no_login_history', '0') == '0')
+		curs.execute("insert into login_history (username, ip) values (?, ?)", [id, ip_check(req, 1)]);
 	
 	req.session.username = id;
 	
@@ -2850,7 +2950,8 @@ wiki.post('/member/login', async function authUser(req, res) {
 	}
 	
 	await curs.execute("delete from useragents where username = ?", [id]);
-	await curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent'] ? req.headers['user-agent'] : '']);
+	if(config.getString('no_login_history', '0') == '0')
+		await curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent'] ? req.headers['user-agent'] : '']);
 	
 	res.redirect(desturl);
 });
@@ -3183,9 +3284,11 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 					values (?, '', '1', ?, ?, '0', '', '0', '', '(새 문서)', 'author')", [
 						'사용자:' + id, getTime(), id
 					]);
-		
-	curs.execute("insert into login_history (username, ip) values (?, ?)", [id, ip_check(req, 1)]);
-	curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent'] ? req.headers['user-agent'] : '']);
+	
+	if(config.getString('no_login_history', '0') == '0') {
+		curs.execute("insert into login_history (username, ip) values (?, ?)", [id, ip_check(req, 1)]);
+		curs.execute("insert into useragents (username, string) values (?, ?)", [id, req.headers['user-agent'] ? req.headers['user-agent'] : '']);
+	}
 	
 	res.redirect(desturl);
 });
