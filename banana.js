@@ -4019,13 +4019,13 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 						</div>
 						
 						<div class=form-group>
-							<label><input type=checkbox name=default_skin_only ${config.getString('', '0') == '1' ? 'checked' : ''}> 기본 스킨을 제외한 스킨을 사용할 수 없음 (소유자는 사용 가능)</label><br>
+							<label><input type=checkbox name=default_skin_only ${config.getString('default_skin_only', '0') == '1' ? 'checked' : ''}> 기본 스킨을 제외한 스킨을 사용할 수 없음 (소유자는 사용 가능)</label><br>
 						</div>
 						
 						<div class=form-group>
 							<label><input type=checkbox name=enable_theseed_skins checked disabled> the seed용으로 만들어진 스킨 지원<sup><a title="swig 기반 스킨만 지원하며 현재 사용 중인 Nuxt.js 기반 스킨은 지원하지 않습니다.">[!]</a></sup></label><br>
 							<label><input type=checkbox name=enable_opennamu_skins ${config.getString('enable_opennamu_skins', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
-							<label><input type=checkbox name=enable_custom_skins ${config.getString('', '0') == '1' ? 'checked' : ''}> 사용자가 직접 레이아웃을 만들어 스킨으로 사용할 수 있도록 허용</label><br>
+							<label><input type=checkbox name=enable_custom_skins ${config.getString('enable_custom_skins', '0') == '1' ? 'checked' : ''}> 사용자가 직접 레이아웃을 만들어 스킨으로 사용할 수 있도록 허용</label><br>
 						</div>
 					</div>
 					
@@ -4135,8 +4135,8 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 					<div class=tab-page id=misc>
 						<h2 class=tab-page-title>기타</h2>
 						
-						<label><input type=checkbox name=allow_telnet ${config.getString('allow_telnet', '0') == '1' ? 'checked' : ''}> 사용자가 텔넷(포트 23)을 통하여 문서 및 게시판을 열람할 수 있도록 허용</label><br>
-						<label><input type=checkbox name=enable_captcha checked ${config.getString('enable_captcha', '1') == '1' ? 'checked' : ''}> 보안문자 사용</label><br>
+						<label><input type=checkbox name=allow_telnet ${config.getString('allow_telnet', '0') == '1' ? 'checked' : ''}> 사용자가 텔넷(포트 23)을 통하여 문서 및 게시판을 열람할 수 있도록 허용 (서버 재시동 필요)</label><br>
+						<label><input type=checkbox name=enable_captcha ${config.getString('enable_captcha', '1') == '1' ? 'checked' : ''}> 보안문자 사용</label><br>
 						<label><input type=checkbox name=ip2md5 ${config.getString('ip2md5', '0') == '1' ? 'checked' : ''}> IP 주소를 표시하지 않고 MD5로 암호화한 후 앞의 6자리 표시</label><br>
 						<label><input type=checkbox name=denial ${config.getString('denial', '0') == '1' ? 'checked' : ''}> 서비스 거부 공격(빠른 반복 새로고침 등) 의심 시 1시간 동안 해당 IP에서 오는 요청을 처리해주지 않음</label><br>
 						<label><input type=checkbox name=no_login_history ${config.getString('no_login_history', '0') == '1' ? 'checked' : ''}> 로그인 내역을 기록하지 않음</label><br><br>
@@ -4185,6 +4185,8 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 			wikiconfig[setting] = req.body[setting];
 		}
 	}
+	
+	timeout(3000);
 	
 	res.redirect('/admin/config');
 });
@@ -4837,7 +4839,7 @@ wiki.use(function(req, res, next) {
 });
 
 if(firstrun) {
-	(async function setWikiData() {
+	(async function setCacheData() {
 		const SML = [
 			"바나나를 불러오는 중...",
 			"바나나를 꺼내는 중...",
