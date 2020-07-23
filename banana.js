@@ -527,7 +527,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	templateVariables['imp'] = [
 		title,  // 페이지 제목 (imp[0])
 		[  // 위키 설정 (imp[1][x])
-			config.getString('wiki.site_name', ''),  // 위키 이름
+			config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
 			config.getString('wiki.copyright_text', '') +  // 위키 
 			config.getString('wiki.footer_text', ''),      // 라이선스
 			'',  // 전역 CSS
@@ -611,7 +611,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	var header = '<html><head>';
 	var skinconfig = require("./skins/" + getSkin() + "/config.json");
 	header += `
-		<title>${title}${subtitle} - ${config.getString('site_name', 'Wiki')}</title>
+		<title>${title}${subtitle} - ${config.getString('site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너']))}</title>
 		<meta charset=utf-8>
 		<meta name=generator content=banana>
 		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
@@ -3983,7 +3983,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 						
 						<div class=form-group>
 							<label><input type=checkbox name=enable_theseed_skins checked disabled> the seed용으로 만들어진 스킨 지원</label><br>
-							<label><input type=checkbox name=enable_opennamu_skins ${config.getString('', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
+							<label><input type=checkbox name=enable_opennamu_skins ${config.getString('enable_opennamu_skins', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
 							<label><input type=checkbox name=enable_custom_skins ${config.getString('', '0') == '1' ? 'checked' : ''}> 사용자가 직접 레이아웃을 만들어 스킨으로 사용할 수 있도록 허용</label><br>
 						</div>
 					</div>
@@ -4014,9 +4014,9 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 							<label>ACL 방식 설정: <sub>(이 설정 변경은 모든 문서의 ACL을 초기화합니다.)</sub></label><br>
 							<label><input type=radio name=acl_type value=user-based ${config.getString('acl_type', 'action-based') == 'user-based' ? 'checked' : ''}> 사용자 중심 - 사용자별로 문서에 대해 할 수 있는 작업을 지정합니다.</label><br>
 							<label><input type=radio name=acl_type value=action-based ${config.getString('acl_type', 'action-based') == 'action-based' ? 'checked' : ''}> 작업 중심 - 문서에 대한 작업을 어떤 사용자가 할 수 있는지 지정합니다.</label><br>
-							<label><input type=radio name=acl_type value=basic ${config.getString('acl_type', 'basic') == 'action-based' ? 'checked' : ''}> 간단 모드 - 처음 사용자가 쉽게 다룰 수 있으며, 미디어위키, 오픈나무, 클래식 the seed 등의 위키엔진에서 널리 사용됩니다.</label><br>
+							<label><input type=radio name=acl_type value=basic ${config.getString('acl_type', 'action-based') == 'basic' ? 'checked' : ''}> 간단 모드 - 처음 사용자가 쉽게 다룰 수 있으며, 미디어위키, 오픈나무, 클래식 the seed 등의 위키엔진에서 널리 사용됩니다.</label><br>
 							<label><input type=radio name=acl_type value=the-seed disabled> the seed 스타일 - the seed 방식을 사용합니다. 이 방식은 제공될 수 없습니다.</label><br>
-							<label><input type=radio name=acl_type value=none ${config.getString('acl_type', 'none') == 'action-based' ? 'checked' : ''}> 없음 - ACL을 지정할 수 없게 합니다. 모든 문서에 모든 사용자가 기여할 수 있습니다. 예외적으로 사용자 문서는 본인 및 관리자만이 편집할 수 있습니다. 차단된 사용자는 제외됩니다.</label>
+							<label><input type=radio name=acl_type value=none ${config.getString('acl_type', 'action-based') == 'none' ? 'checked' : ''}> 없음 - ACL을 지정할 수 없게 합니다. 모든 문서에 모든 사용자가 기여할 수 있습니다. 예외적으로 사용자 문서는 본인 및 관리자만이 편집할 수 있습니다. 차단된 사용자는 제외됩니다.</label>
 						</div>
 					</div>
 					
