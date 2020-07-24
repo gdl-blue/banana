@@ -1,7 +1,0 @@
-{
-  "displayname": "문서함",
-  "description": "문서 주시 기능",
-  "enabled": true,
-  "type": "feature",
-  "initialization_db": "create table star ()"
-}
