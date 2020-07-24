@@ -19,7 +19,7 @@ const generateCaptcha = require('./../../server.js').generateCaptcha;
 const validateCaptcha = require('./../../server.js').validateCaptcha;
 // 필수 코드 종료 //
 
-// 추가적으로 사용할 함수가 있으면 여기에 쓴다. 없으면 쓰지 않는다.
+// 추가적으로 사용할 함수가 있으면 여기에 쓴다. (없으면 쓰지 않는다)
 function parseDatetime(date, time) {
 	const dateString = `${date} ${time}:00`;
 	
