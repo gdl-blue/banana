@@ -313,7 +313,8 @@ catch(e) {
 			'bbs_categories': ['name', 'id'],
 			'bbs_comments': ['userid', 'postid', 'content', 'id', 'deleted', 'edited', 'time'],
 			'bbs_ids': ['id'],
-			'bots': ['username', 'token', 'owner']
+			'bots': ['username', 'token', 'owner'],
+			'email_config': ['service', 'email', 'password']
 		};
 		
 		for(var table in tables) {
@@ -3060,13 +3061,45 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	
 	curs.execute("insert into account_creation (key, email, time) values (?, ?, ?)", [key, req.body['email'], String(getTime())]);
 	
+	try {
+		await curs.execute("select email_service, email_addr, email_pass from email_config");
+		
+		const edata = curs.fetchall()[0];
+		
+		nodemailer.createTransport({
+			service: edata['email_service'],
+			auth: {
+				user: edata['email_addr'],
+				pass: edata['email_pass']
+			}
+		}).sendMail({
+			from: edata['email_addr'],
+			to: req.body['email'],
+			subject: config.getString('site_name', '위키') + ' 가입 인증',
+			html: config.getString('registeration_verification', key).replace(/[$]WIKINAME/gi, config.getString('site_name', '위키')).replace(/[$]ADDRESS/gi, key)
+		}, (e, s) => {
+			if(e) {
+				print(`[오류!] ${e}`);
+				beep(3);
+			}
+		});
+	} catch(e) {}
+	
 	res.send(await render(req, '계정 만들기', `
 		<p>
-			입력한 주소로 인증 우편을 전송했습니다. 우편이 안보일 경우 스팸함을 확인하십시오.
+			입력한 주소로 인증 우편을 전송했습니다. 우편에 적혀있는 키를 다음 상자에 입력하십시오(자바스크립트 활성화 필요). 우편이 안보일 경우 스팸함을 확인하십시오.
 		</p>
 		
+		<form>
+			<input type=text id=keyInput class=form-control>
+			
+			<div class=btns>
+				<button type=button class="btn btn-info" style="width: 100px;" onclick="location.href = '/member/signup/' + $('#keyInput').val();">확인</button>
+			</div>
+		</form>
+		
 		<p style="font-weight: bold; color: red;">
-			[디버그] 가입 주소: <a href="/member/signup/${key}">/member/signup/${key}</a>
+			[디버그] 가입 열쇳말: ${key}
 		</p>
 	`, {}));
 });
@@ -4089,6 +4122,12 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 				
 				<tbody>
 					<tr>
+						<td class=titlebar colspan=2>
+							위키 설정
+						</td>
+					</tr>
+				
+					<tr>
 						<td class=tablist style="display: none;">
 							<div class=tab data-paneid=general>일반</div>
 							<div class=tab data-paneid=notices>공지와 알림</div>
@@ -4232,11 +4271,12 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								<div class=form-group>
 									<label>내 전자우편 암호:</label>
 									<input type=password name=email_pass class=form-control value="">
+									<strong><font color=red>[경고!] 비밀번호는 데이타베이스에 저장됩니다. 비밀번호를 설정한 경우 데이타베이스를 타인에게 배포하지 않아야 합니다. 혹은 완전히 다른 비밀번호를 사용하는 구글 부계정을 사용하세요.</font></strong>
 								</div>
 								
 								<div class=form-group>
 									<label>가입 인증 우편 내용:</label>
-									<textarea rows=15 name=registeration_verification class=form-control>${config.getString('registeration_verification', '안녕하십니까!\n$WIKINAME 가입 인증 메일입니다.\n\n저희 위키에 가입하시려면 다음 링크를 누르시면 됩니다^^\n<a href="$ADDRESS">[가입하기]</a>\n\n가입하시고, 즐거운 위키 편집 되시기 바랍니다~')}</textarea>
+									<textarea rows=15 name=registeration_verification class=form-control>${config.getString('registeration_verification', '안녕하십니까!\n$WIKINAME 가입 인증 메일입니다.\n\n저희 위키에 가입하시려면 다음 키를 사용하시면 됩니다^^\n<strong>$ADDRESS</strong>\n\n가입하시고, 즐거운 위키 편집 되시기 바랍니다~')}</textarea>
 								</div>
 								
 								<div class=form-group>
@@ -4275,6 +4315,11 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								<div class=form-group>
 									<label>토론 안내문: </label><br>
 									<input type=text class=form-control value="${config.getString('discussion_notice', '')}" name=discussion_notice placeholder="공지 없음">
+								</div>
+							
+								<div class=form-group>
+									<label>가입 안내문: </label><br>
+									<input type=text class=form-control value="${config.getString('registeration_notice', '')}" name=registeration_notice placeholder="공지 없음">
 								</div>
 							</div>
 							
@@ -4320,7 +4365,7 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
 		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
 		'file_extensions', 'email_whitelist', 'site_notice', 'edit_notice', 'discussion_notice', '!allow_telnet',
-		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history'
+		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history', 'registeration_notice'
 	];
 	
 	for(settingi of settings) {
@@ -4334,6 +4379,10 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 			wikiconfig[setting] = req.body[setting];
 		}
 	}
+	
+	conn.run("delete from email_config", (err, res) => {
+		curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]);
+	});
 	
 	if(req.body['clear_login_history']) {
 		curs.execute("delete from login_history");
