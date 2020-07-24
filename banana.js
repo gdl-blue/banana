@@ -1,5 +1,3 @@
-module.exports={run:function(){
-
 const isArray = obj => Object.prototype.toString.call(obj) == '[object Array]';
 const ifelse = (e, y, n) => e ? y : n;
 const pow = (밑, 지수) => 밑 ** 지수;
@@ -173,14 +171,14 @@ conn.commit = function() {};
 conn.sd = [];
 
 const curs = {
-	execute: async function executeSQL(sql = '', params = []) {
+	execute: async function executeSQL(sql = '', params = [], noerror = false) {
 		if(UCase(sql).startsWith("SELECT")) {
 			const retval = await conn.query(sql, params);
 			conn.sd = retval;
 			
 			return retval;
 		} else {
-			await conn.run(sql, params, err => { if(err) print('[오류!] ' + err); beep(3); });
+			await conn.run(sql, params, err => { if(err && !noerror) { print('[오류!] ' + err); beep(3); } });
 		}
 		
 		return [];
@@ -233,23 +231,6 @@ swig.setFilter('encode_doc', function filter_encodeDocURL(input) {
 swig.setFilter('to_date', toDate);
 
 swig.setFilter('localdate', generateTime);
-
-// 오픈나무(터보위키) 스킨 호환용
-swig.setFilter('cut_100', function filter_slice100Chars(input) {
-	return input.slice(0, 100);
-});
-
-swig.setFilter('md5_replace', function filter_MD5Hash(input) {
-	return md5(input);
-});
-
-swig.setFilter('url_pas', function filter_encodeURL(input) {
-	return url_pas(input);
-});
-
-swig.setFilter('CEng', function filter_setLanguage(input, eng) {
-	return input;
-});
 
 var bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
@@ -304,8 +285,6 @@ catch(e) {
 			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'isip', 'blockview'],
 			'filelicenses': ['license', 'creator'],
 			'filecategories': ['category', 'creator'],
-			'vote': ['num', 'name', 'start', 'end', 'required_date', 'options', 'mode'],
-			'votedata': ['data', 'username', 'date', 'num'],
 			'tokens': ['username', 'token'],
 			'requests': ['ip', 'time'],
 			'bbs_boards': ['name', 'id'],
@@ -437,7 +416,8 @@ function getUsername(req, forceIP = 0) {
 	}
 }
 
-const ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
+// module.exports에 들어가야 해서 var
+var ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
 
 async function isBanned(req, ismember, username = '') {
 	// 미완성
@@ -481,6 +461,25 @@ function getperm(perm, username) {
 	} catch(e) {
 		return false;
 	}
+}
+
+if(config.getString('enable_opennamu_skins', '1') != '0') {
+	// 오픈나무(터보위키) 스킨 호환용
+	swig.setFilter('cut_100', function filter_slice100Chars(input) {
+		return input.slice(0, 100);
+	});
+
+	swig.setFilter('md5_replace', function filter_MD5Hash(input) {
+		return md5(input);
+	});
+
+	swig.setFilter('url_pas', function filter_encodeURL(input) {
+		return url_pas(input);
+	});
+
+	swig.setFilter('CEng', function filter_setLanguage(input, eng) {
+		return input;
+	});
 }
 
 async function fetchNamespaces() {
@@ -852,6 +851,9 @@ const html = {
 	}
 }
 
+// global에 함수가 안 들어가있다
+module.exports = { timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
+
 function getSkins() {
 	var retval = [];
 	
@@ -880,14 +882,33 @@ for(pi of getPlugins()) {
 	const picfg = require('./plugins/' + pi + '/config.json');
 	const picod = require('./plugins/' + pi + '/index.js');
 	
-	for(url of picod['urls']) {
+	for(var u=0; u<picod['urls'].length; u++) {
 		if(picfg['enabled'] != true) continue;
 		
-		if(picod['codes'][url]['method'].toLowerCase() == 'post') {
-			wiki.post(url, picod['codes'][url]['code']);
+		if(picod['codes'][u]['method'].toLowerCase() == 'post') {
+			wiki.post(picod['urls'][u], picod['codes'][u]['code']);
 		} else {
-			wiki.get (url, picod['codes'][url]['code']);
+			wiki.get (picod['urls'][u], picod['codes'][u]['code']);
 		}
+	}
+	
+	for(prm of picod['permissions']) {
+		perms.push(prm);
+	}
+	
+	for(table in picod['create_table']) {
+		var sql = '';
+		sql = `CREATE TABLE ${table} ( `;
+		
+		for(col of picod['create_table'][table]) {
+			if(col.match(/(?:[^a-zA-Z0-9_])/)) continue;  // SQL 주입 방지
+			sql += `${col} TEXT DEFAULT '', `;
+		}
+		
+		sql = sql.replace(/[,]\s$/, '');		
+		sql += `)`;
+		
+		curs.execute(sql, [], true);
 	}
 }
 
@@ -3224,6 +3245,38 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 	
 	const captcha = generateCaptcha(req, 2);
 	
+	if(id.match(/(?:[^A-Za-z0-9_ㄱ-힣!&lt;&gt;※★☆♣♤☎☏♨ -])/)) {  // 터보위키와 동일한 문자허용 방식임
+		res.send(await render(req, '계정 만들기', `
+			<form class=signup-form method=post>
+				<div class=form-group>
+					<label>사용자 ID</label><br>
+					<input class=form-control name="username" type="text">
+					<p class=error-desc>사용자 이름은 한글, 영어 대/소문자, 숫자, 밑줄, 느낌표, 삼각괄호, 당구장, 별, 빵꾸난별, 클로버, 빵꾸난 스페이드, 전화기, 흰전화기, 목욕탕, 공백, 대시만 들어갈 수 있습니다.</p>
+				</div>
+
+				<div class=form-group>
+					<label>암호</label><br>
+					<input class=form-control name="password" type="password">
+				</div>
+
+				<div class=form-group>
+					<label>암호 확인</label><br>
+					<input class=form-control name="password_check" type="password">
+				</div>
+			
+				<div class=form-group>
+					${captcha}
+				</div>
+			
+				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
+				
+				<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
+			</form>
+		`, {}));
+		
+		return;
+	}
+	
 	await curs.execute("select username from users where username = ? COLLATE NOCASE", [id]);
 	if(curs.fetchall().length) {
 		res.send(await render(req, '계정 만들기', `
@@ -3918,14 +3971,6 @@ function processVotes(req, rtype) {
 }
 */
 
-wiki.get('/vote/:num', async function voteScreen(req, res) {
-	processVotes(req, 'get');
-});
-
-wiki.post('/vote/:num', async function submitVote(req, res) {
-	processVotes(req, 'post');
-});
-
 /*
 wiki.get('/httpstatus', function(req, res) {
 	res.status(req.query['code'] ? req.query['code'] : '200').send(`
@@ -4267,10 +4312,11 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								
 								<div class=form-group>
 									<label><input type=checkbox name=sql_execution_enabled ${config.getString('sql_execution_enabled', '0') == '1' ? 'checked' : ''}> 위키 내에서 SQL 코드를 실행할 수 있음(소유자 전용)</label><br>
+									<label><input type=checkbox name=disable_star ${config.getString('disable_star', '0') == '1' ? 'checked' : ''}> 문서함 사용 안함</label><br>
 									<label><input type=checkbox name=disable_random ${config.getString('disable_random', '0') == '1' ? 'checked' : ''}> 임의 문서 탐색 사용 안함</label><br>
 									<label><input type=checkbox name=disable_search ${config.getString('disable_search', '0') == '1' ? 'checked' : ''}> 검색 사용 안함</label><br>
 									<label><input type=checkbox name=disable_discuss ${config.getString('disable_discuss', '0') == '1' ? 'checked' : ''}> 토론 사용 안함</label><br>
-									<label><input type=checkbox name=disable_history ${config.getString('disable_history', '0') == '1' ? 'checked' : ''}> 역사 기록 안함<sup><a style="font-weight: bold; color: red;" title="위키의 라이선스가 무저작권(CC-0 등)일 때에만 사용해야 합니다.">[!]</a></sup></label><br>
+									<label><input type=checkbox name=disable_history ${config.getString('disable_history', '0') == '1' ? 'checked' : ''}> 역사 열람 금지<sup><a style="font-weight: bold; color: red;" title="위키의 라이선스가 무저작권(CC-0 등)일 때에만 사용해야 합니다.">[!]</a></sup></label><br>
 									<label><input type=checkbox name=disable_recentchanges ${config.getString('disable_recentchanges', '0') == '1' ? 'checked' : ''}> 최근 변경 열람 금지</label><br>
 									<label><input type=checkbox name=disable_recentdiscuss ${config.getString('disable_recentdiscuss', '0') == '1' ? 'checked' : ''}> 최근 토론 열람 금지</label><br>
 									<label><input type=checkbox name=disable_contribution_list ${config.getString('disable_contribution_list', '0') == '1' ? 'checked' : ''}> 기여 목록 열람 금지</label><br>
@@ -4373,9 +4419,11 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 							<div class=tab-page id=plugins>
 								<h2 class=tab-page-title>확장 기능</h2>
 								
-								<p class=noscript-alert>설정을 변경하려면 자바스크립트를 켜주세요 ^^;</p>
+								<noscript class=noscript-alert>
+									<a target=_blank href="/admin/config/plugins">[플러그인 활성화·비활성화]</a>
+								</noscript>
 								
-								<div class=form-group>
+								<div class="form-group for-script">
 									<label>설치된 플러그인: </label><br>
 									<select size=5 id=pluginList style="width: 100%;">
 										${piop}
@@ -4385,9 +4433,11 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 										<button type=button id=enablePluginBtn  class="btn btn-secondary btn-sm">활성화</button>
 										<button type=button id=disablePluginBtn class="btn btn-secondary btn-sm">비활성화</button>
 									</span>
-								</div>
 									
-								<p><font color=red>엔진을 재시동해야 적용됩니다.</font></p>
+									<br />
+									
+									<p><font color=red>엔진을 재시동해야 적용됩니다.</font></p>
+								</div>
 							</div>
 							
 							<div class=tab-page id=misc>
@@ -4432,7 +4482,7 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 	var settings = [
 		'site_name', 'max_users', 'frontpage', 'edit_warning', 'footer_text', '!enable_apiv1', '!enable_apiv2',
 		'!enable_apipost', 'default_skin', 'default_skin_legacy', '!default_skin_only', '!enable_theseed_skins',
-		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled',
+		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled', '!disable_star',
 		'!disable_random', '!disable_search', '!disable_discuss', '!disable_history', '!disable_recentchanges',
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
 		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
@@ -5215,5 +5265,3 @@ if(firstrun) {
 		}
 	})();
 }
-
-}};
