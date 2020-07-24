@@ -4,6 +4,8 @@
 */
 
 $(function() {
+	$('.noscript-alert').remove();
+	
 	if($(window).width() >= 460) {  /* 모니터 1600*1200인데 최대화할 때 너비 1585로 나옴*/
 		$('.vertical-tablist .tablist').show();
 		/* $('.vertical-tablist .tablist').css({'width': '120px', 'float': 'left'}); */
@@ -13,6 +15,7 @@ $(function() {
 		$('.vertical-tablist .tab-content h2.tab-page-title').hide();
 		$('.vertical-tablist .tablist .tab').removeAttr('active');
 		$('.vertical-tablist .tablist .tab')[0].setAttribute('active', '');
+		$('.vertical-tablist .tab-content .tab-page').css('height', '420px');
 		
 		$('.vertical-tablist .tablist .tab').click(function() {
 			$('.vertical-tablist .tablist .tab').removeAttr('active');
@@ -112,6 +115,48 @@ $(function() {
 			},
 			error: function aclRemoveFail(e) {
 				alert('ACL 삭제에 실패했습니다.');
+			}
+		});
+	});
+	
+	$('.tab-page#plugins button#enablePluginBtn').click(function() {
+		$.ajax({
+			type: "POST",
+			url: '/api/v3/plugins/enable',
+			data: {
+				'name': $('.tab-page#plugins select#pluginList[size]').val()
+			},
+			dataType: 'json',
+			success: function(d) {
+				if(d.status == 'error') {
+					alert('선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
+					return;
+				}
+				$('select#pluginList[size] option:selected').css('color', 'inherit');
+			},
+			error: function(d) {
+				alert('선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
+			}
+		});
+	});
+	
+	$('.tab-page#plugins button#disablePluginBtn').click(function() {
+		$.ajax({
+			type: "POST",
+			url: '/api/v3/plugins/disable',
+			data: {
+				'name': $('.tab-page#plugins select#pluginList[size]').val()
+			},
+			dataType: 'json',
+			success: function(d) {
+				if(d.status == 'error') {
+					alert('선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
+					return;
+				}
+				$('select#pluginList[size] option:selected').css('color', 'gray');
+			},
+			error: function(d) {
+				alert('선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
 			}
 		});
 	});
