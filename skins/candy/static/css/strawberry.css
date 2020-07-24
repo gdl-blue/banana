@@ -1,0 +1,490 @@
+.btn {
+    background: transparent;
+    border: 1px dashed #aaa;
+    border-radius: 5678px;
+    color: #000 !important;
+    padding: 1px 6px;
+}
+
+.btns {
+    float: right;
+}
+
+.btn:before {
+    content: "●";
+    font-size: 16pt;
+    color: #FAACCE;
+    padding-right: 5px;
+}
+
+.btn-primary:before {
+    content: "●";
+    font-size: 16pt;
+    color: #6998EC;
+    padding-right: 5px;
+}
+.btn:hover {
+    border-style: solid;
+}
+a {
+    text-decoration: none;
+}
+a:hover {
+    text-decoration: underline;
+}
+
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    padding: 6px;
+    width: 100%;
+}
+
+.strawberry {
+    background-image: repeating-linear-gradient(45deg,#FFF,#FCF7F7 10px,#FFF9FC 0,#FFFFFF 20px);
+    margin: 0;
+}
+
+.wiki-article {
+    padding: 12px;
+    padding-top: 180px;
+}
+
+.navbar {
+    background-image: linear-gradient(to bottom, rgb(211,144,144) 0%, rgb(204,125,125) 51%, rgb(199,111,111) 50%, rgb(211,142,142) 100%);
+    padding: 12px;
+    width: 100%;
+    position: fixed;
+    height: 20px;
+}
+
+.navbar a {
+    color: #fff;
+    text-decoration: none;
+    border: 1px dotted #fff;
+    margin-right: 12px;
+    padding: 6px;
+    border-radius: 6px;
+}
+
+.error-desc {
+    color: red;
+}
+
+.pull-right {
+    float: right;
+}
+
+img.profile-img {
+    margin-top: -12px;
+    width: 42px;
+}
+
+a.profile-img {
+    border: none;
+}
+
+.ribbon-menu .menu {
+    display: inline-block;
+}
+
+.sr-only {
+    display: none;
+}
+
+.ribbon-menu .menu .menu-button {
+    height: 20px;
+    width: 50px !important;
+    padding: 8px;
+    padding-bottom: 2px;
+    color: #fff;
+    text-align: center;
+    background: linear-gradient(rgb(168,199,236) 0%, rgb(134,169,212) 51%, rgb(73,130,196) 50%, rgb(121,196,255) 100%);
+    border: 1px solid rgb(88,132,183);
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    border-bottom: none;
+}
+.ribbon-menu .menu .menu-button:hover {
+    background: linear-gradient(rgb(168,199,236) 0%, rgb(134,169,212) 51%, rgb(73,130,196) 50%, rgb(189,246,255) 100%);
+}
+
+.ribbon-menu .ribbon-tabs {
+    display: inline-block;
+}
+
+.ribbon-menu .ribbon-tabs .tab {
+    padding: 8px;
+    padding-left: 15px;
+    padding-right: 15px;
+    color: #444;
+    text-decoration: none;
+}
+.ribbon-menu * {
+    cursor: default;
+    -webkit-user-select: none;
+    user-select: none;
+}
+.ribbon-menu .ribbon-tabs .tab.active {
+    box-shadow: 1px -3px 5px #eee;
+    background: #fff;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 7px;
+    padding-left: 14px;
+    padding-right: 14px;
+    color: #444;
+    text-decoration: none;
+    border: 1px solid rgb(186,201,219);
+    border-bottom: none;
+}
+.ribbon-menu .ribbon-tabs .tab:hover {
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    padding: 7px;
+    padding-left: 14px;
+    padding-right: 14px;
+    color: #444;
+    text-decoration: none;
+    border: 1px solid #fc0;
+    border-bottom: none;
+}
+
+.nav-tabs .nav-item {
+    list-style: none;
+}
+
+.ribbon-tab-pane {
+    display: none;
+    height: calc(100px - 24px);
+    background: linear-gradient(to bottom, #fff, rgb(234,234,247));
+    padding: 12px;
+}
+.ribbon-tab-pane.active {
+    display: block;
+}
+
+.ribbon-menu .ribbon-tab-pane {
+}
+
+.ribbon-menu {
+    width: 100%;
+    position: fixed;
+    margin-top: 44px;
+    background: rgb(223,233,245);
+    border-bottom: 1px solid rgb(88,132,183);
+}
+
+#editTools {
+    display: none;
+}
+
+.menu-list {
+    position: fixed;
+    background: #fff;
+    border-radius: 6px;
+    border: 1px solid #eef;
+    padding: 12px;
+    box-shadow: 3px 3px 10px #B3B3B3;
+}
+
+.menu-list a {
+    color: #444;
+}
+
+/* https://stackoverflow.com/questions/79461/how-to-vertical-align-elements-in-a-div */
+.ribbon-menu .ribbon-tab-pane .group .button .icon, .ribbon-menu .ribbon-tab-pane .group .button .label {
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+
+    -ms-flex-align: center;
+    -webkit-align-items: center;
+    -webkit-box-align: center;
+
+    align-items: center;
+}
+.ribbon-menu .ribbon-tab-pane .group:hover {
+    background: linear-gradient(#fff, rgb(242,250,253));
+}
+.ribbon-menu .ribbon-tab-pane .group .button {
+    display: inline-block;
+    padding: 5px;
+}
+.ribbon-menu .ribbon-tab-pane .group .button .icon {
+    width: 42px;
+    height: 42px;
+}
+
+.ribbon-menu .ribbon-tab-pane .group .button:hover, .ribbon-menu .ribbon-tab-pane .group .button:active, .ribbon-menu .ribbon-tab-pane .group .button.pressed {
+    background: linear-gradient(rgb(253,242,230) 0%, rgb(254,234,212) 51%, rgb(255,207,108) 50%, rgb(255,220,136) 100%);
+    border: 1px solid rgb(255,183,0);
+    padding: 4px;
+    border-radius: 6px;
+}
+
+.ribbon-menu .ribbon-tab-pane .group .button .icon, .ribbon-menu .ribbon-tab-pane .group .button {
+    text-decoration: none;
+}
+
+.ribbon-menu .ribbon-tab-pane .group .button .icon, .ribbon-menu .ribbon-tab-pane .group {
+    vertical-align: middle;
+}
+
+.ribbon-menu .ribbon-tab-pane .group .button, .ribbon-menu .ribbon-tab-pane .group .button .icon, .ribbon-menu .ribbon-tab-pane .group .button .icon, .ribbon-menu .ribbon-tab-pane .group .button .icon, .ribbon-menu .ribbon-tab-pane .group .button .label {
+    float: center;
+    align-items: center;
+    justify-content: center;
+}
+
+.ribbon-menu .ribbon-tab-pane .group {
+    border-right: 1px solid #ccc;
+    display: inline-block;
+    padding: 5px;
+}
+
+.menu .menu-list .line {
+    border: 1px solid #777;
+}
+
+.r-hidden-body .line {
+    border-top: 1px solid #fff;
+}
+ol.breadcrumb.link-nav {
+    list-style: none;
+    border-radius: 12px;
+    padding: 12px;
+    background: #eceeef;
+    display: table;
+}
+ol.breadcrumb.link-nav li {
+    display: inline-block;
+}
+.new-show-hidden-content-button {
+    display: none !important;
+}
+.old-show-hidden-content-button {
+    display: block !important;
+}
+.alist a {
+    -webkit-user-select: initial !important;
+
+    display: block;
+    border-bottom: 1px solid #99c;
+    padding: 5px;
+
+    /* 출처 B: https://stackoverflow.com/questions/3695435/crop-text-too-long-inside-div */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /* 출처 B 끝 */
+}
+.wiki-article .wiki-folding dt {
+    font-weight: bold;
+}
+.error-desc {
+    color: red;
+}
+.res-wrapper {
+  display: block;
+  margin: 30px 0px;
+}
+@-webkit-keyframes head-loading {
+  from {
+    background-color: #747474;
+  }
+  to {
+    background-color: #cacaca;
+  }
+}
+@-webkit-keyframes body-loading {
+  from {
+    background-color: #e2d7d7;
+  }
+  to {
+    background-color: #f3f3f3;
+  }
+}
+.res-wrapper.res-loading .r-head {
+  -webkit-animation: head-loading 0.5s infinite;
+}
+.res-wrapper.res-loading .r-body {
+  -webkit-animation: body-loading 0.5s infinite;
+}
+.topic-discuss a.more-box {
+  padding: 10px;
+  margin-left: 20px;
+  border: 1px solid black;
+}
+.res .r-head {
+  padding: 10px 12px 5px 15px;
+  background-image: linear-gradient(to bottom, #c8c8c8, #aaaaaa);
+  border-radius: 6px 6px 0px 0px;
+}
+.res .r-head.pinned {
+    background-image: linear-gradient(to bottom, #ffc8c8, #f3c2c2);
+}
+.res .r-head.first-author {
+  background-image: linear-gradient(to bottom, #90eca3, #70cc93);
+}
+.res .r-head .pull-right {
+  float: right;
+}
+.res .r-body {
+  padding: 5px 10px 10px 15px;
+  background-image: linear-gradient(to bottom, #e8e8e8, #cfcfcf);
+  border-radius: 0px 0px 6px 6px;
+  min-width: 550px;
+  max-height: 500px;
+}
+.res .r-body.r-hidden-body {
+  background-image: linear-gradient(to bottom, #444, #000);
+  color: white;
+}
+.res .r-body.r-hidden-body .hidden-content {
+  display: none;
+}
+.res .combo.admin-menu {
+  padding: 5px;
+}
+.res.res-type-status {
+    display: table;
+}
+.res.res-type-normal {
+    display: table;
+}
+.res.res-type-status .r-body {
+  background-image: linear-gradient(to bottom, #f0ad4e, #ec971f);
+}
+
+.table {
+    background: #fff;
+}
+
+.table thead tr, .table tr.nohov {
+    border-bottom: 2px solid #eceeef;
+}
+
+.table tr th, .table tr td {
+    padding: 10px;
+    border-top: 1px solid #eceeef;
+}
+
+.table.table-hover tr:hover {
+    background: #eceeef;
+}
+
+.nav-tabs * {
+    cursor: default !important;
+}
+
+.wiki-article .nav-tabs .nav-item {
+  margin-bottom: -1px;
+}
+
+.wiki-article .nav-tabs .nav-link {
+  color: currentcolor;
+  font-size: 11pt;
+  height: 20px !important;
+  margin-top: 7px !important;
+  border: 1px solid #aaa;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  background-image: linear-gradient(to bottom, rgb(240, 243, 248) 0%, rgb(231,236,246) 31%, rgb(206, 215, 234) 30%, rgb(232, 235, 249) 100%);
+}
+
+.wiki-article .nav-tabs .nav-link:hover {
+    background-image: linear-gradient(to bottom, rgb(240, 243, 248) 0%, rgb(176, 214, 248) 31%, rgb(151, 191, 235) 30%, rgb(205, 216, 241) 100%);
+}
+
+.wiki-article .nav-tabs .nav-link.disabled {
+  color: #636c72;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.wiki-article .nav-tabs .nav-link.active,
+.wiki-article .nav-tabs .nav-item.show .nav-link {
+  height: 30px !important;
+  margin-top: 0px !important;
+  color: #464a4c;
+  background-image: linear-gradient(to bottom, #fff 0%, rgb(233,246,251) 31%, rgb(206, 231, 250) 30%, rgb(185, 209, 250) 100%);
+  border-color: #aaa #aaa #fff;
+}
+
+.wiki-article .nav-tabs .dropdown-menu {
+  margin-top: -1px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.nav {
+  display: flex;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.5em 1em;
+}
+
+.nav-link:focus, .wiki-article .nav-link:hover {
+  text-decoration: none;
+}
+
+.nav-link.disabled {
+  color: #636c72;
+  cursor: not-allowed;
+}
+
+.nav-tabs {
+  border-bottom: 1px solid #ddd;
+}
+
+.nav-tabs .nav-item {
+  margin-bottom: -1px;
+}
+
+.nav-tabs .nav-link {
+  border: 1px solid transparent;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+}
+
+.nav-tabs .nav-link.disabled {
+  color: #636c72;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  color: #464a4c;
+  background-color: #fff;
+  border-color: #ddd #ddd #fff;
+}
+
+.nav-tabs .dropdown-menu {
+  margin-top: -1px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.box {
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #fff;
+    padding: 10px;
+}
+#see_preview {
+    border: 1px solid #ccc !important;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    background-color: #fff;
+}
+.nav-tabs {
+    margin-bottom: 3px !important;
+    border-bottom: none !important;
+}
