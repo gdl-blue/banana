@@ -132,7 +132,7 @@ $(function() {
 					alert('선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
 					return;
 				}
-				$('select#pluginList[size] option:selected').css('color', 'inherit');
+				$('select#pluginList[size] option:selected').css('text-decoration', 'none');
 			},
 			error: function(d) {
 				alert('선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
@@ -153,7 +153,7 @@ $(function() {
 					alert('선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
 					return;
 				}
-				$('select#pluginList[size] option:selected').css('color', 'gray');
+				$('select#pluginList[size] option:selected').css('text-decoration', 'line-through');
 			},
 			error: function(d) {
 				alert('선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
