@@ -5,23 +5,21 @@
 
 $(function() {
 	if($(window).width() >= 460) {  /* 모니터 1600*1200인데 최대화할 때 너비 1585로 나옴*/
-		$('div.vertical-tabs div.tab-list').show();
-		$('div.vertical-tabs div.tab-list').css({'width': '120px', 'float': 'left'});
-		$('div.vertical-tabs div.tab-content').css({'width': 'calc(100% - 121px)', 'float': 'right'});
-		$('div.vertical-tabs div.tab-content div.tab-page').hide();
-		$('div.vertical-tabs div.tab-content div.tab-page')[0].style.display = 'block';
-		$('div.vertical-tabs div.tab-content h2.tab-page-title').hide();
-		$('div.vertical-tabs div.tab-list div.vertical-tab').removeAttr('active');
-		$('div.vertical-tabs div.tab-list div.vertical-tab')[0].setAttribute('active', '');
+		$('.vertical-tablist .tablist').show();
+		/* $('.vertical-tablist .tablist').css({'width': '120px', 'float': 'left'}); */
+		/* $('.vertical-tablist .tab-content').css({'width': 'calc(100% - 141px)', 'float': 'right'}); */
+		$('.vertical-tablist .tab-content .tab-page').hide();
+		$('.vertical-tablist .tab-content .tab-page')[0].style.display = '';
+		$('.vertical-tablist .tab-content h2.tab-page-title').hide();
+		$('.vertical-tablist .tablist .tab').removeAttr('active');
+		$('.vertical-tablist .tablist .tab')[0].setAttribute('active', '');
 		
-		$('div.vertical-tabs, div.vertical-tabs div.tab-content, div.vertical-tabs div.tab-list').css('height', '440px');
-		
-		$('div.vertical-tabs div.tab-list div.vertical-tab').click(function() {
-			$('div.vertical-tabs div.tab-list div.vertical-tab').removeAttr('active');
+		$('.vertical-tablist .tablist .tab').click(function() {
+			$('.vertical-tablist .tablist .tab').removeAttr('active');
 			$(this).attr('active', '');
 			
-			$('div.vertical-tabs div.tab-content div.tab-page').hide();
-			$('div.vertical-tabs div.tab-content div.tab-page[id="' + $(this).attr('data-paneid') + '"]').show();
+			$('.vertical-tablist .tab-content .tab-page').hide();
+			$('.vertical-tablist .tab-content .tab-page[id="' + $(this).attr('data-paneid') + '"]').show();
 		});
 		
 		$('div#config-apply-button').remove();
