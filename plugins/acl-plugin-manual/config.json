@@ -1,6 +1,0 @@
-{
-	"displayname": "ACL 방식 이름",
-	"description": "이 방식 설명",
-	"enabled": true,
-	"type": "acl"
-}
