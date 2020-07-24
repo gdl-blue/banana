@@ -828,7 +828,7 @@ async function getacl(req, title, action) {
 			
 			return false;
 		break; default:
-			return (await require('./' + acltyp + '/index.js')['getacl'](req, title, action));
+			return (await require('./plugins/' + acltyp + '/index.js')['codes']['getacl'](req, title, action));
 	}
 	
 }
@@ -905,6 +905,10 @@ for(pi of getPlugins()) {
 	for(prm of picod['permissions']) {
 		perms.push(prm);
 	}
+}
+
+for(pi of getPlugins('all')) {
+	const picod = require('./plugins/' + pi + '/index.js');
 	
 	for(table in picod['create_table']) {
 		var sql = '';
@@ -3751,7 +3755,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 			
 			res.send(await render(req, title, content, {}, ' (ACL)', _, 'acl'));
 		break; default:
-			await require('./' + acltyp + '/index.js')['aclControlPanel'](req, res);
+			await require('./plugins/' + acltyp + '/index.js')['codes']['aclControlPanel'](req, res);
 	}
 });
 
@@ -3844,7 +3848,7 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 				res.send(retval);
 			}
 		break; default:
-			await require('./' + acltyp + '/index.js')['setacl'](req, res);
+			await require('./plugins/' + acltyp + '/index.js')['codes']['setacl'](req, res);
 	}
 });
 
@@ -4191,9 +4195,9 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 	var aaop = '';
 	
 	for(acl of getPlugins('acl')) {
-		if(acl == 'theseed-acl') continue;
-		
 		const picfg = require('./plugins/' + acl + '/config.json');
+		
+		if(picfg['type'] == 'acl') continue;
 		
 		aaop += `
 			<label>
@@ -4314,7 +4318,6 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								<h2 class=tab-page-title>특수 기능</h2>
 								
 								<div class=form-group>
-									<label><input type=checkbox name=sql_execution_enabled ${config.getString('sql_execution_enabled', '0') == '1' ? 'checked' : ''}> 위키 내에서 SQL 코드를 실행할 수 있음(소유자 전용)</label><br>
 									<label><input type=checkbox name=disable_star ${config.getString('disable_star', '0') == '1' ? 'checked' : ''}> 문서함 사용 안함</label><br>
 									<label><input type=checkbox name=disable_random ${config.getString('disable_random', '0') == '1' ? 'checked' : ''}> 임의 문서 탐색 사용 안함</label><br>
 									<label><input type=checkbox name=disable_search ${config.getString('disable_search', '0') == '1' ? 'checked' : ''}> 검색 사용 안함</label><br>
@@ -4334,10 +4337,10 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								
 								<div class=form-group>
 									<label>ACL 방식 설정: <sub>(이 설정 변경은 모든 문서의 ACL을 초기화합니다.)</sub></label><br>
-									<label><input type=radio name=acl_type value=user-based ${config.getString('acl_type', 'action-based') == 'user-based' ? 'checked' : ''}> 사용자 중심 - 사용자별로 문서에 대해 할 수 있는 작업을 지정합니다.</label><br>
+									<label><input type=radio name=acl_type value=user-based ${config.getString('acl_type', 'action-based') == 'user-based' ? 'checked' : ''} ${getPlugins('acl').includes('user-based') ? '' : 'disabled'}> 사용자 중심 - 사용자별로 문서에 대해 할 수 있는 작업을 지정합니다. ${getPlugins('acl').includes('user-based') ? '' : '(user-based 플러그인이 설치되지 않아서 제공되지 않습니다.)'}</label><br>
 									<label><input type=radio name=acl_type value=action-based ${config.getString('acl_type', 'action-based') == 'action-based' ? 'checked' : ''}> 작업 중심 - 문서에 대한 작업을 어떤 사용자가 할 수 있는지 지정합니다.</label><br>
 									<label><input type=radio name=acl_type value=basic ${config.getString('acl_type', 'action-based') == 'basic' ? 'checked' : ''}> 간단 모드 - 처음 사용자가 쉽게 다룰 수 있으며, 미디어위키, 오픈나무, 클래식 the seed 등의 위키엔진에서 널리 사용됩니다.</label><br>
-									<label><input type=radio name=acl_type value=the-seed ${config.getString('acl_type', 'action-based') == 'the-seed' ? 'checked' : ''} ${getPlugins('acl').includes('theseed-acl') ? '' : 'disabled'}> the seed 스타일 - the seed 방식을 사용합니다. ${getPlugins('acl').includes('theseed-acl') ? '' : '(theseed-acl 플러그인이 설치되지 않아서 제공되지 않습니다.)'}</label><br>
+									<label><input type=radio name=acl_type value=theseed-acl ${config.getString('acl_type', 'action-based') == 'theseed-acl' ? 'checked' : ''} ${getPlugins('acl').includes('theseed-acl') ? '' : 'disabled'}> the seed 스타일 - the seed 방식을 사용합니다. ${getPlugins('acl').includes('theseed-acl') ? '' : '(theseed-acl 플러그인이 설치되지 않아서 제공되지 않습니다.)'}</label><br>
 									${additioalACLs}
 									<label><input type=radio name=acl_type value=none ${config.getString('acl_type', 'action-based') == 'none' ? 'checked' : ''}> 없음 - ACL을 지정할 수 없게 합니다. 모든 문서에 모든 사용자가 기여할 수 있습니다. 예외적으로 사용자 문서는 본인 및 관리자만이 편집할 수 있습니다. 차단된 사용자는 제외됩니다.</label>
 								</div>
@@ -5182,8 +5185,12 @@ wiki.post(/\/api\/v3\/plugins\/enable/, async function API_enablePlugin_v3(req, 
 
 wiki.post(/\/api\/v3\/plugins\/disable/, async function API_disablePlugin_v3(req, res) {
 	try {
+		const test = 6;
+		
 		const name = req.body['name'];
 		const picfg = require('./plugins/' + name + '/config.json');
+		
+		if(picfg['type'] == 'acl') test = 7;
 		
 		picfg['enabled'] = false;
 		
