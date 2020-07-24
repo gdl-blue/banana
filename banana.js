@@ -369,7 +369,9 @@ wiki.use(session({
 	secret: hostconfig['secret'],
 	cookie: {
 		expires: false
-	}
+	},
+	resave: true,
+	saveUninitialized: true
 }));
 
 function markdown(content) {
@@ -861,7 +863,33 @@ function getSkins() {
 	return retval;
 }
 
+function getPlugins() {
+	var retval = [];
+	
+	// 밑의 fileExplorer 함수에 출처 적음.
+	for(dir of fs.readdirSync('./plugins', { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
+		retval.push(dir);
+	}
+	
+	return retval;
+}
+
 function mmmmmmmmmmmmmmn() { return 0; }
+
+for(pi of getPlugins()) {
+	const picfg = require('./plugins/' + pi + '/config.json');
+	const picod = require('./plugins/' + pi + '/index.js');
+	
+	for(url of picod['urls']) {
+		if(picfg['enabled'] != true) continue;
+		
+		if(picod['codes'][url]['method'].toLowerCase() == 'post') {
+			wiki.post(url, picod['codes'][url]['code']);
+		} else {
+			wiki.get (url, picod['codes'][url]['code']);
+		}
+	}
+}
 
 async function fileExplorer(path, req, res) {
 	// const path = ('./skins' + req.params[0]).replace(/\/$/, '');
@@ -3083,7 +3111,7 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	
 	res.send(await render(req, '계정 만들기', `
 		<p>
-			입력한 주소로 인증 우편을 전송했습니다. 우편에 적혀있는 키를 다음 상자에 입력하십시오(자바스크립트 활성화 필요). 우편이 안보일 경우 스팸함을 확인하십시오.
+			입력한 주소로 인증 우편을 전송했습니다. 우편에 적혀있는 키를 다음 상자에 입력하십시오<label class=noscript-alert>(자바스크립트 활성화 필요)</label>. 우편이 안보일 경우 스팸함을 확인하십시오.
 		</p>
 		
 		<form>
@@ -4118,6 +4146,16 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 		dslop += `<option value="${skin}" ${skin == deflskin ? 'selected' : ''}>${skin}</option>`;
 	}
 	
+	var piop = '';
+	
+	for(pi of getPlugins()) {
+		const picfg = require('./plugins/' + pi + '/config.json');
+		var style = '';
+		
+		if(picfg['enabled'] != true) style = ' style="color: gray; text-decoration: line-through;"';
+		piop += `<option${style} value="${pi}">${picfg['displayname']} (${picfg['description'] ? picfg['description'] : '설명 없음'})</option>`;
+	}
+	
 	var content = `
 		<form method=post>
 			<table class=vertical-tablist>
@@ -4143,6 +4181,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 							<div class=tab data-paneid=email>우편 인증</div>
 							<div class=tab data-paneid=filters>필터</div>
 							<div class=tab data-paneid=api>봇과 API</div>
+							<div class=tab data-paneid=plugins>플러그 인</div>
 							<div class=tab data-paneid=misc>고급</div>
 							<div class=tab data-paneid=applying>
 								<button type=submit style="background: transparent; border: none; font-size: initial; color: inherit; padding: 7px; margin: -7px; width: 100%; text-align: inherit;">저장</button>
@@ -4185,6 +4224,9 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								<div class=form-group>
 									<label><input type=checkbox name=enable_apiv1 ${config.getString('enable_apiv1', '1') == '1' ? 'checked' : ''}> API 버전1 사용</label><br>
 									<label><input type=checkbox name=enable_apiv2 ${config.getString('enable_apiv2', '1') == '1' ? 'checked' : ''}> API 버전2 사용</label><br>
+									
+									<!-- v3은 계정 전용 특수 API로 비활성화하면 일부 기능 사용 못함, v5(미구현)은 호환용 특수 API -->
+									<label><input type=checkbox name=enable_apiv3 checked disabled> API 버전3 사용</label><br>
 								</div>
 								
 								<div class=form-group>
@@ -4225,7 +4267,6 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								
 								<div class=form-group>
 									<label><input type=checkbox name=sql_execution_enabled ${config.getString('sql_execution_enabled', '0') == '1' ? 'checked' : ''}> 위키 내에서 SQL 코드를 실행할 수 있음(소유자 전용)</label><br>
-									<label><input type=checkbox name=disable_star ${config.getString('disable_star', '0') == '1' ? 'checked' : ''}> 내 문서함 사용 안함</label><br>
 									<label><input type=checkbox name=disable_random ${config.getString('disable_random', '0') == '1' ? 'checked' : ''}> 임의 문서 탐색 사용 안함</label><br>
 									<label><input type=checkbox name=disable_search ${config.getString('disable_search', '0') == '1' ? 'checked' : ''}> 검색 사용 안함</label><br>
 									<label><input type=checkbox name=disable_discuss ${config.getString('disable_discuss', '0') == '1' ? 'checked' : ''}> 토론 사용 안함</label><br>
@@ -4329,6 +4370,26 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								</div>
 							</div>
 							
+							<div class=tab-page id=plugins>
+								<h2 class=tab-page-title>확장 기능</h2>
+								
+								<p class=noscript-alert>설정을 변경하려면 자바스크립트를 켜주세요 ^^;</p>
+								
+								<div class=form-group>
+									<label>설치된 플러그인: </label><br>
+									<select size=5 id=pluginList style="width: 100%;">
+										${piop}
+									</select>
+									
+									<span class=pull-right>
+										<button type=button id=enablePluginBtn  class="btn btn-secondary btn-sm">활성화</button>
+										<button type=button id=disablePluginBtn class="btn btn-secondary btn-sm">비활성화</button>
+									</span>
+								</div>
+									
+								<p><font color=red>엔진을 재시동해야 적용됩니다.</font></p>
+							</div>
+							
 							<div class=tab-page id=misc>
 								<h2 class=tab-page-title>기타</h2>
 								
@@ -4371,7 +4432,7 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 	var settings = [
 		'site_name', 'max_users', 'frontpage', 'edit_warning', 'footer_text', '!enable_apiv1', '!enable_apiv2',
 		'!enable_apipost', 'default_skin', 'default_skin_legacy', '!default_skin_only', '!enable_theseed_skins',
-		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled', '!disable_star',
+		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled',
 		'!disable_random', '!disable_search', '!disable_discuss', '!disable_history', '!disable_recentchanges',
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
 		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
@@ -5042,6 +5103,44 @@ wiki.post(/\/api\/v2\/login/, async function API_botLogin_v2(req, res) {
 	} else {
 		res.json({
 			'status': 'fail'
+		});
+	}
+});
+
+wiki.post(/\/api\/v3\/plugins\/enable/, async function API_enablePlugin_v3(req, res) {
+	try {
+		const name = req.body['name'];
+		const picfg = require('./plugins/' + name + '/config.json');
+		
+		picfg['enabled'] = true;
+		
+		fs.writeFileSync('./plugins/' + name + '/config.json', JSON.stringify(picfg));
+		
+		res.json({
+			'status': 'success'
+		});
+	} catch(e) {
+		res.json({
+			'status': 'error'
+		});
+	}
+});
+
+wiki.post(/\/api\/v3\/plugins\/disable/, async function API_disablePlugin_v3(req, res) {
+	try {
+		const name = req.body['name'];
+		const picfg = require('./plugins/' + name + '/config.json');
+		
+		picfg['enabled'] = false;
+		
+		fs.writeFileSync('./plugins/' + name + '/config.json', JSON.stringify(picfg));
+		
+		res.json({
+			'status': 'success'
+		});
+	} catch(e) {
+		res.json({
+			'status': 'error'
 		});
 	}
 });
