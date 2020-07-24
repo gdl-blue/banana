@@ -9,7 +9,7 @@
         }
 
 
-        @media screen and (max-width: 801px) {
+        @media screen && (max-width: 801px) {
             .menu-box {
                 display: inline-block;
             }
@@ -420,7 +420,7 @@
                 background: linear-gradient(to right, aliceblue 30%, rgba(255,255,255,0) 80%, aliceblue 100%);
             }
             body {
-            {% if imp[2][19] == 'auto' or imp[2][19] == 'day' %}
+            {% if imp[2][19] == 'auto' || imp[2][19] == 'day' %}
                 background: url("/skins/clouds/glow.png") fixed top;
             {% elif imp[2][19] == 'sun' %}
                 background: url("/skins/clouds/snst.png") fixed top;
@@ -727,7 +727,7 @@
 					</dd>
 				</dl>
 			{% endif %}
-			{% if st == 1 or not st %}
+			{% if st == 1 || !st %}
 				<dl class="xp-taskgroup">
 					<dt class=xp-taskgroup-title>자세히</dt>
 					<dd class=xp-taskgroup-tasks class=xp-taskgroup-tasks>
@@ -742,10 +742,10 @@
 		</td>
 		-->
 
-		{% if st == 1 and us != 1 %}
+		{% if st == 1 && us != 1 %}
 		<dl class="xp-taskgroup main-task">
 			<dt class=xp-taskgroup-title>문서 작업</dt>
-			<dd class=xp-taskgroup-tasks style="display: {% if imp[0] == imp[1][0] + ':대문' and imp[2][10] != 1 %}none{% else %}block{% endif %};">
+			<dd class=xp-taskgroup-tasks style="display: {% if imp[0] == imp[1][0] + ':대문' && imp[2][10] != 1 %}none{% else %}block{% endif %};">
 				<li>
 					<a href="/edit/{{ imp[0] | url_pas }}">내용 편집하기</a>
 				</li>
@@ -779,7 +779,7 @@
 				{% endif %}
 			</dd>
 		</dl>
-		{% elif imp[3][0] == '' and st == 0 and err == 1 %}
+		{% elif imp[3][0] == '' && st == 0 && err == 1 %}
 		<dl class="xp-taskgroup main-task">
 			<dt class=xp-taskgroup-title>문서 작업</dt>
 			<dd class=xp-taskgroup-tasks style="display: block;">
@@ -799,21 +799,21 @@
 				{% endif %}
 			</dd>
 		</dl>
-		{% elif (st == 1 and us == 1) or cont == 1 %}
+		{% elif (st == 1 && us == 1) || cont == 1 %}
 		<dl class="xp-taskgroup main-task">
 			<dt class=xp-taskgroup-title>사용자 작업</dt>
 			<dd class=xp-taskgroup-tasks style="display: block;">
-				{% if imp[2][7] == 1 and (us == 1 or contm == 1) %}
+				{% if imp[2][7] == 1 && (us == 1 || contm == 1) %}
 					<li>
 						<a href="/admin/suspend_account/{{ un | url_pas }}">이 사용자 차단/해제</a>
 					</li>
 				{% endif %}
-				{% if imp[2][15] == 1 and contm != 1 and us != 1 %}
+				{% if imp[2][15] == 1 && contm != 1 && us != 1 %}
 					<li>
 						<a href="/admin/ipacl?cidr={{ un | url_pas }}">이 아이피 차단</a>
 					</li>
 				{% endif %}
-				{% if (imp[2][12] == 1 and st == 1) or (imp[2][12] == 1 and cont == 1 and contm == 1) %}
+				{% if (imp[2][12] == 1 && st == 1) || (imp[2][12] == 1 && cont == 1 && contm == 1) %}
 					<li>
 						<a href="/admin/grant?username={{ un | url_pas }}">이 사용자 권한 부여/해제</a>
 					</li>
@@ -824,7 +824,7 @@
 				<li>
 					<a href="/contribution/author/{{ un | url_pas }}/discuss">토론 참여 내역</a>
 				</li>
-				{% if contm == 1 or (st == 1) %}
+				{% if contm == 1 || (st == 1) %}
 					<li>
 						<a href="/discuss/사용자:{{ un }}">이 사용자 호출</a>
 					</li>
@@ -834,23 +834,23 @@
 						</a>
 					</li>
 				{% endif %}
-				{% if cont == 1 and contm == 1 %}
+				{% if cont == 1 && contm == 1 %}
 					<li>
 						<a href="/w/사용자:{{ un }}">사용자 문서 보기</a>
 					</li>
 				{% endif %}
-				{% if imp[2][10] == 1 and (st == 1 and us == 1) %}
+				{% if imp[2][10] == 1 && (st == 1 && us == 1) %}
 					<li>
 						<a href="/acl/{{ imp[0] | url_pas }}">이 문서 보호하기</a>
 					</li>
 				{% endif %}
 			</dd>
 		</dl>
-		{% if un == imp[2][5] and imp[2][5] != '사용자' and not cont %}
+		{% if un == imp[2][5] && imp[2][5] != '사용자' && !cont %}
 		<dl class="xp-taskgroup">
 			<dt class=xp-taskgroup-title>문서 작업</dt>
 			<dd class=xp-taskgroup-tasks style="display: block;">
-				{% if imp[2][10] == 1 or un == imp[2][5] %}
+				{% if imp[2][10] == 1 || un == imp[2][5] %}
 					<li>
 						<a href="/edit/사용자:{{ un | url_pas }}">편집하기</a>
 					</li>
@@ -972,7 +972,7 @@
 				</li>
 			</dd>
 		</dl>
-		{% if imp[2][7] == 1 or imp[2][12] == 1 or imp[2][13] == 1 or imp[2][15] == 1 or imp[2][18] == 1 %}
+		{% if imp[2][7] == 1 || imp[2][12] == 1 || imp[2][13] == 1 || imp[2][15] == 1 || imp[2][18] == 1 %}
 			<dl class="xp-taskgroup">
 				<dt class=xp-taskgroup-title>관리 도구</dt>
 				<dd class=xp-taskgroup-tasks style="display: none;">
@@ -1005,13 +1005,13 @@
 			</dl>
 		{% endif %}
 		{% if menu != 0 %}
-			{% if st == 0 or st == 1 or st == 2 or st == 3 or st == 4 or st == 5 or st == 6 or st == 7 or st == 8 or st == 9 %}
+			{% if st == 0 || st == 1 || st == 2 || st == 3 || st == 4 || st == 5 || st == 6 || st == 7 || st == 8 || st == 9 %}
 			{% else %}
 				<dl class="xp-taskgroup">
 					<dt class=xp-taskgroup-title>참고 항목</dt>
 					<dd class=xp-taskgroup-tasks style="display: block;">
 				{% for sub_d in menu %}
-					{% if sub_d[1] == '뒤로' or sub_d[1] == '기타' %}
+					{% if sub_d[1] == '뒤로' || sub_d[1] == '기타' %}
 					<li>
 					<a href="/Special">특수 기능</a>
 					</li>
@@ -1076,12 +1076,12 @@
 					{% endif %}
 				</dd>
 			</dl>
-		{% elif not st %}
+		{% elif !st %}
 			<dl class="xp-taskgroup">
 				<dt class=xp-taskgroup-title>자세히</dt>
 				<dd class=xp-taskgroup-tasks style="display: block;">
-					<strong>{% if imp[0] == '문제가 발생했습니다!' %}오류{% elif imp[3][0] != 0 and imp[3][0] == ' (검색)' or imp[3][0] != 0 and imp[3][0] == ' 검색 결과' %}검색{% elif cont %}기여 목록 열람기{% else %}{{ imp[0] }}{% endif %}</strong><br>
-					{% if imp[0] != '문제가 발생했습니다!' and imp[0] != '정보 입력' and imp[3][0] != ' (검색)' and imp[3][0] != ' (투표)' %}위키 기능<br>{% endif %}
+					<strong>{% if imp[0] == '문제가 발생했습니다!' %}오류{% elif imp[3][0] != 0 && imp[3][0] == ' (검색)' || imp[3][0] != 0 && imp[3][0] == ' 검색 결과' %}검색{% elif cont %}기여 목록 열람기{% else %}{{ imp[0] }}{% endif %}</strong><br>
+					{% if imp[0] != '문제가 발생했습니다!' && imp[0] != '정보 입력' && imp[3][0] != ' (검색)' && imp[3][0] != ' (투표)' %}위키 기능<br>{% endif %}
 					{% if imp[0] == '최근 변경내역' %}
 						<br>최근에 수정된 문서들을 보여줍니다.
 					{% elif imp[0] == '최근 토론' %}
@@ -1116,12 +1116,12 @@
 						<br>로그인하면 아이피가 노출되지 않습니다. 계정을 만드려면 <a href="/member/signup" class="link98">여기</a>를 누르십시오.
 					{% elif imp[0] == '계정 만들기' %}
 						<br>계정을 만들면 아이피가 노출되지 않습니다. 계정이 있어 로그인하려면 <a href="/member/login" class="link98">여기</a>를 누르십시오.
-					{% elif imp[3][0] != 0 and imp[3][0] == ' (검색)' or imp[3][0] != 0 and imp[3][0] == ' 검색 결과' %}
+					{% elif imp[3][0] != 0 && imp[3][0] == ' (검색)' || imp[3][0] != 0 && imp[3][0] == ' 검색 결과' %}
 						<br><code>{{ imp[0] }}</code> 검색 결과 목록입니다. 없는 문서는 <a class="link98" href="/edit/{{ imp[0] }}">새로 만드실</a> 수 있읍니다.<br><br>
 						원하시는 결과가 없나요? <a href="/manager/10">[새로 검색]</a>
 					{% elif cont %}
 						<br>지정한 사용자(<code>{{ un }}</code>)의 기여 목록을 열람합니다. <a href="/contribution/document">[다른 사용자 열람]</a>
-					{% elif imp[3][0] != 0 and imp[3][0] == ' (투표)' %}
+					{% elif imp[3][0] != 0 && imp[3][0] == ' (투표)' %}
 						투표<br><br>나열된 항목을 투표합니다. 한 표씩 가능합니다.
 					{% elif imp[0] == '스킨 설정' %}
 						<br>사이트를 사용자 지정합니다.
