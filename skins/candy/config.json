@@ -1,0 +1,26 @@
+{
+	"override_views": [
+	],
+	"static_files": [
+		"css/strawberry.css",
+		"js/script.js"
+	],
+	"auto_js_targets": {
+		"*": [
+			{
+				"path": "js/script.js"
+			}
+		]
+	},
+	"auto_css_targets": {
+		"*": [
+			"css/strawberry.css"
+		]
+	},
+	"manual_file_targets": {
+	},
+	"body_classes": [
+		"strawberry"
+	],
+	"additional_heads": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\">"
+}
