@@ -1,0 +1,192 @@
+<style>
+	body {
+		margin: 0;
+		background-image: url(data:image/bmp;base64,Qk3mBAAAAAAAADYAAAAoAAAAFAAAABQAAAABABgAAAAAALAEAAAAAAAAAAAAAAAAAAAAAAAA4NvR4NvR2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR4NvR4NvR2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2salzMSzzMSz2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR4NvRzMSzzMSz2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR4NvR4NvR4NvRzMSz2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR4NvR4NvR4NvR2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR4NvR2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2salzMSzzMSz2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvRzMSzzMSz2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR4NvR4NvRzMSz2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal2sal4NvR4NvR);
+		background-repeat: repeat;
+		padding: 8px;
+	}
+	
+	div.navbar {
+		border-radius: 6px;
+		padding: 5px 10px 5px 10px;
+		box-shadow: 3px 3px 0 rgb(64, 64, 64);
+		border-color: rgb(64, 64, 64);
+		border-width: 2px;
+		border-style: solid;
+		background: rgb(185, 122, 87);
+		padding: 15px;
+		margin-bottom: 10px;
+	}
+	
+	div.navbar a.nav-link {
+		border-radius: 6px;
+		border-style: outset;
+		border-width: 2px;
+		padding: 5px 10px 5px 10px;
+		cursor: pointer;
+		margin-right: 10px;
+		box-shadow: 5px 5px 0 rgb(64, 64, 64);
+		color: #000;
+		text-decoration: none;
+	}
+	div.navbar a.nav-link:active {
+		border-style: inset;
+		box-shadow: none;
+	}
+	
+	.pull-right {
+		float: right;
+	}
+	.xp-taskgroup .p-taskgroup-tasks {
+		display: block;
+	}
+	.xp-taskgroup.folded .p-taskgroup-tasks {
+		display: none;
+	}
+
+	.xp-taskgroup .xp-taskgroup-title {
+		border-radius: 6px 6px 0 0;
+		padding: 5px;
+		color: #fff;
+		background: repeating-linear-gradient(45deg,rgb(128, 255, 255),rgb(0, 255, 255) 10px,rgb(128, 255, 255) 0,rgb(0, 255, 255) 20px);
+		font-weight: bold;
+
+		text-shadow: 1px 1px #000;
+
+		font-family: "굴림" !important;
+		font-size: 12pt;
+	}
+	.xp-taskgroup .xp-taskgroup-tasks {
+		border-radius: 0 0;
+		padding: 5px;
+		background: aliceblue;
+		margin: 0;
+	}
+
+	.xp-taskgroup .xp-taskgroup-tasks a {
+		color: #000;
+		text-decoration: none;
+	}
+	.xp-taskgroup.main-task .xp-taskgroup-title {
+		font-weight: bold;
+		color: #fff;
+		background: repeating-linear-gradient(45deg,rgb(255, 128, 192),rgb(255, 0, 128) 10px,rgb(255, 128, 192) 0,rgb(255, 0, 128) 20px);
+	}
+	
+	#pageContent {
+		width: 100%;
+	}
+	
+	.btn {
+		background: rgb(128, 255, 255);
+		border-color: rgb(64, 64, 64);
+		border-width: 2px;
+		border-style: solid;
+		padding: 5px 10px 5px 10px;
+		border-radius: 6px;
+		box-shadow: 3px 3px 0 rgb(64, 64, 64);
+		font-size: 12pt;
+		text-decoration: none;
+		color: #000;
+	}
+	
+	.btn.btn-primary {
+		background: rgb(89, 255, 172);;
+		border-color: rgb(64, 64, 64);
+		border-width: 2px;
+		border-style: solid;
+		padding: 5px 10px 5px 10px;
+		border-radius: 6px;
+		box-shadow: 3px 3px 0 rgb(64, 64, 64);
+	}
+	
+	.btn:active, .btn.btn-primary:active {
+		background: #000;
+		border-color: rgb(64, 64, 64);
+		border-width: 2px;
+		border-style: solid;
+		padding: 5px 10px 5px 10px;
+		border-radius: 6px;
+		box-shadow: none;
+		color: white;
+	}
+	
+	.form-control, input[type="checkbox"], input[type="radio"] {
+		border: 2px inset #070707;
+		border-radius: 6px;
+		padding: 5px 10px 5px 10px;
+		box-shadow: 3px 3px 0 rgb(64, 64, 64);
+	}
+	
+	div.liceinfo {
+		border-radius: 6px;
+		padding: 5px 10px 5px 10px;
+		box-shadow: 3px 3px 0 rgb(64, 64, 64);
+		border-color: rgb(64, 64, 64);
+		border-width: 2px;
+		border-style: solid;
+		background: rgb(254, 255, 238);
+	}
+</style>
+<div class=navbar>
+	<a href=/ class=nav-link style="background: rgb(255, 255, 128); border-color: yellow;">{{ imp[1][0] }}</a>
+	<a href=/recent_changes class=nav-link style="background: rgb(255, 128, 192); border-color: rgb(255, 62, 158);">최근 변경</a>
+	<a href=/recent_discuss class=nav-link style="background: rgb(89, 255, 172); border-color: rgb(0, 255, 128);">최근 토론</a>
+	
+	<span class=pull-right>
+		<a href=/other class=nav-link style="background: rgb(255, 128, 128); border-color: rgb(255, 0, 0);">특수 기능</a>
+		<a href=/user class=nav-link style="background: rgb(128, 255, 255); border-color: rgb(0, 255, 255);">{{ imp[2][5] }}</a>
+	</span>
+</div>
+
+<table class=transparent id=pageContent>
+	<colgroup>
+		<col style="width: 200px;">
+		<col>
+	</colgroup>
+	
+	<tr>
+		<td id=commonTasks>
+			<div id=commonTasksDiv>
+				<dl class="xp-taskgroup main-task">
+					<dt class=xp-taskgroup-title>
+						작업
+					</dt>
+
+					<dd class=xp-taskgroup-tasks style="display: block;">
+						{% for submenu in menu %}
+							<li href="/{{ submenu[0] }}">{{ submenu[1] }}</li>
+						{% endfor %}
+					</dd>
+				</dl>
+				
+				<dl class="xp-taskgroup">
+					<dt class=xp-taskgroup-title>
+						자세히
+					</dt>
+
+					<dd class=xp-taskgroup-tasks style="display: block;">
+						<strong>{{ imp[0] }}</strong><br>
+						{% if imp[3][1] != 0 %}<br>{{ imp[3][1] }}{% endif %}
+						{% if imp[3][4] == 2 %}<br>주시중인 문서{% endif %}
+					</dd>
+				</dl>
+			</div>
+		</td>
+		
+		<td style="background: rgb(255, 238, 238);">
+			<h1>{{ imp[0] }}{% if imp[3][0] != 0 %}{{ imp[3][0] }}{% endif %} - {{ imp[1][0] }}</h1>
+			{{ data|safe }}
+		</td>
+	</tr>
+	
+	<tr>
+		<td></td>
+		
+		<td>
+			<div class=liceinfo>
+				{{ imp[1][1]|safe }}
+			</div>
+		</td>
+	</tr>
+</table>
