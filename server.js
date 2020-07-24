@@ -727,102 +727,110 @@ function ip_pas(ip = '', ismember = '', isadmin = null) {
 }
 
 async function getacl(req, title, action) {
-	var fullacllst = [];
+	const acltyp = config.getString('acl_type', 'action-based');
 	
-	await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
-	fullacllst.push(curs.fetchall());
-	
-	await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
-	fullacllst.push(curs.fetchall());
-	
-	await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
-	fullacllst.push(curs.fetchall());
-	
-	for(var acllst of fullacllst) {
-		for(var acl of acllst) {
-			var   condition = true;
-			const action    = acl['action'];
-			const high      = acl['hipri'] == '1' ? true : false;
-			const not       = acl['not'] == '1' ? true : false;
-			const value     = acl['value'];
+	switch(acltyp) {
+		case 'action-based':
+			var fullacllst = [];
 			
-			['any', '모두'],
-			['member', '로그인된 사용자'],
-			['blocked_ip', '차단된 아이피'],
-			['blocked_member', '차단된 계정'],
-			['admin', '관리자'],
-			['developer', '소유자'],
-			['document_creator', '문서를 만든 사용자'],
-			['document_last_edited', '문서에 마지막으로 기여한 사용자'],
-			['document_contributor', '문서 기여자'],
-			['blocked_before', '차단된 적이 있는 사용자'],
-			['discussed_document', '이 문서에서 토론한 사용자'],
-			['discussed', '토론한 적이 있는 사용자'],
-			['has_starred_document', '이 문서를 주시하는 사용자']
+			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
+			fullacllst.push(curs.fetchall());
 			
-			switch(acl['value']) {
-				case 'any':
-					condition = true;
-				break;case 'member':
-					condition = islogin(req);
-				break;case 'blocked_ip':
-					condition = !islogin(req) && isBanned(req, 'ip', ip_check(req));
-				break;case 'blocked_member':
-					condition = islogin(req) && isBanned(req, 'ip', ip_check(req));
-				break;case 'admin':
-					condition = getperm('admin', ip_check(req)) || getperm('developer', ip_check(req));
-				break;case 'developer':
-					condition = getperm('developer', ip_check(req));
-				break;case 'document_creator':
-					await curs.execute("select username from history where title = ? and username = ? and ismember = ? and rev = '1' and advance = '(새 문서)'", [title, ip_check(req), islogin(req) ? 'author' : 'ip']);
-					condition = curs.fetchall().length;
-				break;case 'document_last_edited':
-					await curs.execute("select username from history where title = ? and ismember = ? order by cast(rev as integer) desc limit 1", [title, islogin(req) ? 'author' : 'ip']);
-					condition = curs.fetchall()[0]['username'] == ip_check(req);
-				break;case 'document_contributor':
-					await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
-					condition = curs.fetchall().length > 0;
-				break;default:
-					try {
-						if(value.startsWith('member:')) {
-							condition = islogin(req) && ip_check(req).toUpperCase() == value.replace(/^member[:]/i, '').toUpperCase();
+			await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
+			fullacllst.push(curs.fetchall());
+			
+			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
+			fullacllst.push(curs.fetchall());
+			
+			for(var acllst of fullacllst) {
+				for(var acl of acllst) {
+					var   condition = true;
+					const action    = acl['action'];
+					const high      = acl['hipri'] == '1' ? true : false;
+					const not       = acl['not'] == '1' ? true : false;
+					const value     = acl['value'];
+					
+					['any', '모두'],
+					['member', '로그인된 사용자'],
+					['blocked_ip', '차단된 아이피'],
+					['blocked_member', '차단된 계정'],
+					['admin', '관리자'],
+					['developer', '소유자'],
+					['document_creator', '문서를 만든 사용자'],
+					['document_last_edited', '문서에 마지막으로 기여한 사용자'],
+					['document_contributor', '문서 기여자'],
+					['blocked_before', '차단된 적이 있는 사용자'],
+					['discussed_document', '이 문서에서 토론한 사용자'],
+					['discussed', '토론한 적이 있는 사용자'],
+					['has_starred_document', '이 문서를 주시하는 사용자']
+					
+					switch(acl['value']) {
+						case 'any':
+							condition = true;
+						break;case 'member':
+							condition = islogin(req);
+						break;case 'blocked_ip':
+							condition = !islogin(req) && isBanned(req, 'ip', ip_check(req));
+						break;case 'blocked_member':
+							condition = islogin(req) && isBanned(req, 'ip', ip_check(req));
+						break;case 'admin':
+							condition = getperm('admin', ip_check(req)) || getperm('developer', ip_check(req));
+						break;case 'developer':
+							condition = getperm('developer', ip_check(req));
+						break;case 'document_creator':
+							await curs.execute("select username from history where title = ? and username = ? and ismember = ? and rev = '1' and advance = '(새 문서)'", [title, ip_check(req), islogin(req) ? 'author' : 'ip']);
+							condition = curs.fetchall().length;
+						break;case 'document_last_edited':
+							await curs.execute("select username from history where title = ? and ismember = ? order by cast(rev as integer) desc limit 1", [title, islogin(req) ? 'author' : 'ip']);
+							condition = curs.fetchall()[0]['username'] == ip_check(req);
+						break;case 'document_contributor':
+							await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
+							condition = curs.fetchall().length > 0;
+						break;default:
+							try {
+								if(value.startsWith('member:')) {
+									condition = islogin(req) && ip_check(req).toUpperCase() == value.replace(/^member[:]/i, '').toUpperCase();
+								}
+								else if(value.startsWith('ip:')) {
+									condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
+								}
+								else {
+									condition = false;
+								}
+							} catch(e) {
+								condition = false;
+							}
+					}
+					
+					if(action == 'allow') {
+						if(!not && condition) {
+							return true;
 						}
-						else if(value.startsWith('ip:')) {
-							condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
+						else if(not && !condition) {
+							return true;
 						}
 						else {
-							condition = false;
+							return false;
 						}
-					} catch(e) {
-						condition = false;
+					} else {
+						if(!not && !condition) {
+							return true;
+						}
+						else if(not && condition) {
+							return true;
+						}
+						else {
+							return false;
+						}
 					}
+				}
 			}
 			
-			if(action == 'allow') {
-				if(!not && condition) {
-					return true;
-				}
-				else if(not && !condition) {
-					return true;
-				}
-				else {
-					return false;
-				}
-			} else {
-				if(!not && !condition) {
-					return true;
-				}
-				else if(not && condition) {
-					return true;
-				}
-				else {
-					return false;
-				}
-			}
-		}
+			return false;
+		break; default:
+			return (await require('./' + acltyp + '/index.js')['getacl'](req, title, action));
 	}
 	
-	return false;
 }
 
 function navbtn(cs, ce, s, e) {
@@ -852,7 +860,7 @@ const html = {
 }
 
 // global에 함수가 안 들어가있다
-module.exports = { timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
+module.exports = { generateCaptcha: generateCaptcha, validateCaptcha: validateCaptcha, timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
 
 function getSkins() {
 	var retval = [];
@@ -865,11 +873,13 @@ function getSkins() {
 	return retval;
 }
 
-function getPlugins() {
+function getPlugins(type = 'feature', excludeDisabled = false) {
 	var retval = [];
 	
 	// 밑의 fileExplorer 함수에 출처 적음.
 	for(dir of fs.readdirSync('./plugins', { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
+		if(require('./plugins/' + dir + '/config.json')['enabled'] != true && excludeDisabled) continue;
+		if(type != 'all' && require('./plugins/' + dir + '/config.json')['type'] != type) continue;
 		retval.push(dir);
 	}
 	
@@ -1252,43 +1262,6 @@ function redirectToFrontPage(req, res) {
 
 wiki.get('/w', redirectToFrontPage);
 wiki.get('/', redirectToFrontPage);
-
-wiki.get('/ExecuteSQL', async function executeSQLPage(req, res) {
-	if(config.getString('wiki.sql_execution_enabled', false)) {
-		res.send(await showError(req, 'disabled_feature'));
-		return;
-	}
-	
-	const captcha = generateCaptcha(req, 5);
-	
-	const sp = itoa(randint(1000, 9999));
-	
-	print(`SQL 실행 PIN: ${sp}`);
-	
-	req.session.sqlpin = sha3(sp);
-	
-	res.send(await render(req, 'SQL 실행', `
-		<form method=post>
-			<div class=form-group>
-				<label>구문: </label><br>
-				<input type=text name=sql class=form-control>
-			</div>
-			
-			<div class=form-group>
-				<label>터미널의 PIN: </label><br>
-				<input type=password name=pin class=form-control>
-			</div>
-			
-			<div class=form-group>
-				${captcha}
-			</div>
-		
-			<div class=btns>
-				<button type=submit class="btn btn-primary" style="width: 100px;">실행</button>
-			</div>
-		</form>
-	`));
-});
 
 wiki.get(/\/skins(.*)/, async function skinRootExplorer(req, res) {
 	const path = ('./skins' + req.params[0]).replace(/\/$/, '');
@@ -3638,141 +3611,148 @@ wiki.post('/Upload', async function saveFile(req, res) {
 });
 
 wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
-	const title = req.params[0];
+	const acltyp = config.getString('acl_type', 'action-based');
 	
-	const dispname = ['읽기', '편집', '토론', '편집 요청'];
-	const aclname  = ['read', 'edit', 'discuss', 'edit_request'];
-	
-	const permlist = [
-		['any', '모두'],
-		['member', '로그인된 사용자'],
-		['blocked_ip', '차단된 아이피'],
-		['blocked_member', '차단된 계정'],
-		['admin', '관리자'],
-		['developer', '소유자'],
-		['document_creator', '문서를 만든 사용자'],
-		['document_last_edited', '문서에 마지막으로 기여한 사용자'],
-		['document_contributor', '문서 기여자'],
-		['blocked_before', '차단된 적이 있는 사용자'],
-		['discussed_document', '이 문서에서 토론한 사용자'],
-		['discussed', '토론한 적이 있는 사용자'],
-		['has_starred_document', '이 문서를 주시하는 사용자']
-	];
-	
-	var permopts = '';
-	var acltypes = '';
-	
-	for(var prm of permlist) {
-		permopts += `<option value="${prm[0]}">${prm[1]}</option>`;
-	}
-	
-	for(var typ=0; typ<aclname.length; typ++) {
-		acltypes += `<option value="${aclname[typ]}">${dispname[typ]}</option>`;
-	}
-	
-	var content = `
-		<style>
-			${(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) || !getperm('acl', ip_check(req)) ? '.acl-controller {display: none; }' : ''}
-		</style>
-	`;
-	
-	if(!req.query['nojs'] && compatMode(req)) {
-		res.redirect('/acl/' + encodeURIComponent(title) + '?nojs=1');
-		return;
-	}
-	
-	if(req.query['nojs'] == '1' && getperm('acl', ip_check(req))) {
-		// action type mode value not
-		content += `
-			<form method=post>
-				<p>ACL <select name=mode><option value=add>추가</option><option value=remove>삭제</option></select></p>
-				<label>액션: </label><select name=action><option value=allow>허용</option><option value=deny>거부</option></select><br>
-				<label>주체: </label><select name=type>${acltypes}</select><br>
-				<label>대상: </label><select name=value>${permopts}</select><br>
-				<label>반대 대상: </label><input type=checkbox name=not><br>
+	switch(acltyp) {
+		case 'action-based':
+			const title = req.params[0];
+			
+			const dispname = ['읽기', '편집', '토론', '편집 요청'];
+			const aclname  = ['read', 'edit', 'discuss', 'edit_request'];
+			
+			const permlist = [
+				['any', '모두'],
+				['member', '로그인된 사용자'],
+				['blocked_ip', '차단된 아이피'],
+				['blocked_member', '차단된 계정'],
+				['admin', '관리자'],
+				['developer', '소유자'],
+				['document_creator', '문서를 만든 사용자'],
+				['document_last_edited', '문서에 마지막으로 기여한 사용자'],
+				['document_contributor', '문서 기여자'],
+				['blocked_before', '차단된 적이 있는 사용자'],
+				['discussed_document', '이 문서에서 토론한 사용자'],
+				['discussed', '토론한 적이 있는 사용자'],
+				['has_starred_document', '이 문서를 주시하는 사용자']
+			];
+			
+			var permopts = '';
+			var acltypes = '';
+			
+			for(var prm of permlist) {
+				permopts += `<option value="${prm[0]}">${prm[1]}</option>`;
+			}
+			
+			for(var typ=0; typ<aclname.length; typ++) {
+				acltypes += `<option value="${aclname[typ]}">${dispname[typ]}</option>`;
+			}
+			
+			var content = `
+				<style>
+					${(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) || !getperm('acl', ip_check(req)) ? '.acl-controller {display: none; }' : ''}
+				</style>
+			`;
+			
+			if(!req.query['nojs'] && compatMode(req)) {
+				res.redirect('/acl/' + encodeURIComponent(title) + '?nojs=1');
+				return;
+			}
+			
+			if(req.query['nojs'] == '1' && getperm('acl', ip_check(req))) {
+				// action type mode value not
+				content += `
+					<form method=post>
+						<p>ACL <select name=mode><option value=add>추가</option><option value=remove>삭제</option></select></p>
+						<label>액션: </label><select name=action><option value=allow>허용</option><option value=deny>거부</option></select><br>
+						<label>주체: </label><select name=type>${acltypes}</select><br>
+						<label>대상: </label><select name=value>${permopts}</select><br>
+						<label>반대 대상: </label><input type=checkbox name=not><br>
+						
+						<div class=btns>
+							<button type=submit class="btn btn-primary" style="width: 100px;">확인</button>
+						</div>
+					</form>
+				`;
+			}
+			
+			for(var acl=0; acl<dispname.length; acl++) {
+				var ret1 = '', ret2 = '';
+			
+				await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+					'allow', title, aclname[acl]
+				]);
 				
-				<div class=btns>
-					<button type=submit class="btn btn-primary" style="width: 100px;">확인</button>
-				</div>
-			</form>
-		`;
-	}
-	
-	for(var acl=0; acl<dispname.length; acl++) {
-		var ret1 = '', ret2 = '';
-	
-		await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
-			'allow', title, aclname[acl]
-		]);
-		
-		for(var aclitm of curs.fetchall()) {
-			ret1 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
-		}
-		
-		await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
-			'deny', title, aclname[acl]
-		]);
-		
-		for(var aclitm of curs.fetchall()) {
-			ret2 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
-		}
-		
-		content += `
-			<div class=form-group>
-				<h3 style="margin: none;" class=wiki-heading>${dispname[acl]}</h3>
-				<div class=wiki-heading-content>
-					<div style="width: 49.5%; float: left;" class=acl-list-form data-acltype=${aclname[acl]} data-action=allow>
-						<label>허용 대상: </label><br>
-						<div class=acl-controller>
-							<select style="width: 100%;" type=text class="form-control acl-value">
-								${permopts}
-							</select>
-							<label><input type=checkbox name=not> 선택대상의 반대</label> <label title="ACL은 기본적으로 거부가 우선적으로 작동합니다."><input type=checkbox name=high> 높은 우선순위</label>
-						
-							<span style="float: right;">
-								<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
-								<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
-							</span>
+				for(var aclitm of curs.fetchall()) {
+					ret1 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
+				}
+				
+				await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+					'deny', title, aclname[acl]
+				]);
+				
+				for(var aclitm of curs.fetchall()) {
+					ret2 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
+				}
+				
+				content += `
+					<div class=form-group>
+						<h3 style="margin: none;" class=wiki-heading>${dispname[acl]}</h3>
+						<div class=wiki-heading-content>
+							<div style="width: 49.5%; float: left;" class=acl-list-form data-acltype=${aclname[acl]} data-action=allow>
+								<label>허용 대상: </label><br>
+								<div class=acl-controller>
+									<select style="width: 100%;" type=text class="form-control acl-value">
+										${permopts}
+									</select>
+									<label><input type=checkbox name=not> 선택대상의 반대</label> <label title="ACL은 기본적으로 거부가 우선적으로 작동합니다."><input type=checkbox name=high> 높은 우선순위</label>
+								
+									<span style="float: right;">
+										<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
+										<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
+									</span>
+								</div>
+								
+								<select size=16 style="height: 250px;" class="form-control acl-list">
+									${ret1}
+								</select>
+							</div>
+							
+							<div style="width: 49.5%; float: right;" class=acl-list-form data-acltype=${aclname[acl]} data-action=deny>
+								<label>거부 대상: </label><br>
+								<div class=acl-controller>
+									<select style="width: 100%;" type=text class="form-control acl-value">
+										${permopts}
+									</select>
+									<label><input type=checkbox name=not> 선택대상의 반대</label>
+									<label></label>
+								
+									<span style="float: right;">
+										<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
+										<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
+									</span>
+								</div>
+								
+								<select size=16 style="height: 250px;" class="form-control acl-list">
+									${ret2}
+								</select>
+							</div>
 						</div>
-						
-						<select size=16 style="height: 250px;" class="form-control acl-list">
-							${ret1}
-						</select>
 					</div>
-					
-					<div style="width: 49.5%; float: right;" class=acl-list-form data-acltype=${aclname[acl]} data-action=deny>
-						<label>거부 대상: </label><br>
-						<div class=acl-controller>
-							<select style="width: 100%;" type=text class="form-control acl-value">
-								${permopts}
-							</select>
-							<label><input type=checkbox name=not> 선택대상의 반대</label>
-							<label></label>
-						
-							<span style="float: right;">
-								<button style="width: 50px;" type=button class="btn btn-primary btn-sm addbtn">추가</button>
-								<button style="width: 50px;" type=button class="btn btn-danger  btn-sm delbtn">삭제</button>
-							</span>
-						</div>
-						
-						<select size=16 style="height: 250px;" class="form-control acl-list">
-							${ret2}
-						</select>
-					</div>
-				</div>
-			</div>
-		`;
+				`;
+			}
+			
+			if(!req.query['nojs'] && !(!req.query['nojs'] && compatMode(req))) {
+				content += `
+					<noscript>
+						<meta http-equiv=refresh content="0; url=?nojs=1" />
+					</noscript>
+				`;
+			}
+			
+			res.send(await render(req, title, content, {}, ' (ACL)', _, 'acl'));
+		break; default:
+			await require('./' + acltyp + '/index.js')['aclControlPanel'](req, res);
 	}
-	
-	if(!req.query['nojs'] && !(!req.query['nojs'] && compatMode(req))) {
-		content += `
-			<noscript>
-				<meta http-equiv=refresh content="0; url=?nojs=1" />
-			</noscript>
-		`;
-	}
-	
-	res.send(await render(req, title, content, {}, ' (ACL)', _, 'acl'));
 });
 
 /*
@@ -3789,75 +3769,82 @@ wiki.post('/t', function(q, s) {
 */
 
 wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
-	const title = req.params[0];
+	const acltyp = config.getString('acl_type', 'action-based');
 	
-	const action = req.body['action'];
-	const type   = req.body['type'];
-	const value  = req.body['value'];
-	const mode   = req.body['mode'];
-	const not    = req.body['not'] ? '1' : '0';
-	
-	if(!action || !type || !value || !mode || !not) {
-		res.send(await showError(req, 'invalid_request_body'));
-		return;
-	}
-	
-	if(!action || !type || !value || !mode || !not) {
-		res.send(await showError(req, 'invalid_value'));
-		return;
-	}
-	
-	if(!getperm('acl', ip_check(req))) {
-		res.send(await showError(req, 'insufficient_privileges'));
-		return;
-	}
-	
-	switch(mode) {
-		case 'add':
-			await curs.execute("insert into acl (title, action, value, type, notval) values (?, ?, ?, ?, ?)", [
-				title, action, value, type, not
+	switch(acltyp) {
+		case 'action-based':
+			const title = req.params[0];
+			
+			const action = req.body['action'];
+			const type   = req.body['type'];
+			const value  = req.body['value'];
+			const mode   = req.body['mode'];
+			const not    = req.body['not'] ? '1' : '0';
+			
+			if(!action || !type || !value || !mode || !not) {
+				res.send(await showError(req, 'invalid_request_body'));
+				return;
+			}
+			
+			if(!action || !type || !value || !mode || !not) {
+				res.send(await showError(req, 'invalid_value'));
+				return;
+			}
+			
+			if(!getperm('acl', ip_check(req))) {
+				res.send(await showError(req, 'insufficient_privileges'));
+				return;
+			}
+			
+			switch(mode) {
+				case 'add':
+					await curs.execute("insert into acl (title, action, value, type, notval) values (?, ?, ?, ?, ?)", [
+						title, action, value, type, not
+					]);
+				break;case 'remove':
+					await curs.execute("delete from acl where value = ? and title = ? and notval = ? and type = ? and action = ?", [
+						value, title, not, type, action
+					]);
+			}
+			
+			var rev = 1;
+			
+			await curs.execute("select rev from history where title = ? order by CAST(rev AS INTEGER) desc limit 1", [title]);
+			try {
+				rev = Number(curs.fetchall()[0]['rev']) + 1;
+			} catch(e) {
+				rev = 0 + 1;
+			}
+			
+			var dc = '';
+			
+			await curs.execute("select content from documents where title = ?", [title]);
+			const asdf = curs.fetchall();
+			
+			if(asdf.length) dc = asdf[0]['content'];
+			
+			await curs.execute("insert into history (title, content, rev, username, time, changes, log, iserq, erqnum, ismember, advance) \
+							values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+				title, dc, rev, ip_check(req), getTime(), '0', '', '0', '-1', islogin(req) ? 'author' : 'ip', `(ACL ${mode == 'add' ? '추가' : '삭제'} - ${type}:${action == 'deny' ? '거부' : '허용'}:${html.escape(value)})`
 			]);
-		break;case 'remove':
-			await curs.execute("delete from acl where value = ? and title = ? and notval = ? and type = ? and action = ?", [
-				value, title, not, type, action
+			
+			var retval = '';
+			
+			await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+				action, title, type
 			]);
-	}
-	
-	var rev = 1;
-	
-	await curs.execute("select rev from history where title = ? order by CAST(rev AS INTEGER) desc limit 1", [title]);
-	try {
-		rev = Number(curs.fetchall()[0]['rev']) + 1;
-	} catch(e) {
-		rev = 0 + 1;
-	}
-	
-	var dc = '';
-	
-	await curs.execute("select content from documents where title = ?", [title]);
-	const asdf = curs.fetchall();
-	
-	if(asdf.length) dc = asdf[0]['content'];
-	
-	await curs.execute("insert into history (title, content, rev, username, time, changes, log, iserq, erqnum, ismember, advance) \
-					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-		title, dc, rev, ip_check(req), getTime(), '0', '', '0', '-1', islogin(req) ? 'author' : 'ip', `(ACL ${mode == 'add' ? '추가' : '삭제'} - ${type}:${action == 'deny' ? '거부' : '허용'}:${html.escape(value)})`
-	]);
-	
-	var retval = '';
-	
-	await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
-		action, title, type
-	]);
-	
-	for(var acl of curs.fetchall()) {
-		retval += `<option>${acl['not'] == '1' ? 'not ' : ''}${acl['value']}</option>`;
-	}
-	
-	if(req.query['nojs'] == '1') {
-		res.redirect('/acl/' + encodeURIComponent(title) + '?nojs=1');
-	} else {
-		res.send(retval);
+			
+			for(var acl of curs.fetchall()) {
+				retval += `<option>${acl['not'] == '1' ? 'not ' : ''}${acl['value']}</option>`;
+			}
+			
+			if(req.query['nojs'] == '1') {
+				res.redirect('/acl/' + encodeURIComponent(title) + '?nojs=1');
+			} else {
+				res.send(retval);
+			}
+		break; default:
+			await require('./' + acltyp + '/index.js')['setacl'](req, res);
 	}
 });
 
@@ -4193,13 +4180,29 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 	
 	var piop = '';
 	
-	for(pi of getPlugins()) {
+	for(pi of getPlugins('all')) {
 		const picfg = require('./plugins/' + pi + '/config.json');
 		var style = '';
 		
 		if(picfg['enabled'] != true) style = ' style="color: gray; text-decoration: line-through;"';
 		piop += `<option${style} value="${pi}">${picfg['displayname']} (${picfg['description'] ? picfg['description'] : '설명 없음'})</option>`;
 	}
+	
+	var aaop = '';
+	
+	for(acl of getPlugins('acl')) {
+		if(acl == 'theseed-acl') continue;
+		
+		const picfg = require('./plugins/' + acl + '/config.json');
+		
+		aaop += `
+			<label>
+				<input ${picfg['enabled'] != true ? 'disabled' : ''} type=radio name=acl_type value="${acl}" ${config.getString('acl_type', 'action-based') == '${acl}' ? 'checked' : ''}>
+				${picfg['displayname']} - ${picfg['description']}
+			</label><br>`;
+	}
+	
+	const additioalACLs = aaop;
 	
 	var content = `
 		<form method=post>
@@ -4334,7 +4337,8 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 									<label><input type=radio name=acl_type value=user-based ${config.getString('acl_type', 'action-based') == 'user-based' ? 'checked' : ''}> 사용자 중심 - 사용자별로 문서에 대해 할 수 있는 작업을 지정합니다.</label><br>
 									<label><input type=radio name=acl_type value=action-based ${config.getString('acl_type', 'action-based') == 'action-based' ? 'checked' : ''}> 작업 중심 - 문서에 대한 작업을 어떤 사용자가 할 수 있는지 지정합니다.</label><br>
 									<label><input type=radio name=acl_type value=basic ${config.getString('acl_type', 'action-based') == 'basic' ? 'checked' : ''}> 간단 모드 - 처음 사용자가 쉽게 다룰 수 있으며, 미디어위키, 오픈나무, 클래식 the seed 등의 위키엔진에서 널리 사용됩니다.</label><br>
-									<label><input type=radio name=acl_type value=the-seed disabled> the seed 스타일 - the seed 방식을 사용합니다. 이 방식은 제공될 수 없습니다.</label><br>
+									<label><input type=radio name=acl_type value=the-seed ${config.getString('acl_type', 'action-based') == 'the-seed' ? 'checked' : ''} ${getPlugins('acl').includes('theseed-acl') ? '' : 'disabled'}> the seed 스타일 - the seed 방식을 사용합니다. ${getPlugins('acl').includes('theseed-acl') ? '' : '(theseed-acl 플러그인이 설치되지 않아서 제공되지 않습니다.)'}</label><br>
+									${additioalACLs}
 									<label><input type=radio name=acl_type value=none ${config.getString('acl_type', 'action-based') == 'none' ? 'checked' : ''}> 없음 - ACL을 지정할 수 없게 합니다. 모든 문서에 모든 사용자가 기여할 수 있습니다. 예외적으로 사용자 문서는 본인 및 관리자만이 편집할 수 있습니다. 차단된 사용자는 제외됩니다.</label>
 								</div>
 							</div>
