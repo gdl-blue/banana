@@ -15,6 +15,8 @@ const timeFormat = require('./../../server.js').timeFormat;
 const islogin = require('./../../server.js').islogin;
 const stringInFormat = require('./../../server.js').stringInFormat;
 const timeout = require('./../../server.js').timeout;
+const generateCaptcha = require('./../../server.js').generateCaptcha;
+const validateCaptcha = require('./../../server.js').validateCaptcha;
 // 필수 코드 종료 //
 
 // 추가적으로 사용할 함수가 있으면 여기에 쓴다. 없으면 쓰지 않는다.
