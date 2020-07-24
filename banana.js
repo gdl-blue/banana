@@ -1153,10 +1153,6 @@ wiki.get('/recent_discuss', function redirectB(req, res) {
 	res.redirect('/RecentChanges');
 });
 
-wiki.get('/upload', function redirectC(req, res) {
-	res.redirect('/Upload');
-});
-
 async function redirectD(req, res) {
 	res.send(await render(req, '특수 기능', '<p>최상단의 [특수 기능] 혹은 [도구] 메뉴를 통해 기능을 볼 수 있습니다.</p>'));
 }
@@ -3363,6 +3359,11 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 });
 
 wiki.get('/Upload', async function fileUploadPage(req, res) {
+	if(config.getString('allow_upload', '1') == '0') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	await curs.execute("select license from filelicenses order by license");
 	const licelst = curs.fetchall();
 	await curs.execute("select category from filecategories order by category");
@@ -3513,6 +3514,11 @@ wiki.get('/Upload', async function fileUploadPage(req, res) {
 });
 
 wiki.post('/Upload', async function saveFile(req, res) {
+	if(config.getString('allow_upload', '1') == '0') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
 	const file = req.files['file'];
 	
 	var content = `[include(틀:이미지 라이선스/${req.body['license']})]\n[[분류:파일/${req.body['category']}]]\n\n` + req.body['text'];
@@ -4355,6 +4361,11 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 });
 
 wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
+	if(!getperm('developer', ip_check(req))) {
+		res.send(await showError(req, 'insufficient_privileges'));
+		return;
+	}
+	
 	// 소유자 전용 페이지이므로 딱히 취약점 가드를 할 필요가 있을까.
 	
 	var settings = [
