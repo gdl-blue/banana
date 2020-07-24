@@ -1,0 +1,6 @@
+{
+	"displayname": "투표",
+	"description": "공모전 등에서 사용자들이 투표할 수 있습니다.",
+	"enabled": true,
+	"type": "feature"
+}
