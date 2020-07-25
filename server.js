@@ -575,10 +575,10 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			case 'the seed':
 				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
 			break; case 'opennamu':
-				var tmplt = fs.readFileSync('./skins/' + getSkin(req) + '/index.html');
+				var tmplt = fs.readFileSync('./skins/' + getSkin(req) + '/index.html').toString();
 				
 				for(ifstatement of tmplt.match(/[{][%]\s{0,}if(.+)\s{0,}[%][}]/g)) {
-					tmplt.replace(ifstatement, ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!'));
+					tmplt = tmplt.replace(ifstatement, ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!'));
 				}
 				
 				for(forstatement of tmplt.match(/[{][%]\s{0,}for(.+)\sin\s(.+)\s{0,}[%][}]/g)) {
@@ -592,7 +592,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					if(typeof varlist[iteratedObject] == 'object' && !isArray(varlist[iteratedObject])) {
 						12345678;
 					} else {
-						tmplt.replace(forstatement, '{% for ' + iteratorName + ' of ' + iteratedObject + ' %}');
+						tmplt = tmplt.replace(forstatement, '{% for ' + iteratorName + ' of ' + iteratedObject + ' %}');
 					}
 				}
 				
