@@ -571,14 +571,37 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	const skintype = _0xa9fc3e ? _0xa9fc3e : 'the seed';
 	
 	try {
-		switch(LCase(skintype)) {
-			case 'the seed':
-				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
-			break; case 'opennamu':
+		switch(skintype.toLowerCase()) {
+			case 'opennamu':
 				var tmplt = fs.readFileSync('./skins/' + getSkin(req) + '/index.html').toString();
 				
 				for(ifstatement of tmplt.match(/[{][%]\s{0,}if(.+)\s{0,}[%][}]/g)) {
 					tmplt = tmplt.replace(ifstatement, ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!'));
+					
+					/*
+					// 디버그용 코드
+					
+					imp = ['', [], [], []];
+					menu = 0;
+					st = 1;
+					contm = undefined;
+					us = undefined;
+					un = undefined;
+					ns = undefined;
+					discuss_ongoing = undefined;
+					cont = undefined;
+					strd = 0;
+					strc = 0;
+					sub_d = [];
+					
+					try {
+						console.log(ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!').match(/[{][%]\s{0,}if((?:(?!%).)+)\s{0,}[%][}]/)[1]);
+						eval(ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!').match(/[{][%]\s{0,}if((?:(?!%).)+)\s{0,}[%][}]/)[1]);
+					} catch(e) {
+						print("<<<에러!>>>")
+						console.log(e);
+					}
+					*/
 				}
 				
 				for(forstatement of tmplt.match(/[{][%]\s{0,}for(.+)\sin\s(.+)\s{0,}[%][}]/g)) {
@@ -589,14 +612,16 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					const iteratorName = _0x28vcd8[1];
 					const iteratedObject = _0x28vcd8[2];
 					
-					if(typeof varlist[iteratedObject] == 'object' && !isArray(varlist[iteratedObject])) {
-						12345678;
-					} else {
-						tmplt = tmplt.replace(forstatement, '{% for ' + iteratorName + ' of ' + iteratedObject + ' %}');
+					if(!(typeof varlist[iteratedObject] == 'object' && !isArray(varlist[iteratedObject]))) {
+						tmplt = tmplt.replace(forstatement, iteratorName + ' of ' + iteratedObject);
 					}
 				}
 				
-				template = swig.compile(tmplt);
+				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
+				
+				template = swig.compile(tmplt, { filepath: './skins/' + getSkin(req) + '/index.html' });
+			break; default:
+				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
 		}
 	} catch(e) {
 		print(`[오류!] ${e}`);
