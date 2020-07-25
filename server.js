@@ -228,6 +228,10 @@ swig.setFilter('encode_doc', function filter_encodeDocURL(input) {
 	return encodeURIComponent(input);
 });
 
+swig.setFilter('avatar_url', function filter_avatarURL(input) {
+	return input;
+});
+
 swig.setFilter('to_date', toDate);
 
 swig.setFilter('localdate', generateTime);
@@ -4710,11 +4714,20 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 	for(settingi of settings) {
 		if(settingi.startsWith('!')) {
 			const setting = settingi.replace(/^[!]/, '');
-			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
+			
+			// update 쓰려면 복잡해져서(값이 이미 있는지 확인해야함) 안 씀
+			conn.run("delete from config where key = ?", [setting], err => {
+				curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
+			});
+			
 			wikiconfig[setting] = req.body[setting] ? '1' : '0';
 		} else {
 			const setting = settingi;
-			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
+			
+			conn.run("delete from config where key = ?", [setting], err => {
+				curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
+			});
+			
 			wikiconfig[setting] = req.body[setting];
 		}
 	}
