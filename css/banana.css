@@ -40,6 +40,10 @@ div.captcha-input label {
 	padding: 7px;
 }
 
+.vertical-tablist .tablist .tab img {
+	width: 20px;
+}
+
 .vertical-tablist .tablist .tab[active] {
 	background: linear-gradient(to bottom, rgb(164, 193, 227) 0%, rgb(107, 148, 195) 51%, rgb(80, 126, 178) 50%, rgb(68, 116, 171) 100%);
 	color: white;
@@ -65,7 +69,7 @@ div.captcha-input label {
 	border-width: 10px 0 10px 10px;
 	border-color: transparent rgb(80, 126, 178);
 	margin-top: -19px;
-	margin-left: 110px;
+	margin-left: 130px;
 }
 
 .vertical-tablist {
@@ -108,4 +112,8 @@ div.captcha-input label {
 
 .vertical-tablist .tab-content .tab-page {
 	overflow-y: auto;
+}
+
+.for-script {
+	display: none;
 }
