@@ -88,6 +88,8 @@ const perms = [
 	'ban_users'
 ];
 
+const _perms = perms;
+
 function print(x) { console.log(x); }
 function prt(x) { process.stdout.write(x); }
 
@@ -148,7 +150,7 @@ const ipRangeCheck = require("ip-range-check");
 function Split(str, del) { return str.split(del); }; const split = Split;
 function Replace(str, rgx, rpl) { return str.replace(rgx, rpl); }; const replace = Replace;
 function UCase(s) { return s.toUpperCase(); }; const ucase = UCase;
-function LCase(s) { return s.toUpperCase(); }; const lcase = LCase;
+function LCase(s) { return s.toLowerCase(); }; const lcase = LCase;
 
 const sqlite3 = require('sqlite3').verbose(); // SQLite 라이브러리 호출
 const conn = new sqlite3.Database('./wikidata.db', (err) => {}); // 데이타베이스 연결
@@ -447,7 +449,8 @@ const config = {
 		
 		if(typeof(wikiconfig[str]) == 'undefined') {
 			wikiconfig[str] = def;
-			curs.execute("insert into config (key, value) values (?, ?)", [str, def]);
+			conn.run("delete from config where key = ?", [str], e => curs.execute("insert into config (key, value) values (?, ?)", [str, def]));
+			
 			return def;
 		}
 		return wikiconfig[str];
@@ -569,71 +572,19 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		}
 	}
 	
-	var skinconfig = require("./skins/" + getSkin(req) + "/config.json");
+	var skinconfig;
+	
+	try {
+		skinconfig = require("./skins/" + getSkin(req) + "/config.json");
+	} catch(e) {
+		skinconfig = {
+			type: 'openNAMU'
+		}
+	}
+	
 	var template;
 	var _0xa9fc3e = skinconfig['type'];
 	const skintype = _0xa9fc3e ? _0xa9fc3e : 'the seed';
-	
-	try {
-		switch(skintype.toLowerCase()) {
-			case 'opennamu':
-				var tmplt = fs.readFileSync('./skins/' + getSkin(req) + '/index.html').toString();
-				
-				for(ifstatement of tmplt.match(/[{][%]\s{0,}if(.+)\s{0,}[%][}]/g)) {
-					tmplt = tmplt.replace(ifstatement, ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!'));
-					
-					/*
-					// 디버그용 코드
-					
-					imp = ['', [], [], []];
-					menu = 0;
-					st = 1;
-					contm = undefined;
-					us = undefined;
-					un = undefined;
-					ns = undefined;
-					discuss_ongoing = undefined;
-					cont = undefined;
-					strd = 0;
-					strc = 0;
-					sub_d = [];
-					
-					try {
-						console.log(ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!').match(/[{][%]\s{0,}if((?:(?!%).)+)\s{0,}[%][}]/)[1]);
-						eval(ifstatement.replace(/\sor\s/g, ' || ').replace(/\sand\s/g, ' && ').replace(/not\s/g, '!').match(/[{][%]\s{0,}if((?:(?!%).)+)\s{0,}[%][}]/)[1]);
-					} catch(e) {
-						print("<<<에러!>>>")
-						console.log(e);
-					}
-					*/
-				}
-				
-				for(forstatement of tmplt.match(/[{][%]\s{0,}for(.+)\sin\s(.+)\s{0,}[%][}]/g)) {
-					// 특이하지만 변수명으로 of 사용 가능(in은 불가)
-					
-					const _0x28vcd8 = forstatement.match(/(.+)\sin\s(.+)/);
-					
-					const iteratorName = _0x28vcd8[1];
-					const iteratedObject = _0x28vcd8[2];
-					
-					if(!(typeof varlist[iteratedObject] == 'object' && !isArray(varlist[iteratedObject]))) {
-						tmplt = tmplt.replace(forstatement, iteratorName + ' of ' + iteratedObject);
-					}
-				}
-				
-				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
-				
-				template = swig.compile(tmplt, { filepath: './skins/' + getSkin(req) + '/index.html' });
-			break; default:
-				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
-		}
-	} catch(e) {
-		print(`[오류!] ${e}`);
-		
-		return `
-			<title>` + title + ` (프론트엔드 오류!)</title>
-			<meta charset=utf-8>` + content;
-	}
 
 	var output;
 	var templateVariables = varlist;
@@ -663,64 +614,119 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	
 	if(config.getString('enable_opennamu_skins', '1') == '1') {
 		// 오픈나무 스킨 호환용
-		templateVariables['imp'] = [
-			title,  // 페이지 제목 (imp[0])
-			[  // 위키 설정 (imp[1][x])
-				config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
-				config.getString('wiki.copyright_text', '') +  // 위키 
-				config.getString('wiki.footer_text', ''),      // 라이선스
-				'',  // 전역 CSS
-				'',  // 전역 JS
-				config.getString('wiki.logo_url', ''),  // 로고
-				'',  // 전역 <HEAD>
-				config.getString('wiki.site_notice', ''),  // 공지
-				getpermForSkin,  // 권한 유무 여부 함수
-				toDate(getTime())  // 시간
-			], 
-			[  // 사용자 정보 (imp[2][x])
-			   // --------------------------
-			   // return [0, 1, 2, 3, 4, 5, ip_check(), 
-			   //			admin_check(1), admin_check(3), admin_check(4), admin_check(5), 
-			   //           admin_check(6), admin_check(7), admin_check(), 
-			   //           toplst('사용자:' + ip_check()), ipa, ar, tr, cv, mycolor[0][0], str(spin)]
+		
+		if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu-seed') {
+			templateVariables['imp'] = [
+				title,  // 페이지 제목 (imp[0])
+				[  // 위키 설정 (imp[1][x])
+					config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
+					config.getString('wiki.copyright_text', '') +  // 위키 
+					config.getString('wiki.footer_text', ''),      // 라이선스
+					'',  // 전역 CSS
+					'',  // 전역 JS
+					config.getString('wiki.logo_url', '') + config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 로고
+					'',  // 전역 <HEAD>
+					config.getString('wiki.site_notice', ''),  // 공지
+					getpermForSkin,  // 권한 유무 여부 함수
+					toDate(getTime())  // 시간
+				], 
+				[  // 사용자 정보 (imp[2][x])
+				   // --------------------------
+				   // return [0, 1, 2, 3, 4, 5, ip_check(), 
+				   //			admin_check(1), admin_check(3), admin_check(4), admin_check(5), 
+				   //           admin_check(6), admin_check(7), admin_check(), 
+				   //           toplst('사용자:' + ip_check()), ipa, ar, tr, cv, mycolor[0][0], str(spin)]
+				
+					'',  // 사용자 CSS
+					'',  // 사용자 JS
+					islogin(req) ? 1 : 0,  // 로그인 여부
+					'',  // 사용자 <HEAD>
+					'someone@example.com', // 전자우편 주소; 아직 이메일 추가기능도 미구현.,
+					islogin(req) ? ip_check(req) : '사용자',  // 사용자 이름
+					ip_check(req),  // 사용자/아이피 주소
+					getperm('suspend_account'),  // 차단 권한 유무(데프리케잇; imp[1][8] 사용)
+					0,  // 토론 권한 여부인데 세분화해서 쓰므로 안 씀
+					getperm('login_history'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
+					getperm('admin'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
+					0,  // 역사 숨기기였는데 구현 안함
+					getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
+					getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
+					user_document_discuss,  // 사용자 토론 존재여부
+					getperm('ipacl'),  // IPACL 권한 유무(데프리케잇; imp[1][8] 사용)
+					getperm('admin'),  // 중재자 권한인데 admin으로 통합
+					getperm('admin'),  // 호민관 권한인데 admin으로 통합
+					getperm('create_vote'),  // 투표추가 권한 유무(데프리케잇; imp[1][8] 사용)
+					'default',  // 스킨 색 구성표인데 스킨 선택도 안 만듬
+					'12345678'  // 지원 PIN인데 미구현
+				], 
+				[  // 기타 정보 (imp[3][x])
+					subtitle == '' ? 0 : subtitle,  // 페이지 부제목
+					!varlist['date'] ? 0 : varlist['date'],  // 마지막 수정 시간
+					['wiki', 'notfound'].includes(viewname)  // 별찜 여부
+					 ? (
+						varlist['starred'] ? 2 : (
+							islogin(req) ? 1 : 0
+						)
+					 ) : (
+						''
+					 )
+				]
+			];
+			templateVariables['data'] = content;
+			templateVariables['menu'] = menu;
+		}
+		else if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu') {
+			var prmret = [];
 			
-				'',  // 사용자 CSS
-				'',  // 사용자 JS
-				islogin(req) ? 1 : 0,  // 로그인 여부
-				'',  // 사용자 <HEAD>
-				'someone@example.com', // 전자우편 주소; 아직 이메일 추가기능도 미구현.,
-				islogin(req) ? ip_check(req) : '사용자',  // 사용자 이름
-				ip_check(req),  // 사용자/아이피 주소
-				getperm('suspend_account'),  // 차단 권한 유무(데프리케잇; imp[1][8] 사용)
-				0,  // 토론 권한 여부인데 세분화해서 쓰므로 안 씀
-				getperm('login_history'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
-				getperm('admin'),  // 로그인내역 권한 유무(데프리케잇; imp[1][8] 사용)
-				0,  // 역사 숨기기였는데 구현 안함
-				getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
-				getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
-				user_document_discuss,  // 사용자 토론 존재여부
-				getperm('ipacl'),  // IPACL 권한 유무(데프리케잇; imp[1][8] 사용)
-				getperm('admin'),  // 중재자 권한인데 admin으로 통합
-				getperm('admin'),  // 호민관 권한인데 admin으로 통합
-				getperm('create_vote'),  // 투표추가 권한 유무(데프리케잇; imp[1][8] 사용)
-				'default',  // 스킨 색 구성표인데 스킨 선택도 안 만듬
-				'12345678'  // 지원 PIN인데 미구현
-			], 
-			[  // 기타 정보 (imp[3][x])
-				subtitle == '' ? 0 : subtitle,  // 페이지 부제목
-				!varlist['date'] ? 0 : varlist['date'],  // 마지막 수정 시간
-				['wiki', 'notfound'].includes(viewname)  // 별찜 여부
-				 ? (
-					varlist['starred'] ? 2 : (
-						islogin(req) ? 1 : 0
-					)
-				 ) : (
-					''
-				 )
-			]
-		];
-		templateVariables['data'] = content;
-		templateVariables['menu'] = menu;
+			for(usrprm of _perms) {
+				if(!islogin(req)) break;
+				
+				if(getperm(usrprm, ip_check(req))) prmret.push(usrprm);
+			}
+		
+			if(!prmret.length) prmret = '0';
+			
+			templateVariables['imp'] = [
+				title,  // 페이지 제목 (imp[0])
+				[  // 위키 설정 (imp[1][x])
+					config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
+					config.getString('wiki.copyright_text', '') +  // 위키 
+					config.getString('wiki.footer_text', ''),      // 라이선스
+					'',  // 전역 CSS
+					'',  // 전역 JS
+					config.getString('wiki.logo_url', '') + config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 로고
+					''   // 전역 <HEAD>
+				], 
+				[  // 사용자 정보 (imp[2][x])
+					'',  // 사용자 CSS
+					'',  // 사용자 JS
+					islogin(req) ? 1 : 0,  // 로그인 여부
+					'',  // 사용자 <HEAD>
+					'someone@example.com', // 전자우편 주소; 아직 이메일 추가기능도 미구현.,
+					islogin(req) ? ip_check(req) : '사용자',  // 사용자 이름
+					islogin(req) ? (getperm('admin', ip_check(req)) ? 1 : 0) : 0,
+					isBanned(req, islogin(req) ? 'author' : 'ip', ip_check(req)),
+					0,
+					prmret,
+					ip_check(req),
+					user_document_discuss ? 1 : 0
+				], 
+				[  // 기타 정보 (imp[3][x])
+					subtitle == '' ? 0 : subtitle,  // 페이지 부제목
+					!varlist['date'] ? 0 : varlist['date'],  // 마지막 수정 시간
+					['wiki', 'notfound'].includes(viewname)  // 별찜 여부
+					 ? (
+						varlist['starred'] ? 2 : (
+							islogin(req) ? 1 : 0
+						)
+					 ) : (
+						''
+					 )
+				]
+			];
+			templateVariables['data'] = content;
+			templateVariables['menu'] = menu;
+		}
 	}
 	
 	if(islogin(req)) {
@@ -746,9 +752,44 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		};
 	}
 	
-	output = template(templateVariables);
+	//try {
+		switch(skintype.toLowerCase()) {
+			case 'opennamu':
+			case 'opennamu-seed':
+				var tmplt = fs.readFileSync('./skins/' + getSkin(req) + '/index.html').toString();
+				
+				try {
+					for(ifstatement of tmplt.match(/[{][%]\s{0,}if(.+)\s{0,}[%][}]/g)) {
+						tmplt = tmplt.replace(ifstatement, ifstatement.replace(/None/g, 'null').replace(/\snot\s/g, ' !'));
+						
+						const _0x3af4e6 = ifstatement.match(/(.+)\sin\s(.+)/);
+						if(!_0x3af4e6) continue;
+						
+						const find = _0x3af4e6[1];
+						const seed = _0x3af4e6[2];
+						
+						if(isArray(templateVariables[seed])) {
+							tmplt = tmplt.replace(ifstatement, `${seed}.includes(${find})`);
+						}
+					}
+				} catch(e){}
+				
+				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
+				
+				return swig.render(tmplt, { locals: templateVariables });
+			break; case 'the seed':
+				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
+		}
+	try {
+	} catch(e) {
+		print(`[오류!] ${e}`);
+		
+		return `
+			<title>` + title + ` (프론트엔드 오류!)</title>
+			<meta charset=utf-8>` + content;
+	}
 	
-	if(LCase(skintype) == 'opennamu') return output;
+	output = template(templateVariables);
 	
 	var header = '<html><head>';
 	header += `
