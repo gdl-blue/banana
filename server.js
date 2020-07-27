@@ -73,6 +73,14 @@ const find = (obj, fnc) => {
 	return -1;
 }
 
+function shell(c, l = '') {
+	(require("child_process")).exec(require('os').platform() == 'win32' ? c : l);
+}
+
+function sound(a) {
+	shell('beep.exe ' + a);
+}
+
 // https://stackoverflow.com/questions/1183872/put-a-delay-in-javascript
 function timeout(ms) {
 	var s = new Date().getTime();
@@ -1683,6 +1691,8 @@ wiki.use(function(req, res, next) {
 
 if(firstrun) {
 	(async function setCacheData() {
+		sound('950,150');
+		
 		const SML = [
 			"바나나를 불러오는 중...",
 			"바나나를 꺼내는 중...",
@@ -1725,6 +1735,8 @@ if(firstrun) {
 		
 		const server = wiki.listen(hostconfig['port']); // 서버실행
 		print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
+		
+		sound('500,100 750,150');
 		
 		// 활성화된 경우 텔넷 서버 열기
 		if(config.getString('allow_telnet', '0') == '1') {
