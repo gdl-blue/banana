@@ -72,6 +72,13 @@ Node.js, 병아리 엔진을 기반으로 하는 위키 엔진. 여태 본인이
 ## 요구 환경
 Windows 7(Node.js 6 이상)
 
+### Windows XP에서 호스팅하기
+테스트해보지 않음, 본인 책임하에 사용, 시스템 복원 지점 생성
+
+최신 프로그램을 XP에서 돌아가게 하는 패치들:
+- https://msfn.org/board/topic/176757-cancelled-by-the-author-extended-kernel-for-xp-extendedxp/
+- https://www.betaarchive.com/forum/viewtopic.php?t=36763
+
 ### Windows Vista에서 호스팅하기
 #### 32비트
 아직은 없다.
