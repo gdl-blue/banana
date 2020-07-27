@@ -68,3 +68,13 @@ Node.js, 병아리 엔진을 기반으로 하는 위키 엔진. 여태 본인이
 
 ### nodemailer
 [[NPM]](https://www.npmjs.com/package/nodemailer) [[라이선스]](https://github.com/nodemailer/nodemailer/blob/master/LICENSE)
+
+## 요구 환경
+Windows 7(Node.js 6 이상)
+
+### Windows Vista에서 호스팅하기
+#### 32비트
+아직은 없다.
+
+#### 64비트
+[여기](https://www.youtube.com/watch?v=cJI6utFsFr4)에 접속하면 설명 창에 구글 드라이브 링크가 있는데 접속하여 화일들을 내려받는다. DLL 화일들을 SYSTEM32에 붙여넣는다. (본인 책임하에 사용하기, 시스템 복원 지점 생성 권장) 재시동.
