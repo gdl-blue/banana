@@ -5,6 +5,24 @@ Node.js, 병아리 엔진을 기반으로 하는 위키 엔진. 여태 본인이
 
 스킨은 the seed 4.12.0 이하용으로 만들어진 스킨을 가져와 사용하면 된다. (skins 디렉토리에 넣기)
 
+## 요구 환경
+Windows 7(Node.js 6 이상)
+- https://www.microsoft.com/ko-KR/download/confirmation.aspx?id=24417 (윈도우 전용)
+
+### Windows XP에서 호스팅하기
+테스트해보지 않음, 본인 책임하에 사용, 시스템 복원 지점 생성
+
+최신 프로그램을 XP에서 돌아가게 하는 패치들:
+- https://msfn.org/board/topic/176757-cancelled-by-the-author-extended-kernel-for-xp-extendedxp/
+- https://www.betaarchive.com/forum/viewtopic.php?t=36763
+
+### Windows Vista에서 호스팅하기
+#### 32비트
+아직은 없다.
+
+#### 64비트
+[여기](https://www.youtube.com/watch?v=cJI6utFsFr4)에 접속하면 설명 창에 구글 드라이브 링크가 있는데 접속하여 화일들을 내려받는다. DLL 화일들을 SYSTEM32에 붙여넣는다(파일이 존재한다고 나오는데 원본은 다른 곳에 복사하거나 이름 변경하여 백업). (본인 책임하에 사용하기, 시스템 복원 지점 생성 권장) 재시동 후 Node.js 6 설치를 시도해보자.
+
 ## 기능
 굵게 표시한 것을 모두 만들면 베타로 전환.
 - [X] **문서 읽기**
@@ -68,20 +86,3 @@ Node.js, 병아리 엔진을 기반으로 하는 위키 엔진. 여태 본인이
 
 ### nodemailer
 [[NPM]](https://www.npmjs.com/package/nodemailer) [[라이선스]](https://github.com/nodemailer/nodemailer/blob/master/LICENSE)
-
-## 요구 환경
-Windows 7(Node.js 6 이상)
-
-### Windows XP에서 호스팅하기
-테스트해보지 않음, 본인 책임하에 사용, 시스템 복원 지점 생성
-
-최신 프로그램을 XP에서 돌아가게 하는 패치들:
-- https://msfn.org/board/topic/176757-cancelled-by-the-author-extended-kernel-for-xp-extendedxp/
-- https://www.betaarchive.com/forum/viewtopic.php?t=36763
-
-### Windows Vista에서 호스팅하기
-#### 32비트
-아직은 없다.
-
-#### 64비트
-[여기](https://www.youtube.com/watch?v=cJI6utFsFr4)에 접속하면 설명 창에 구글 드라이브 링크가 있는데 접속하여 화일들을 내려받는다. DLL 화일들을 SYSTEM32에 붙여넣는다(파일이 존재한다고 나오는데 원본은 다른 곳에 복사하거나 이름 변경하여 백업). (본인 책임하에 사용하기, 시스템 복원 지점 생성 권장) 재시동 후 Node.js 6 설치를 시도해보자.
