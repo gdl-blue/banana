@@ -223,7 +223,7 @@ End Function
 
 Private Sub cmdInstall_Click()
     If txtHost.Text = "" Or txtPort.Text = "" Or txtSecret.Text = "" Or txtSkin.Text = "" Then
-        MsgBox "모든 칸들을 채워주세요~", 16, "오류"
+        Alert "모든 칸들을 채워주세요~", "오류", Me, 16
         Exit Sub
     End If
 
@@ -250,7 +250,7 @@ End Sub
 Private Sub Form_Load()
     If UCase(Command) <> "/I" Then
         iscomplete = True
-        MsgBox "직접 실행할 수 없습니다;; RUN.bAT 혹은 SERVER.JS를 실행하세요^^", 48, "안내"
+        Alert "직접 실행할 수 없습니다;; RUN.BAT 혹은 SERVER.JS를 실행하세요^^", "안내", Me, 48
         End
     End If
 
@@ -267,7 +267,7 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
-    If MsgBox("설치를 취소하시겠습니까? --; 세션 키에 비밀번호를 적고 설치를 누르고 처리될 때까지 기다리시고 127.0.0.1에 접속하면 당신의 위키가 만들어집니다 ^^", vbOKCancel + vbExclamation, "확인") = vbOK Then
+    If Confirm("설치를 취소하시겠습니까? --; 세션 키에 비밀번호를 적고 설치를 누르고 처리될 때까지 기다리시고 127.0.0.1에 접속하면 당신의 위키가 만들어집니다 ^^", "확인", Me, 48) Then
         End
     Else
         Cancel = 1
