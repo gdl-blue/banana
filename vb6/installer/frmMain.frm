@@ -14,13 +14,21 @@ Begin VB.Form frmMain
    ScaleHeight     =   5640
    ScaleWidth      =   7440
    StartUpPosition =   2  '화면 가운데
-   Begin VB.TextBox txtSkin 
-      Height          =   270
-      IMEMode         =   3  '사용 못함
+   Begin VB.ComboBox txtSkin 
+      Height          =   300
       Left            =   1920
-      TabIndex        =   10
+      Style           =   2  '드롭다운 목록
+      TabIndex        =   12
       Top             =   2520
       Width           =   4335
+   End
+   Begin VB.DirListBox dir 
+      Height          =   300
+      Left            =   6120
+      TabIndex        =   11
+      Top             =   4920
+      Visible         =   0   'False
+      Width           =   975
    End
    Begin VB.TextBox txtSecret 
       Height          =   270
@@ -78,7 +86,7 @@ Begin VB.Form frmMain
       EndProperty
       Height          =   255
       Left            =   360
-      TabIndex        =   11
+      TabIndex        =   10
       Top             =   2520
       Width           =   1455
    End
@@ -199,6 +207,20 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 Dim iscomplete As Boolean
 
+'https://www.vbforums.com/showthread.php?73289-Get-last-folder-name-in-a-path
+Function GetLastDirName(strpath As String) As String
+    Dim i, j
+    strpath = IIf(Right(strpath, 1) = "\", Left(strpath, Len(strpath) - 1), strpath)
+    i = InStr(1, strpath, "\")
+    j = InStr(i + 1, strpath, "\")
+    While (j <> 0)
+        i = InStr(i + 1, strpath, "\")
+        j = InStr(i + 1, strpath, "\")
+    Wend
+    GetLastDirName = Mid(strpath, i, Len(strpath) - i + 1)
+    GetLastDirName = Right(GetLastDirName, Len(GetLastDirName) - 1)
+End Function
+
 Private Sub cmdInstall_Click()
     If txtHost.Text = "" Or txtPort.Text = "" Or txtSecret.Text = "" Or txtSkin.Text = "" Then
         MsgBox "모든 칸들을 채워주세요~", 16, "오류"
@@ -227,6 +249,15 @@ End Sub
 
 Private Sub Form_Load()
     iscomplete = False
+    
+    Dim i As Integer
+    dir.Path = dir.Path & "\skins"
+    
+    For i = 0 To dir.ListCount - 1
+        txtSkin.AddItem GetLastDirName(dir.List(i))
+    Next i
+    
+    txtSkin.ListIndex = 0
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
