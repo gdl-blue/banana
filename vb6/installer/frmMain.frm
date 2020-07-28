@@ -14,13 +14,22 @@ Begin VB.Form frmMain
    ScaleHeight     =   5640
    ScaleWidth      =   7440
    StartUpPosition =   2  '화면 가운데
+   Begin VB.TextBox txtSkin 
+      Height          =   270
+      IMEMode         =   3  '사용 못함
+      Left            =   1920
+      PasswordChar    =   "*"
+      TabIndex        =   10
+      Top             =   2520
+      Width           =   4335
+   End
    Begin VB.TextBox txtSecret 
       Height          =   270
       IMEMode         =   3  '사용 못함
       Left            =   1920
       PasswordChar    =   "*"
       TabIndex        =   6
-      Top             =   2280
+      Top             =   2040
       Width           =   4335
    End
    Begin VB.TextBox txtPort 
@@ -28,7 +37,7 @@ Begin VB.Form frmMain
       Left            =   1920
       TabIndex        =   4
       Text            =   "80"
-      Top             =   1800
+      Top             =   1560
       Width           =   4335
    End
    Begin VB.TextBox txtHost 
@@ -36,7 +45,7 @@ Begin VB.Form frmMain
       Left            =   1920
       TabIndex        =   2
       Text            =   "127.0.0.1"
-      Top             =   1320
+      Top             =   1080
       Width           =   4335
    End
    Begin VB.CommandButton cmdInstall 
@@ -56,6 +65,24 @@ Begin VB.Form frmMain
       Top             =   4920
       Width           =   1695
    End
+   Begin VB.Label Label7 
+      BackStyle       =   0  '투명
+      Caption         =   "기 본   스 킨 :"
+      BeginProperty Font 
+         Name            =   "돋움"
+         Size            =   9
+         Charset         =   129
+         Weight          =   400
+         Underline       =   0   'False
+         Italic          =   0   'False
+         Strikethrough   =   0   'False
+      EndProperty
+      Height          =   255
+      Left            =   360
+      TabIndex        =   11
+      Top             =   2520
+      Width           =   1455
+   End
    Begin VB.Label Label6 
       BackStyle       =   0  '투명
       Caption         =   $"frmMain.frx":397E
@@ -71,7 +98,7 @@ Begin VB.Form frmMain
       Height          =   615
       Left            =   600
       TabIndex        =   9
-      Top             =   3600
+      Top             =   3960
       Width           =   6255
    End
    Begin VB.Label Label5 
@@ -89,7 +116,7 @@ Begin VB.Form frmMain
       Height          =   495
       Left            =   600
       TabIndex        =   8
-      Top             =   3000
+      Top             =   3360
       Width           =   6255
    End
    Begin VB.Label Label4 
@@ -113,7 +140,7 @@ Begin VB.Form frmMain
    End
    Begin VB.Label Label3 
       BackStyle       =   0  '투명
-      Caption         =   "세션 키 :"
+      Caption         =   "세 션   비밀  키 :"
       BeginProperty Font 
          Name            =   "돋움"
          Size            =   9
@@ -126,7 +153,7 @@ Begin VB.Form frmMain
       Height          =   255
       Left            =   360
       TabIndex        =   5
-      Top             =   2280
+      Top             =   2040
       Width           =   1455
    End
    Begin VB.Label Label2 
@@ -144,7 +171,7 @@ Begin VB.Form frmMain
       Height          =   255
       Left            =   360
       TabIndex        =   3
-      Top             =   1800
+      Top             =   1560
       Width           =   1455
    End
    Begin VB.Label Label1 
@@ -162,7 +189,7 @@ Begin VB.Form frmMain
       Height          =   255
       Left            =   360
       TabIndex        =   1
-      Top             =   1320
+      Top             =   1080
       Width           =   1455
    End
 End
@@ -174,6 +201,11 @@ Attribute VB_Exposed = False
 Dim iscomplete As Boolean
 
 Private Sub cmdInstall_Click()
+    If txtHost.Text = "" Or txtPort.Text = "" Or txtSecret.Text = "" Or txtSkin.Text = "" Then
+        MsgBox "모든 칸들을 채워주세요~", 16, "오류"
+        Exit Sub
+    End If
+
     iscomplete = True
     
     'https://stackoverflow.com/questions/21108664/how-to-create-txt-file
@@ -184,6 +216,7 @@ Private Sub cmdInstall_Click()
     Print #iFileNo, "    " & ChrW$(34) & "host" & ChrW$(34) & ": " & ChrW$(34) & txtHost.Text & ChrW$(34) & ", "
     Print #iFileNo, "    " & ChrW$(34) & "port" & ChrW$(34) & ": " & ChrW$(34) & txtPort.Text & ChrW$(34) & ", "
     Print #iFileNo, "    " & ChrW$(34) & "initialized" & ChrW$(34) & ": false, "
+    Print #iFileNo, "    " & ChrW$(34) & "skin" & ChrW$(34) & ": " & ChrW$(34) & txtSkin.Text & ChrW$(34) & ", "
     Print #iFileNo, "    " & ChrW$(34) & "secret" & ChrW$(34) & ": " & ChrW$(34) & txtSecret.Text & ChrW$(34)
     Print #iFileNo, "}"
     Close #iFileNo

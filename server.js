@@ -312,14 +312,14 @@ try {
 			hostconfig = {
 				host: input("호스트 주소: "),
 				port: input("포트 번호: "),
-				secret: input("세션 비밀 키: ")
+				secret: input("세션 비밀 키: "),
+				skin: input("기본 스킨 이름: ")
 			};
 		}
 		
 		hostconfig['initialized'] = true;
 		
-		const defskin = input("기본 스킨 이름: ");
-		hostconfig['skin'] = defskin;
+		const defskin = hostconfig['skin'];
 		
 		print("\n기본 설정을 구성하고 있습니다. 잠시만 기다려 주세요~^^");
 		
