@@ -1,3 +1,3 @@
-git add *
-git commit -m %1
-git push -f origin master
+"C:\Program Files\git\cmd\git.exe" add *
+"C:\Program Files\git\cmd\git.exe" commit -m %1
+"C:\Program Files\git\cmd\git.exe" push -f origin master
