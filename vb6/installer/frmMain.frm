@@ -18,7 +18,6 @@ Begin VB.Form frmMain
       Height          =   270
       IMEMode         =   3  '사용 못함
       Left            =   1920
-      PasswordChar    =   "*"
       TabIndex        =   10
       Top             =   2520
       Width           =   4335

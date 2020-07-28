@@ -14,7 +14,6 @@
 	"manual_file_targets": {
 	},
 	"body_classes": [
-		"childish"
 	],
 	"additional_heads": "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1, maximum-scale=1\">"
 }
