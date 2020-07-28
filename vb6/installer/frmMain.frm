@@ -248,6 +248,12 @@ Private Sub cmdInstall_Click()
 End Sub
 
 Private Sub Form_Load()
+    If UCase(Command) <> "/I" Then
+        iscomplete = True
+        MsgBox "직접 실행할 수 없습니다;; RUN.bAT 혹은 SERVER.JS를 실행하세요^^", 48, "안내"
+        End
+    End If
+
     iscomplete = False
     
     Dim i As Integer

@@ -300,7 +300,7 @@ try {
 			if(require('os').platform() == 'win32') {
 				print("설치 프로그램을 불러오는 중입니다 . . .");
 				conn.close(e => {});
-				(require("child_process")).exec('banana.exe', {}, (a, b, c) => process.exit());
+				(require("child_process")).exec('banana.exe /i', {}, (a, b, c) => process.exit());
 				timeout(3500);
 				process.exit();
 			}
