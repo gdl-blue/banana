@@ -186,7 +186,7 @@ conn.query = function (sql, params) {
 		return new Promise(function (resolve, reject) {
 		that.all(sql, params, function asyncSQLRun(error, rows) {
 			if (error)
-				resolve(-1);  // 추후에 UPRW 뜨면 프로그램이 종료된다고 해서
+				resolve(-1);  // 추후에 UPRW 뜨면 프로그램이 종료된다고 해서 reject 제거
 			else
 				resolve(rows);
 		});
@@ -1517,7 +1517,8 @@ wiki.get('/', async function welcome(req, res) {
 	
 	res.send(swig.render(fs.readFileSync('./welcome.html').toString(), { locals: {
 		wiki_name: config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),
-		notice: config.getString('wiki.site_notice', '')
+		notice: config.getString('wiki.site_notice', ''),
+		range: range
 	} }));
 });
 

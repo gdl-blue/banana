@@ -36,6 +36,19 @@
 			height: 60px;
 			margin-right: 20px;
 		}
+		
+		div.notice-box {
+			border-radius: 6px;
+			
+			border: 1px solid #048;
+			border-top-width: 6px;
+			
+			padding: 10px;
+			
+			width: 500px;
+			
+			text-align: left;
+		}
 	</style>
 </head>
 
@@ -166,5 +179,13 @@
 				</tr>
 			</tbody>
 		</table>
+		
+		{% if notice != '' %}
+			{% for i in range(3) %} <br /> {% endfor %}
+			
+			<div class=notice-box>
+				{{ notice }}
+			</div>
+		{% endif %}
 	</center>
 </body>
