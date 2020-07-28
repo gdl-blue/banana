@@ -1,0 +1,116 @@
+<meta charset=euc-kr>
+<title>화일 올리기</title>
+
+<style>
+	.form-group {
+		margin-bottom: 40px;
+	}
+	
+	.form-control {
+		padding: 7px 10px 7px 10px;
+		border-radius: 5px;
+		width: 100%;
+		border: 1px solid #ccc;
+	}
+	
+	.form-control[disabled], .form-control[readonly] {
+		background-color: #eceeef
+	}
+	
+	.form-control:focus {
+		border-color: #00c8c8;
+	}
+	
+	.inline *:not(option) {
+		display: inline-block;
+	}
+</style>
+
+<script src="https://code.jquery.com/jquery-1.8.0.min.js"></script>
+
+<form id=special-document-editor>
+	<script>
+		$(function() {
+			const specialEditor = $('form#special-document-editor');
+		
+			$('form#special-document-editor button#insertButton').click(function() {
+				const type = $('#elementSelect').val();
+				const caption = $('#captionInput').val();
+				const classes = $('#classInput').val();
+				const style = $('#styleInput').val();
+				const value = $('#valueInput').val();
+				
+				var tagname = '', attributes = '';
+				
+				switch(type) {
+					case 'button':
+						tagname = 'button';
+					break; case 'checkbox':
+						tagname = 'input';
+						attributes += ' type=checkbox';
+					break; case 'radio':
+						tagname = 'input';
+						attributes += ' type=radio';
+					break; case 'select':
+						tagname = 'select';
+						attributes += ' type=radio';
+					
+				}
+			});
+		});
+	</script>
+
+	<div class=inline>
+		<div class=field-group>
+			<label>요소:</label><br>
+			<select class=form-control id=elementSelect style="width: auto;">
+				<option value=button>단추</option>
+				<option value=checkbox>확인란</option>
+				<option value=radio>라디오</option>
+				<option value=select>콤보 상자</option>
+				<option value=list>목록 상자</option>
+				<option value=textbox>입력 상자</option>
+				<option value=passwordbox>비밀번호 상자</option>
+				<option value=paragraph>문단</option>
+				<option value=label>레이블</option>
+			</select>
+		</div>
+		
+		<div class=field-group>
+			<label>캡션:</label><br>
+			<input type=text class=form-control id=captionInput>
+		</div>
+		
+		<div class=field-group>
+			<label>값:</label><br>
+			<input type=text class=form-control id=valueInput>
+		</div>
+		
+		<div class=field-group>
+			<label>클래스:</label><br>
+			<input type=text class=form-control id=classInput>
+		</div>
+		
+		<div class=field-group>
+			<label>스타일:</label><br>
+			<input type=text class=form-control id=styleInput>
+		</div>
+		
+		<div class=field-group>
+			<label>&nbsp;</label><br>
+			<button type=button id=insertButton class="btn btn-secondary">삽입</button>
+		</div>
+	</div>
+	
+	<div class=pageform>
+		<div style="display: inline-block; float: left; width: 49%;">
+			<label>HTML:</label><br>
+			<textarea rows=25 class=form-control id=html></textarea>
+		</div>
+		
+		<div style="display: inline-block; float: right; width: 49%;">
+			<label>JavaScript:</label><br>
+			<textarea rows=25 class=form-control id=js></textarea>
+		</div>
+	</div>
+</form>

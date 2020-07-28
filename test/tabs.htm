@@ -1,0 +1,141 @@
+<meta charset=euc-kr>
+<title>세로 탭 예제</title>
+
+<style>
+	.form-group {
+		margin-bottom: 40px;
+	}
+	
+	.form-control {
+		padding: 7px 10px 7px 10px;
+		border-radius: 5px;
+		width: 100%;
+		border: 1px solid #ccc;
+	}
+	
+	.form-control[disabled], .form-control[readonly] {
+		background-color: #eceeef
+	}
+	
+	.form-control:focus {
+		border-color: #00c8c8;
+	}
+	
+	.vertical-tablist .tablist .tab {
+		padding: 7px;
+	}
+	
+	.vertical-tablist .tablist .tab[active] {
+		background: linear-gradient(to bottom, rgb(164, 193, 227) 0%, rgb(107, 148, 195) 51%, rgb(80, 126, 178) 50%, rgb(68, 116, 171) 100%);
+		color: white;
+	}
+	
+	/* https://stackoverflow.com/questions/14294476/add-arrow-shaped-to-active-tab */
+	.vertical-tablist .tablist .tab[active]::after {
+		content: "";
+		position: absolute;
+		bottom: -15px;
+		left: 50px;
+		border-width: 15px 15px 0;
+		border-style: solid;
+		border-color: #f3961c transparent;
+		display: block;
+		width: 0;
+	}
+	
+	.vertical-tablist .tablist .tab[active]::after {
+		top: auto;
+		left: auto;
+		bottom: auto;
+		border-width: 10px 0 10px 10px;
+		border-color: transparent rgb(80, 126, 178);
+		margin-top: -19px;
+		margin-left: 110px;
+	}
+	
+	.vertical-tablist {
+		border: 1px solid #ddd;
+		border-radius: 5px;
+	}
+	
+	.vertical-tablist, .vertical-tablist .tab-content, .vertical-tablist .tablist {
+		height: 420px;
+		vertical-align: top;
+	}
+	
+	.vertical-tablist {
+		height: 421px;
+	}
+	
+	.vertical-tablist .tablist {
+		border-right: 1px solid #ddd;
+		background: linear-gradient(to bottom, #eceeef, #fff);
+		overflow-y: auto;
+	}
+	
+	.vertical-tablist .tablist .tab {
+		border-bottom: 1px solid #ddd;
+	}
+	
+	.vertical-tablist .tab-content {
+		padding: 10px 10px 10px 20px;
+		background: linear-gradient(to bottom, rgb(242, 248, 254), rgb(222, 232, 243), #fff);
+		overflow-y: auto;
+	}
+</style>
+
+<script src="https://code.jquery.com/jquery-1.8.0.min.js"></script>
+
+<script>
+	$(function() {
+		$('.vertical-tablist .tablist').show();
+		/* $('.vertical-tablist .tablist').css({'width': '120px', 'float': 'left'}); */
+		/* $('.vertical-tablist .tab-content').css({'width': 'calc(100% - 141px)', 'float': 'right'}); */
+		$('.vertical-tablist .tab-content .tab-page').hide();
+		$('.vertical-tablist .tab-content .tab-page')[0].style.display = '';
+		$('.vertical-tablist .tab-content h2.tab-page-title').hide();
+		$('.vertical-tablist .tablist .tab').removeAttr('active');
+		$('.vertical-tablist .tablist .tab')[0].setAttribute('active', '');
+		
+		$('.vertical-tablist .tablist .tab').click(function() {
+			$('.vertical-tablist .tablist .tab').removeAttr('active');
+			$(this).attr('active', '');
+			
+			$('.vertical-tablist .tab-content .tab-page').hide();
+			$('.vertical-tablist .tab-content .tab-page[id="' + $(this).attr('data-paneid') + '"]').show();
+		});
+	});
+</script>
+
+<form method=post>
+	<table class=vertical-tablist>
+		<colgroup>
+			<col style="width: 120px;">
+			<col>
+		</colgroup>
+		
+		<tbody>
+			<tr>
+				<td class=tablist style="display: none;">
+					<div class=tab data-paneid=1>탭 1</div>
+					<div class=tab data-paneid=2>탭 2</div>
+					<div class=tab data-paneid=3>탭 3</div>
+				</td>
+				
+				<td class=tab-content>
+					<div class=tab-page id=1>
+						탭 1 내용
+					</div>
+					
+					<div class=tab-page id=2>
+						탭 2 내용
+					</div>
+					
+					<div class=tab-page id=3>
+						탭 3 내용
+					</div>
+				</td>
+			</tr>
+		</tbody>
+	</table>
+</form>

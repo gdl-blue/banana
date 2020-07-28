@@ -1,0 +1,119 @@
+div.captcha-frame {
+	border-color: #000;
+	border-width: 1px 1px 1px;
+	border-style: solid;
+	
+	border-radius: 6px;
+	
+	display: table;
+	
+	padding: 10px;
+	
+	background: rgb(153, 208, 249);
+	background: linear-gradient(rgb(153, 208, 249) 0%, rgb(13, 120, 200) 31%, rgb(43, 157, 242) 30%, rgb(99, 183, 245));
+}
+
+img.captcha-image {
+	border-radius: 6px;
+	border: 1px solid white;
+	box-shadow: 3px 3px 20px 1px grey inset;
+	-ms-box-shadow: 3px 3px 20px 1px grey inset;
+	-webkit-box-shadow: 3px 3px 20px 1px grey inset;
+	-moz-box-shadow: 3px 3px 20px 1px grey inset;
+	
+	display: inline-block;
+}
+
+div.captcha-input label {
+	color: #fff;
+}
+
+.vertical-tablist {
+	width: 100%;
+}
+
+.vertical-tablist .tablist {
+	padding: 0;
+}
+
+.vertical-tablist .tablist .tab {
+	padding: 7px;
+}
+
+.vertical-tablist .tablist .tab img {
+	width: 20px;
+}
+
+.vertical-tablist .tablist .tab[active] {
+	background: linear-gradient(to bottom, rgb(164, 193, 227) 0%, rgb(107, 148, 195) 51%, rgb(80, 126, 178) 50%, rgb(68, 116, 171) 100%);
+	color: white;
+}
+
+/* https://stackoverflow.com/questions/14294476/add-arrow-shaped-to-active-tab */
+.vertical-tablist .tablist .tab[active]::after {
+	content: "";
+	position: absolute;
+	bottom: -15px;
+	left: 50px;
+	border-width: 15px 15px 0;
+	border-style: solid;
+	border-color: #f3961c transparent;
+	display: block;
+	width: 0;
+}
+
+.vertical-tablist .tablist .tab[active]::after {
+	top: auto;
+	left: auto;
+	bottom: auto;
+	border-width: 10px 0 10px 10px;
+	border-color: transparent rgb(80, 126, 178);
+	margin-top: -19px;
+	margin-left: 130px;
+}
+
+.vertical-tablist {
+	border: 1px solid #ddd;
+	border-radius: 5px;
+	border-collapse: separate;
+	border-radius: 6px;
+	border: 2px solid #888888;
+}
+
+.vertical-tablist, .vertical-tablist .tab-content, .vertical-tablist .tablist {
+	height: 420px;
+	vertical-align: top;
+}
+
+.vertical-tablist {
+	height: 421px;
+}
+
+.vertical-tablist .tablist {
+	border-right: 1px solid #ddd;
+	background: linear-gradient(to bottom, #eceeef, #fff);
+	overflow-y: auto;
+}
+
+.vertical-tablist .titlebar {
+	background: linear-gradient(to right, #eceeef, #fff);
+	font-weight: bold;
+}
+
+.vertical-tablist .tablist .tab {
+	border-bottom: 1px solid #ddd;
+}
+
+.vertical-tablist .tab-content {
+	padding: 10px 10px 10px 20px;
+	background: linear-gradient(to bottom, rgb(242, 248, 254), rgb(222, 232, 243), #fff);
+	overflow-y: auto;
+}
+
+.vertical-tablist .tab-content .tab-page {
+	overflow-y: auto;
+}
+
+.for-script {
+	display: none;
+}
