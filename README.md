@@ -1,6 +1,3 @@
-## Windows 기준 요약 실행법
-![그림](https://raw.githubusercontent.com/gdl-888/banana/master/qckmanul.bmp)
-
 ## 개요
 터보위키(새위키)에 새로 사용할 위키 엔진이다. 아직 알파 단계인데, 지금 사용하는것을 금지하지는 않지만 버그가 있고 갑자기 전체적 구조가 바뀔 수 있다.
 
