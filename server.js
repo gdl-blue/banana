@@ -186,7 +186,7 @@ conn.query = function (sql, params) {
 		return new Promise(function (resolve, reject) {
 		that.all(sql, params, function asyncSQLRun(error, rows) {
 			if (error)
-				reject(error);
+				resolve(-1);  // 추후에 UPRW 뜨면 프로그램이 종료된다고 해서
 			else
 				resolve(rows);
 		});
@@ -196,11 +196,11 @@ conn.query = function (sql, params) {
 conn.exec = function (sql, params) {
 	var that = this;
 		return new Promise(function (resolve, reject) {
-		that.run(sql, params, function asyncSQLRun(error, rows) {
+		that.run(sql, params, function asyncSQLRun(error) {
 			if (error)
-				reject(error);
+				resolve(-1);
 			else
-				resolve(rows);
+				resolve(0);
 		});
 	});
 };
@@ -677,7 +677,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			templateVariables['imp'] = [
 				title,  // 페이지 제목 (imp[0])
 				[  // 위키 설정 (imp[1][x])
-					config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
+					config.getString('wiki.site_name', c),  // 위키 이름
 					config.getString('wiki.copyright_text', '') +  // 위키 
 					config.getString('wiki.footer_text', ''),      // 라이선스
 					'',  // 전역 CSS
@@ -834,7 +834,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 				
 				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
 				
-				return swig.render(tmplt, { locals: templateVariables });
+				return c;
 			break; case 'the seed':
 				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
 		}
@@ -1509,7 +1509,17 @@ function redirectToFrontPage(req, res) {
 }
 
 wiki.get('/w', redirectToFrontPage);
-wiki.get('/', redirectToFrontPage);
+wiki.get('/', async function welcome(req, res) {
+	if(compatMode(req) || config.getString('no_welcome', '0') == '1') {
+		redirectToFrontPage(req, res);
+		return;
+	}
+	
+	res.send(swig.render(fs.readFileSync('./welcome.html').toString(), { locals: {
+		wiki_name: config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),
+		notice: config.getString('wiki.site_notice', '')
+	} }));
+});
 
 wiki.get(/\/skins(.*)/, async function skinRootExplorer(req, res) {
 	const path = ('./skins' + req.params[0]).replace(/\/$/, '');

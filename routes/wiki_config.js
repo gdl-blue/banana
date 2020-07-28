@@ -243,6 +243,16 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 									${additioalACLs}
 									<label><input type=radio name=acl_type value=none ${config.getString('acl_type', 'action-based') == 'none' ? 'checked' : ''}> 없음 - ACL을 지정할 수 없게 합니다. 모든 문서에 모든 사용자가 기여할 수 있습니다. 예외적으로 사용자 문서는 본인 및 관리자만이 편집할 수 있습니다. 차단된 사용자는 제외됩니다.</label>
 								</div>
+								
+								<div class=form-group>
+									<label>환영 페이지 끄기: </label><br>
+									<label><input name=no_welcome type=checkbox ${config.getString('no_welcome', '0') == '1' ? 'checked' : ''}></label>
+								</div>
+								
+								<div class=form-group>
+									<label>환영 페이지(HTML): </label><br>
+									<textarea name=welcome_page class=form-control rows=20>${html.escape(fs.readFileSync('./welcome.html').toString())}</textarea>
+								</div>
 							</div>
 							
 							<div class=tab-page id=tos>
@@ -427,40 +437,39 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
 		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
 		'file_extensions', 'email_whitelist', 'site_notice', 'edit_notice', 'discussion_notice', '!allow_telnet',
-		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history', 'registeration_notice'
+		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history', 'registeration_notice', '!no_welcome'
 	];
 	
 	for(settingi of settings) {
 		if(settingi.startsWith('!')) {
 			const setting = settingi.replace(/^[!]/, '');
 			
+			// 이런 비동기... 매크로 있으면 [#define curs await _curs]로 안 쓸 수 있는데...
+			
 			// update 쓰려면 복잡해져서(값이 이미 있는지 확인해야함) 안 씀
-			conn.run("delete from config where key = ?", [setting], err => {
-				curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
-			});
+			await curs.execute("delete from config where key = ?", [setting]);
+			await curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
 			
 			wikiconfig[setting] = req.body[setting] ? '1' : '0';
 		} else {
 			const setting = settingi;
 			
-			conn.run("delete from config where key = ?", [setting], err => {
-				curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
-			});
+			await curs.execute("delete from config where key = ?", [setting]);
+			await curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
 			
 			wikiconfig[setting] = req.body[setting];
 		}
 	}
 	
-	conn.run("delete from email_config", (err, res) => {
-		curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]);
-	});
+	await curs.execute("delete from email_config");
+	await curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]);
 	
 	if(req.body['clear_login_history']) {
-		curs.execute("delete from login_history");
-		curs.execute("delete from useragents");
+		await curs.execute("delete from login_history");
+		await curs.execute("delete from useragents");
 	}
 	
-	timeout(3000);
+	fs.writeFileSync('./welcome.html', req.body['welcome_page']);
 	
 	res.redirect('/admin/config');
 });

@@ -1,3 +1,33 @@
+/* HTML 지원중단 태그 호환 (하지만 대부분 브라우저 차원에서 지원하긴 한다.) */
+strike {
+	text-decoration: line-through;
+}
+* {
+	background-color: attr(bgcolor);
+	color: attr(text);
+}
+big {
+	font-size: larger;
+}
+center {
+	text-align: center;
+}
+font {
+	color: attr(color);
+	font-size: attr(size);
+	font-family: attr(face);
+}
+nobr {
+	white-space: nowrap;
+}
+multicol {
+	column-count: attr(cols);
+	column-width: attr(width);
+	column-gap: attr(gutter);
+}
+/* isindex는 자바스크립트로 해야함 */
+/* 끝 */
+
 div.captcha-frame {
 	border-color: #000;
 	border-width: 1px 1px 1px;
