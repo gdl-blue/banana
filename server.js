@@ -1320,7 +1320,7 @@ function dropSourceCode(req, res) {
 	// res.sendFile('index.js', { root: "./" });
 }
 
-wiki.get('/index.js', dropSourceCode);
+// wiki.get('/index.js', dropSourceCode);
 
 wiki.get('/js/:filepath', function dropJS(req, res) {
 	const filepath = req.params['filepath'];

@@ -10,7 +10,6 @@ Begin VB.Form frmMain
    LinkTopic       =   "Form1"
    MaxButton       =   0   'False
    MinButton       =   0   'False
-   Picture         =   "frmMain.frx":0442
    ScaleHeight     =   5640
    ScaleWidth      =   7440
    StartUpPosition =   2  '화면 가운데
@@ -92,7 +91,7 @@ Begin VB.Form frmMain
    End
    Begin VB.Label Label6 
       BackStyle       =   0  '투명
-      Caption         =   $"frmMain.frx":397E
+      Caption         =   $"frmMain.frx":0442
       BeginProperty Font 
          Name            =   "돋움"
          Size            =   9
@@ -110,7 +109,7 @@ Begin VB.Form frmMain
    End
    Begin VB.Label Label5 
       BackStyle       =   0  '투명
-      Caption         =   $"frmMain.frx":3A58
+      Caption         =   $"frmMain.frx":051C
       BeginProperty Font 
          Name            =   "돋움"
          Size            =   9
@@ -199,6 +198,54 @@ Begin VB.Form frmMain
       Top             =   1080
       Width           =   1455
    End
+   Begin VB.Shape Shape3 
+      BackStyle       =   1  '투명하지 않음
+      Height          =   1695
+      Left            =   360
+      Shape           =   4  '둥근 사각형
+      Top             =   3120
+      Width           =   6735
+   End
+   Begin VB.Shape Shape2 
+      BackStyle       =   1  '투명하지 않음
+      Height          =   2055
+      Left            =   240
+      Shape           =   4  '둥근 사각형
+      Top             =   840
+      Width           =   6255
+   End
+   Begin VB.Shape Shape1 
+      BackStyle       =   1  '투명하지 않음
+      Height          =   615
+      Left            =   360
+      Shape           =   4  '둥근 사각형
+      Top             =   120
+      Width           =   6855
+   End
+   Begin VB.Image imgDay 
+      Height          =   5685
+      Left            =   0
+      Picture         =   "frmMain.frx":05BE
+      Top             =   0
+      Visible         =   0   'False
+      Width           =   7545
+   End
+   Begin VB.Image imgSunset 
+      Height          =   5760
+      Left            =   0
+      Picture         =   "frmMain.frx":3AFA
+      Top             =   0
+      Visible         =   0   'False
+      Width           =   7500
+   End
+   Begin VB.Image imgNight 
+      Height          =   5940
+      Left            =   0
+      Picture         =   "frmMain.frx":A0FD
+      Top             =   0
+      Visible         =   0   'False
+      Width           =   7545
+   End
 End
 Attribute VB_Name = "frmMain"
 Attribute VB_GlobalNameSpace = False
@@ -248,6 +295,17 @@ Private Sub cmdInstall_Click()
 End Sub
 
 Private Sub Form_Load()
+    If CInt(Format(Now, "H")) >= 7 And CInt(Format(Now, "H")) < 16 Then
+        imgDay.Visible = True
+        Shape1.Visible = False
+        Shape2.Visible = False
+        Shape3.Visible = False
+    ElseIf CInt(Format(Now, "H")) = 6 Or CInt(Format(Now, "H")) = 17 Then
+        imgSunset.Visible = True
+    Else
+        imgNight.Visible = True
+    End If
+
     If UCase(Command) <> "/I" Then
         iscomplete = True
         Alert "직접 실행할 수 없습니다;; RUN.BAT 혹은 SERVER.JS를 실행하세요^^", "안내", Me, 48
@@ -274,3 +332,6 @@ Private Sub Form_Unload(Cancel As Integer)
     End If
 End Sub
 
+Private Sub Image1_Click()
+
+End Sub
