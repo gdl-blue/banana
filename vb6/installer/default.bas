@@ -15,8 +15,6 @@ Public Function LenH(ByVal strValue As String) As Integer
 End Function
 
 Sub Alert(Content As String, Title As String, Optional OwnerForm As Form = 1, Optional Icon As Long = 64) 'Windows Vista 이상 윈도우에서 Windws 2000 스타일 메시지 상자 표시
-    'http://www.vbforums.com/showthread.php?353910-Read-registry-key-SOLVED
-    '사용중인 윈도우가 XP 이하이면 이 메시지 상자 표시이유가 없으므로 실제 메시지상자 표시
     On Error Resume Next
     
     Select Case Icon
@@ -60,8 +58,6 @@ End Sub
 
 
 Function Confirm(Content As String, Title As String, Optional OwnerForm As Form = 1, Optional Icon As Long = 32, Optional BtnReversed As Boolean = False) As Boolean 'Windows Vista 이상 윈도우에서 Windws 2000 스타일 메시지 상자 표시
-    '=====================================================
-    
     Select Case Icon
         Case 48
             msgXPOC.imgMBIconWarning.Visible = True

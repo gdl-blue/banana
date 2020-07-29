@@ -23,7 +23,8 @@ Private Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 
 Dim args
 
-' Credits: (Milk (Sleep+Pause Sub)). (Wayne Spangler (Pause Sub))
+' VBForums에서 퍼옴.
+' 제작자: (Milk (Sleep+Pause Sub)). (Wayne Spangler (Pause Sub))
 Sub Pause(ByVal Delay As Single)
    Delay = Timer + Delay
    If Delay > 86400 Then 'more than number of seconds in a day

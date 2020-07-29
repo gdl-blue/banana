@@ -236,6 +236,8 @@ const wiki = express();
 function getTime() { return Math.floor(new Date().getTime()); }; const get_time = getTime;
 
 function toDate(t) {
+	if(isNaN(Number(t))) return t;  // 문자열(1983-04-22 12:45:56 등)로 되어있는 경우 기냥 반환
+	
 	var date = new Date(Number(t));
 	
 	var hour = date.getHours(); hour = (hour < 10 ? "0" : "") + hour;
@@ -983,14 +985,31 @@ async function getacl(req, title, action) {
 		case 'action-based':
 			var fullacllst = [];
 			
-			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
+			const sql = `await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
 			fullacllst.push(curs.fetchall());
 			
 			await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
 			fullacllst.push(curs.fetchall());
 			
 			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
-			fullacllst.push(curs.fetchall());
+			fullacllst.push(curs.fetchall());`;
+			
+			eval(sql);
+			
+			if(!fullacllst.length) {
+				var ns = '';
+				
+				if(await fetchNamespaces().includes(title.split(':')[0]) && title.startsWith(title.split(':')[0] + ':')) {
+					ns = title.split(':')[0];
+				} else {
+					ns = '문서';
+				}
+				
+				title = ns + ':';
+				eval(sql);
+				
+				// 왜 goto가 없어
+			}
 			
 			for(var acllst of fullacllst) {
 				for(var acl of acllst) {

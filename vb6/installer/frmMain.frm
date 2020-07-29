@@ -289,7 +289,7 @@ Private Sub cmdInstall_Click()
     Print #iFileNo, "}"
     Close #iFileNo
     
-    Shell "cmd /c start node server.js"
+    Shell "cmd /c start node index.js"
     
     End
 End Sub
@@ -325,13 +325,9 @@ Private Sub Form_Load()
 End Sub
 
 Private Sub Form_Unload(Cancel As Integer)
-    If Confirm("설치를 취소하시겠습니까? --; 세션 키에 비밀번호를 적고 설치를 누르고 처리될 때까지 기다리시고 127.0.0.1에 접속하면 당신의 위키가 만들어집니다 ^^", "확인", Me, 48) Then
+    If Confirm("취소하시겠습니까? --; 항목을 채우고 설치를 누른 후 기다리시면 입력학 주소에 당신의 위키가 만들어집니다 ^^", "확인", Me, 48) Then
         End
     Else
         Cancel = 1
     End If
-End Sub
-
-Private Sub Image1_Click()
-
 End Sub

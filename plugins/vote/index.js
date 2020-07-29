@@ -1,22 +1,22 @@
 // 필수 코드 시작 //
-const render = require('./../../server.js').render;
-const conn = require('./../../server.js').conn;
-const curs = require('./../../server.js').curs;
-const ip_check = require('./../../server.js').ip_check;
-const ip_pas = require('./../../server.js').ip_pas;
-const html = require('./../../server.js').html;
-const ban_check = require('./../../server.js').ban_check;
-const config = require('./../../server.js').config;
-const getperm = require('./../../server.js').getperm;
-const showError = require('./../../server.js').showError;
-const toDate = require('./../../server.js').toDate;
-const generateTime = require('./../../server.js').generateTime;
-const timeFormat = require('./../../server.js').timeFormat;
-const islogin = require('./../../server.js').islogin;
-const stringInFormat = require('./../../server.js').stringInFormat;
-const timeout = require('./../../server.js').timeout;
-const generateCaptcha = require('./../../server.js').generateCaptcha;
-const validateCaptcha = require('./../../server.js').validateCaptcha;
+const render = require('./../../index.js').render;
+const conn = require('./../../index.js').conn;
+const curs = require('./../../index.js').curs;
+const ip_check = require('./../../index.js').ip_check;
+const ip_pas = require('./../../index.js').ip_pas;
+const html = require('./../../index.js').html;
+const ban_check = require('./../../index.js').ban_check;
+const config = require('./../../index.js').config;
+const getperm = require('./../../index.js').getperm;
+const showError = require('./../../index.js').showError;
+const toDate = require('./../../index.js').toDate;
+const generateTime = require('./../../index.js').generateTime;
+const timeFormat = require('./../../index.js').timeFormat;
+const islogin = require('./../../index.js').islogin;
+const stringInFormat = require('./../../index.js').stringInFormat;
+const timeout = require('./../../index.js').timeout;
+const generateCaptcha = require('./../../index.js').generateCaptcha;
+const validateCaptcha = require('./../../index.js').validateCaptcha;
 // 필수 코드 종료 //
 
 // 추가적으로 사용할 함수가 있으면 여기에 쓴다. 없으면 쓰지 않는다.
