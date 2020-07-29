@@ -1518,7 +1518,8 @@ wiki.get('/', async function welcome(req, res) {
 	res.send(swig.render(fs.readFileSync('./welcome.html').toString(), { locals: {
 		wiki_name: config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),
 		notice: config.getString('wiki.site_notice', ''),
-		range: range
+		range: range,
+		datetime: new Date().getTime()
 	} }));
 });
 
