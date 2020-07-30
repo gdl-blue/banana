@@ -36,20 +36,11 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			
 			content += '</ul>';
 			
-			subtitle = ' (닫힌 토론 목록)';
+			subtitle = ' (닫힌 토론)';
 			
 			viewname = 'thread_list_close'
 		break;default:
 			content += `
-				<h2 class="wiki-heading">편집 요청</h2>
-				<div class=wiki-heading-content>
-					<ul class=wiki-list>
-			`;
-			
-			content += `
-					</ul>
-				</div>
-				
 				<p>
 					<a href="?state=closed_edit_requests">[닫힌 편집 요청 보기]</a>
 				</p>
@@ -110,8 +101,8 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 										rs['hidden'] == '1'
 										? (
 											getperm('hide_thread_comment', ip_check(req))
-											? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]<br>' + markdown(rs['content'], rs['ismember'])
-											: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
+											? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'], rs['ismember'])
+											: '[' + rs['hider'] + '가 숨긴 댓글입니다.]'
 										  )
 										: markdown(rs['content'], rs['ismember'])
 									}
@@ -123,22 +114,22 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				
 				content += '</div>';
 			}
-			content += '<a href="?state=close">[닫힌 토론 목록 보기]</a>';
+			content += '<a href="?state=close">[닫힌 토론]</a>';
 			
 			content += `
-				<h4 class="wiki-heading">토론 발제</h4>
+				<h4 class="wiki-heading">토론 발제하기</h4>
 				
 				<form method="post" class="new-thread-form" id="topicForm">
 					<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 					
 					<div class="form-group">
 						<label>주제:</label>
-						<input type="text" class="form-control" id="topicInput" name="topic">
+						<input type="text" class="form-control" name="topic">
 					</div>
-
+>
 					<div class="form-group">
-						<label>내용:</label>
-						<textarea name="text" class="form-control" id="contentInput" rows="5"></textarea>
+						<label>내용:</label
+						<textarea name="text" class="form-control" rows="5"></textarea>
 					</div>
 					
 
@@ -148,7 +139,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				</form>
 			`;
 			
-			subtitle = ' (토론)';
+			subtitle = ' (토론 목록)';
 			viewname = 'thread_list'
 	}
 	
@@ -175,12 +166,12 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 		return;
 	}
 	
-	var tnum = rndval('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 22);
+	var tnum = rndval('abcdef0123456789', 32);
 	
 	while(1) {
 		await curs.execute("select tnum from threads where tnum = ?", [tnum]);
 		if(!curs.fetchall().length) break;
-		tnum = rndval('abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', 22);
+		tnum = rndval('abcdef0123456789', 32);
 	}
 	
 	curs.execute("insert into threads (title, topic, status, time, tnum) values (?, ?, ?, ?, ?)",

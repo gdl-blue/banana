@@ -28,10 +28,6 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 			<div class=form-group>
 				${captcha}
 			</div>
-			
-			<p>
-				<strong>가입 후 탈퇴는 불가능합니다.</strong>
-			</p>
 		
 			<div class=btns>
 				<button type=reset class="btn btn-secondary">초기화</button>
@@ -74,10 +70,6 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 				<div class=form-group>
 					${captcha}
 				</div>
-				
-				<p>
-					<strong>가입후 탈퇴는 불가능합니다.</strong>
-				</p>
 			
 				<div class=btns>
 					<button type=reset class="btn btn-secondary">초기화</button>

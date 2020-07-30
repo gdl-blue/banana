@@ -46,7 +46,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 				<div class="res-wrapper res-loading" data-id="${i}" data-locked="false" data-visible=false>
 					<div class="res res-type-normal">
 						<div class="r-head">
-							<span class="num"><a id="${i}">#${i}</a>&nbsp;</span>
+							<span class="num"><a id="${i}">${i}. </a>&nbsp;</span>
 						</div>
 						
 						<div class="r-body"></div>

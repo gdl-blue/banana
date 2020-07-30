@@ -862,7 +862,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
 	}
 	header += `
-		<!--[if !IE]><!--><script type="text/javascript" src="https://theseed.io/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
+		<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
 		<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
 		<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 		<script type="text/javascript" src="/js/banana.js"></script>
@@ -922,7 +922,7 @@ function alertBalloon(title, content, type = 'danger', dismissible = true, class
 }
 
 async function showError(req, code) {
-	return await render(req, "문제가 발생했습니다!", `<h2>${fetchErrorString(code)}</h2>`);
+	return await render(req, "오류가 발생했습니다.", `<h2>${fetchErrorString(code)}</h2>`);
 }
 
 function ip_pas(ip = '', ismember = '', isadmin = null) {
@@ -1197,82 +1197,6 @@ for(pi of getPlugins('all')) {
 		
 		curs.execute(sql, [], true);
 	}
-}
-
-async function fileExplorer(path, req, res) {
-	// const path = ('./skins' + req.params[0]).replace(/\/$/, '');
-	
-	// https://stackoverflow.com/questions/18112204/get-all-directories-within-directory-nodejs
-	const getDirectories = path => fs.readdirSync(path, { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name);
-	const getFiles       = path => fs.readdirSync(path, { withFileTypes: true }).filter(dirent => !dirent.isDirectory()).map(dirent => dirent.name);
-	
-	const dirlist  = getDirectories(path);
-	const filelist = getFiles(path);
-	
-	var content = `
-		<table class="table table-hover">
-			<thead>
-				<tr>
-					<td><strong>이름</strong></td>
-					<td><strong>형식</strong></td>
-					<td><strong>크기</strong></td>
-				</tr>
-			</thead>
-			
-			<tbody id>
-				<tr>
-					<td><a href="${path.endsWith('/') ? '..' : '.'}">..</a></td>
-					<td>디렉토리</td>
-					<td>0</td>
-				</tr>
-	`;
-	
-	for(var d of dirlist) {
-		content += `
-			<tr>
-				<td>
-					<a href="/${html.escape((path.endsWith('/') ? path : path + '/') + d)}">${html.escape(d)}</a>
-				</td>
-				
-				<td>디렉토리</td>
-				
-				<td>
-					${fs.statSync(path + '/' + d)['size']}
-				</td>
-			</tr>
-		`;
-	}
-	
-	for(var f of filelist) {
-		var acode;
-		console.log(path)
-		if(fs.existsSync((path.endsWith('/') ? path : path + '/') + f)) {
-			acode = `<a href="/${html.escape((path.endsWith('/') ? path : path + '/') + f)}">${html.escape(f)}</a>`;
-		} else {
-			acode = `${html.escape(f)}`;
-		}
-		
-		content += `
-			<tr>
-				<td>
-					${acode}
-				</td>
-				
-				<td>파일</td>
-				
-				<td>
-					${fs.statSync(path + '/' + f)['size']}
-				</td>
-			</tr>
-		`;
-	}
-	
-	content += `
-			</tbody>
-		</table>
-	`;
-	
-	res.send(await render(req, '탐색 중 - ' + path.replace(/^[.]\//, ''), content));
 }
 
 wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropSkinFile(req, res) {
@@ -1574,7 +1498,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 		var hbtn = ''
 		if(getperm('hide_thread_comment', ip_check(req))) {
 			hbtn += `
-				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[숨기기${rs['hidden'] == '1' ? ' 해제' : ''}]</a>
+				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[댓글 ${rs['hidden'] == '1' ? '표시' : '숨기기'}]</a>
 			`;
 		}
 		content += `
@@ -1582,8 +1506,8 @@ async function getThreadData(req, tnum, tid = '-1') {
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
 						<span class=num>
-							<a id="${rs['id']}">#${rs['id']}</a>&nbsp;
-						</span> ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn} <span style="float: right;">${generateTime(toDate(rs['time']), timeFormat)}</span>
+							<a id="${rs['id']}">${rs['id']}.</a>&nbsp;
+						</span> ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn} <span style="float: right;">${generateTime(toDate(rs['time']), "Y년 m월 d일 H시 i분")}</span>
 					</div>
 					
 					<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">
@@ -1591,18 +1515,18 @@ async function getThreadData(req, tnum, tid = '-1') {
 							rs['hidden'] == '1'
 							? (
 								getperm('hide_thread_comment', ip_check(req))
-								? '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]<br>' + markdown(rs['content'])
-								: '[' + rs['hider'] + '에 의해 숨겨진 글입니다.]'
+								? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'])
+								: '[' + rs['hider'] + '가 숨긴 댓글입니다.]'
 							  )
 							: (
 								rs['status'] == 1
 								? (
 									rs['stype'] == 'status'
-									? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 상태로 표시'
+									? '[토론을 <strong>' + html.escape(rs['content']) + '</strong> 상태로 표시했읍니다.]'
 									: (
 										rs['stype'] == 'document'
-										? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 문서로 이동'
-										: '토론 주제를 <strong>' + html.escape(rs['content']) + '</strong>(으)로 변경'
+										? '[토론을 <strong>' + html.escape(rs['content']) + '</strong> 문서로 이동했읍니다.]'
+										: '[토론의 주제를 <strong>' + html.escape(rs['content']) + '</strong>(으)로 변경했읍니다.]'
 									)
 								)
 								: markdown(rs['content'])
@@ -1622,127 +1546,6 @@ for(src of fs.readdirSync('./routes', { withFileTypes: true }).filter(dirent => 
 	// require로 하면 여기서 정의한 함수도 바로 사용이 안 되고 module.exports로 다 다시 해야 함
 	eval(fs.readFileSync('./routes/' + src).toString());
 }
-
-/*
-function processVotes(req, rtype) {
-	const num = req.params['num'];
-	
-    await curs.execute("select num, name, start, end, required_date, options, mode from vote where num = ?", [num]);
-    const dbData = curs.fetchall();
-    var voteTitle = '무제';
-    if(dbData.length) {
-        voteTitle = dbData[0]['name'];
-        var data = ''
-        data += '시작일: ' + dbData[0]['start'] + '<br>'
-        data += '종료일: ' + dbData[0]['end'] + '<br>'
-        data += '투표 방식: ' + dbData[0]['mode'] + ' 투표<br>'
-        if(!(['공개', '비공개', '기명'].includes(dbData[0]['mode']))) {
-            return await showError(req, 'invalid_vote_type');
-		}
-		
-        var adminMenu = '<span class="pull-right" style="display: inline-block;">'
-        if(getperm('delete_vote'))
-            adminMenu += '<a href="/admin/vote/' + num + '/delete" class="btn btn-danger btn-sm" onclick="return confirm(\'삭제하시겠습니까?\');">[ADMIN] 삭제</a>';
-        if(getperm('edit_vote'))
-            adminMenu += ' <a href="/admin/vote/' + num + '/edit" class="btn btn-warning btn-sm">[ADMIN] 편집</a></span>';
-        adminMenu += '</span>';
-        data += '<br><h2 style="border:none">투표하기 ' + adminMenu + '</h2>';
-        await curs.execute("select data, username, date from votedata where num = ? order by data, date asc", [num]);
-        data += '<textarea rows=5 readonly style="background:#eceeef" class="form-control">';
-        for(var i of curs.fetchall()) {
-            if dbData[0]['mode'] == '기명':
-                data += i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표: ' + i[0] + '\n'
-            elif dbData[0][6] == '공개':
-                if admin_check() == 1:
-                    data += '[ADMIN] ' + i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표: ' + i[0] + '\n'
-                else:
-                    data += i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표 완료.\n'
-            else:
-                if admin_check() == 1:
-                    data += '[ADMIN] ' + i[2] + ' (UTC) - "' + i[1] + '" 사용자가 투표: ' + i[0] + '\n'
-                else:
-                    data += '어떤 사용자가 어디론가 투표함.\n'
-		}
-        data += '</textarea><hr>'
-        if not('state' in flask.session):
-            data += '로그인이 필요합니다.'
-        else:
-            if re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) >= dbData[0][3]:
-                data += '기한 만료.'
-            elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) < dbData[0][2]:
-                data += '투표가 시작되지 않았음.'
-            elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', getUserDate(conn, ip_check())) > dbData[0][4]:
-                data += '자격 조건 미달.'
-            else:
-                curs.execute("select data from votedata where username = ? and num = ?", [ip_check(), num])
-                if curs.fetchall():
-                    data += '투표 완료.'
-                else:
-                    data += dbData[0][5] + '<br><div class="btns pull-right"><button type="submit" class="btn btn-info" style="width: 120px;">투표</button></div>'
-    } else {
-        res.send(await showError(req, '투표를 찾을 수 없습니다.'));
-		return;
-	}
-
-    if flask.request.method == 'POST':
-        curs.execute("select num, name, start, end, deserve, options, mode from vote where num = ?", [num])
-		dbData = curs.fetchall()
-		if not(dbData):
-			return showError('투표를 찾을 수 없습니다.')
-		if not('state' in flask.session):
-			return showError('로그인이 필요합니다.')
-		if re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) >= dbData[0][3]:
-			return showError('기한이 만료되었습니다.')
-		elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', get_time()) < dbData[0][2]:
-			return showError('투표가 아직 시작되지 않았습니다.')
-		elif re.sub('[ ]\d{1,2}[:]\d{1,2}[:]\d{1,2}', '', getUserDate(conn, ip_check())) > dbData[0][4]:
-			return showError('자격 조건을 충족하지 않습니다.')
-		if ban_check() == 1:
-			return re_error('/ban')
-		curs.execute("select data from votedata where username = ? and num = ?", [ip_check(), num])
-		if curs.fetchall():
-			return showError('투표를 이미 완료했습니다.')
-		if getForm('voteOptionsSelect', None) == None:
-			return easy_minify(flask.render_template(skin_check(),
-				imp = [voteTitle, wiki_set(), custom(), other2([' (투표)', 0])],
-				data =  alertBalloon('투표한 옵션이 없습니다.') + '''
-						<form method="post" onsubmit="return confirm('계속하시겠습니까? 취소 및 수정은 불가능합니다.');">
-							''' + data + '''
-						</form>
-						''',
-				menu = 0,
-				err = 1,
-				vote = 1
-			))
-		curs.execute("insert into votedata (num, username, data, date) values (?, ?, ?, ?)", [num, ip_check(), getForm('voteOptionsSelect'), get_time()])
-		conn.commit()
-		return redirect('/vote/' + num)
-
-    else:
-        return easy_minify(flask.render_template(skin_check(),
-            imp = [voteTitle, wiki_set(), custom(), other2([' (투표)', 0])],
-            data =  '''
-                    <form method="post" onsubmit="return confirm('계속하시겠습니까? 취소 및 수정은 불가능합니다.');">
-                        ''' + data + '''
-                    </form>
-                    ''',
-            menu = 0,
-            vote = 1,
-            smsub = ' 투표'
-        ))
-}
-*/
-
-/*
-wiki.get('/httpstatus', function(req, res) {
-	res.status(req.query['code'] ? req.query['code'] : '200').send(`
-		<form method=get>
-			<label>HTTP 코드: </label> <input type=text name=code>
-			<button type=submit>이동</button>
-		</form>
-	`);
-});
-*/
 
 wiki.use(function(req, res, next) {
     return res.status(404).send(`
