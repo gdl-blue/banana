@@ -59,11 +59,11 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		content += `
 				<tr>
 					<td>
-						<strong>r${row['rev']}</strong> | <a rel=nofollow href="/w/${encodeURIComponent(title)}?rev=${row['rev']}">열람</a> |
+						<strong>r${row['rev']}</strong> | <a rel=nofollow href="/w/${encodeURIComponent(title)}?rev=${row['rev']}">읽기</a> |
 							<a rel=nofollow href="/raw/${encodeURIComponent(title)}?rev=${row['rev']}">날내용</a> |
-							<a rel=nofollow href="/revert/${encodeURIComponent(title)}?rev=${row['rev']}">이 판으로 복구</a>${
+							<a rel=nofollow href="/revert/${encodeURIComponent(title)}?rev=${row['rev']}">여기로 되돌리기</a>${
 								Number(row['rev']) > 1
-								? ' | <a rel=nofollow href="/diff/' + encodeURIComponent(title) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교</a>'
+								? ' | <a rel=nofollow href="/diff/' + encodeURIComponent(title) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교하기</a>'
 								: ''
 							}
 							

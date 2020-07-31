@@ -59,13 +59,13 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
 						<a href="/w/${encodeURIComponent(row['title'])}">${html.escape(row['title'])}</a> 
-						<a href="/history/${encodeURIComponent(row['title'])}">[역사]</a> 
+						| <a href="/history/${encodeURIComponent(row['title'])}">역사</a> 
 						${
 								Number(row['rev']) > 1
-								? '<a \href="/diff/' + encodeURIComponent(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">[비교]</a>'
+								? ' | <a \href="/diff/' + encodeURIComponent(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교</a>'
 								: ''
 						} 
-						<a href="/discuss/${encodeURIComponent(row['title'])}">[토론]</a> 
+						| <a href="/discuss/${encodeURIComponent(row['title'])}">토론</a> 
 						
 						(<span style="color: ${
 							(
@@ -105,5 +105,5 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 		</table>
 	`;
 	
-	res.send(await render(req, '최근 변경내역', content, {}));
+	res.send(await render(req, '최근 변경된 문서', content, {}));
 });
