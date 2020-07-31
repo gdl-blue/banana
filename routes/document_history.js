@@ -38,17 +38,17 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		<table class="table table-hover">
 			<thead>
 				<tr>
-					<td>
-						<strong>버전</strong>
-					</td>
+					<th>
+						시간
+					</th>
 					
-					<td>
-						<strong>수정자</strong>
-					</td>
+					<th>
+						수정자
+					</th>
 					
-					<td>
-						<strong>시간</strong>
-					</td>
+					<th>
+						버전
+					</th>
 				</tr>
 			</thead>
 			
@@ -58,6 +58,14 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	for(row of curs.fetchall()) {
 		content += `
 				<tr>
+					<td>
+						${generateTime(toDate(row['time']), timeFormat)} 
+					</td>
+					
+					<td>
+						${ip_pas(row['username'], row['ismember'])}
+					</td>
+					
 					<td>
 						<strong>r${row['rev']}</strong> | <a rel=nofollow href="/w/${encodeURIComponent(title)}?rev=${row['rev']}">읽기</a> |
 							<a rel=nofollow href="/raw/${encodeURIComponent(title)}?rev=${row['rev']}">날내용</a> |
@@ -79,14 +87,6 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 								)
 								
 							};">${row['changes']}</span>)
-					</td>
-					
-					<td>
-						${ip_pas(row['username'], row['ismember'])}
-					</td>
-					
-					<td>
-						${generateTime(toDate(row['time']), timeFormat)} 
 					</td>
 				</tr>
 		`;
