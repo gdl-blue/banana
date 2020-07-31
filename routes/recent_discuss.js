@@ -12,10 +12,6 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 			<li><a href="?logtype=normal_thread">[열린 토론]</a></li>
 			<li><a href="?logtype=old_thread">[오래된 토론]</a></li>
 			<li><a href="?logtype=closed_thread">[닫힌 토론]</a></li>
-
-			<li><a href="?logtype=open_editrequest">[열린 편집 요청]</a></li>
-			<li><a href="?logtype=accepted_editrequest">[승인된 편집 요청]</a></li>
-			<li><a href="?logtype=closed_editrequest">[닫힌 편집 요청]</a></li>
 		</ol>
 		
 		<table class="table table-hover">
@@ -25,7 +21,7 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 			</colgroup>
 			<thead>
 				<tr>
-					<th>항목</th>
+					<th>토론</th>
 					<th>시간</th>
 				</tr>
 			</thead>
@@ -65,5 +61,5 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		</table>
 	`;
 	
-	res.send(await render(req, "최근 토론", content, {}));
+	res.send(await render(req, "최근 발언된 토론", content, {}));
 });

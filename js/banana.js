@@ -305,7 +305,7 @@ $(function() {
 				dataType: 'json',
 				success: function(data) {
 					const tid = atoi(data['comment_id']);
-					var rescount = $('div.res-wrapper').length;
+					var rescount = $('#res-container div.res-wrapper').length;
 					
 					for(var i=rescount+1; i<=tid; i++, rescount++) {
 						$('div.res-wrapper[data-id="' + itoa(rescount) + '"]').after($(

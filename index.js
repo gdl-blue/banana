@@ -1514,8 +1514,9 @@ async function getThreadData(req, tnum, tid = '-1') {
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
 						<span class=num>
-							<a id="${rs['id']}">${rs['id']}.</a>&nbsp;
-						</span> ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn} <span style="float: right;">${generateTime(toDate(rs['time']), "Y년 m월 d일 H시 i분")}</span>
+							${rs['id']}.&nbsp;
+						</span> ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn}
+						<span style="float: right;">${generateTime(toDate(rs['time']), "Y년 m월 d일 H시 i분")}</span>
 					</div>
 					
 					<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">

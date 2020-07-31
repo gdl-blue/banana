@@ -46,7 +46,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 				<div class="res-wrapper res-loading" data-id="${i}" data-locked="false" data-visible=false>
 					<div class="res res-type-normal">
 						<div class="r-head">
-							<span class="num"><a id="${i}">${i}. </a>&nbsp;</span>
+							<span class="num">${i}.&nbsp;</span>
 						</div>
 						
 						<div class="r-body"></div>
@@ -60,7 +60,13 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			</div>
 		</div>
 		
-		<h2 class=wiki-heading style="cursor: pointer;">내 의견</h2>
+		<div class=res-wrapper data-id="-1" data-locked=true data-visible=false>
+			<div class="res res-type-normal">
+				<div class="r-head">
+					<span class="num">*. <strong>내 의견</strong>&nbsp;</span>
+				</div>
+				
+				<div class="r-body">
 	`;
 	
 	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
@@ -92,7 +98,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		    <form method="post" id="thread-status-form">
         		토론 상태: 
         		<select name="status">${sts}</select>
-        		<button id="changeBtn" class="d_btn type_blue">변경</button>
+        		<button>변경</button>
         	</form>
 		`;
 	}
@@ -102,7 +108,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
         	<form method="post" id="thread-document-form">
         		토론 문서: 
         		<input type="text" name="document" value="${title}">
-        		<button id="changeBtn" class="d_btn type_blue">변경</button>
+        		<button>변경</button>
         	</form>
 		`;
 	}
@@ -112,21 +118,24 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
         	<form method="post" id="thread-topic-form">
         		토론 주제: 
         		<input type="text" name="topic" value="${topic}">
-        		<button id="changeBtn" class="d_btn type_blue">변경</button>
+        		<button>변경</button>
         	</form>
 		`;
 	}
 	
 	content += `
-		<script>$(function() { discussPollStart("${tnum}"); });</script>
-	
-		<form id=new-thread-form method=post>
-			<textarea class=form-control rows=5 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '동결된 토론입니다.' : (status == 'close' ? '닫힌 토론입니다.' : '')}</textarea>
-			
-			<div class=btns>
-				<button type=submit class="btn btn-info" style="width: 120px;">전송하기!</button>
+					<script>$(function() { discussPollStart("${tnum}"); });</script>
+				
+					<form id=new-thread-form method=post>
+						<textarea class=form-control style="border: none; background: transparent;" placeholder="의견을 입력해주세요." rows=3 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '[동결된 토론입니다.]' : (status == 'close' ? '[닫힌 토론입니다.]' : '')}</textarea>
+						
+						<div class=btns>
+							<button type=submit class="btn btn-sm" style="width: 120px;">전송하기!</button>
+						</div>
+					</form>
+				</div>
 			</div>
-		</form>
+		</div>
 	`;
 	
 	if(!req.query['nojs'] && !(!req.query['nojs'] && compatMode(req))) {
