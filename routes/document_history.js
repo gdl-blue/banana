@@ -39,15 +39,15 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 			<thead>
 				<tr>
 					<td>
-						버전
+						<strong>버전</strong>
 					</td>
 					
 					<td>
-						수정자 이름
+						<strong>수정자</strong>
 					</td>
 					
 					<td>
-						시간
+						<strong>시간</strong>
 					</td>
 				</tr>
 			</thead>
@@ -59,10 +59,9 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		content += `
 				<tr>
 					<td>
-						<strong>r${row['rev']}</strong> | <a rel=nofollow href="/w/${encodeURIComponent(title)}?rev=${row['rev']}">보기</a> |
-							<a rel=nofollow href="/raw/${encodeURIComponent(title)}?rev=${row['rev']}" data-npjax="true">RAW</a> |
-							<a rel=nofollow href="/blame/${encodeURIComponent(title)}?rev=${row['rev']}">Blame</a> |
-							<a rel=nofollow href="/revert/${encodeURIComponent(title)}?rev=${row['rev']}">이 리비젼으로 되돌리기</a>${
+						<strong>r${row['rev']}</strong> | <a rel=nofollow href="/w/${encodeURIComponent(title)}?rev=${row['rev']}">열람</a> |
+							<a rel=nofollow href="/raw/${encodeURIComponent(title)}?rev=${row['rev']}">날내용</a> |
+							<a rel=nofollow href="/revert/${encodeURIComponent(title)}?rev=${row['rev']}">이 판으로 복구</a>${
 								Number(row['rev']) > 1
 								? ' | <a rel=nofollow href="/diff/' + encodeURIComponent(title) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교</a>'
 								: ''

@@ -70,7 +70,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				
 				for(rs of td) {
 					const crid = Number(rs['id']);
-					if(ltid > 5 && crid != 1 && (crid < ltid - 2)) {
+					if(ltid > 4 && crid != 1 && crid != 2 && (crid < ltid - 1)) {
 						if(!ambx) {
 							content += `
 								<div>
@@ -87,7 +87,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 						<div class=res-wrapper>
 							<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 								<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
-									<span class=num>#${rs['id']}</span> ${ip_pas(rs['username'])} <span style="float: right;">${generateTime(toDate(rs['time']), timeFormat)}</span>
+									<span class=num>${rs['id']}.</span> ${ip_pas(rs['username'])} <span style="float: right;">${generateTime(toDate(rs['time']), timeFormat)}</span>
 								</div>
 								
 								<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">
@@ -130,7 +130,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 					
 
 					<div class="btns">
-						<button id="createBtn" class="btn btn-info" style="width: 120px;">확인</button>
+						<button id="createBtn" class="btn btn-info" style="width: 120px;">발제!</button>
 					</div>
 				</form>
 			`;

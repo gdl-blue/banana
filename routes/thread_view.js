@@ -124,7 +124,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			<textarea class=form-control rows=5 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '동결된 토론입니다.' : (status == 'close' ? '닫힌 토론입니다.' : '')}</textarea>
 			
 			<div class=btns>
-				<button type=submit class="btn btn-info" style="width: 120px;">전송</button>
+				<button type=submit class="btn btn-info" style="width: 120px;">전송하기!</button>
 			</div>
 		</form>
 	`;
