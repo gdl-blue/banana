@@ -985,16 +985,14 @@ async function getacl(req, title, action) {
 		case 'action-based':
 			var fullacllst = [];
 			
-			const sql = `await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
+			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
 			fullacllst.push(curs.fetchall());
 			
 			await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
 			fullacllst.push(curs.fetchall());
 			
 			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
-			fullacllst.push(curs.fetchall());`;
-			
-			eval(sql);
+			fullacllst.push(curs.fetchall());
 			
 			if(!fullacllst.length) {
 				var ns = '';
@@ -1006,7 +1004,15 @@ async function getacl(req, title, action) {
 				}
 				
 				title = ns + ':';
-				eval(sql);
+			
+				await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
+				fullacllst.push(curs.fetchall());
+				
+				await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
+				fullacllst.push(curs.fetchall());
+				
+				await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
+				fullacllst.push(curs.fetchall());
 				
 				// 왜 goto가 없어
 			}
@@ -1333,7 +1339,7 @@ function generateCaptcha(req, cnt = 3) {
 		const img = i.getBase64();
 		
 		retHTML += `
-			<img class=captcha-image src="data:image/png;base64,${new Buffer(img, 'base64').toString('base64')}" />
+			<img class=captcha-image src="data:image/png;base64,${Buffer.from(img, 'base64').toString('base64')}" />
 		`;
 	}
 	
@@ -1453,10 +1459,12 @@ function redirectToFrontPage(req, res) {
 
 wiki.get('/w', redirectToFrontPage);
 wiki.get('/', async function welcome(req, res) {
-	if(compatMode(req) || config.getString('no_welcome', '0') == '1') {
+	if(compatMode(req) || config.getString('no_welcome', '0') == '1' || req.session['welcomed']) {
 		redirectToFrontPage(req, res);
 		return;
 	}
+	
+	req.session.welcomed = true;
 	
 	res.send(swig.render(fs.readFileSync('./welcome.html').toString(), { locals: {
 		wiki_name: config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),

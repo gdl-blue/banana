@@ -41,13 +41,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			viewname = 'thread_list_close'
 		break;default:
 			content += `
-				<p>
-					<a href="?state=closed_edit_requests">[닫힌 편집 요청 보기]</a>
-				</p>
-			`;
-			
-			content += `
-				<h2 class="wiki-heading">토론</h2>
+				<h2 class="wiki-heading">열린 토론 목록</h2>
 				<div class=wiki-heading-content>
 			`;
 				
@@ -76,7 +70,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				
 				for(rs of td) {
 					const crid = Number(rs['id']);
-					if(ltid > 4 && crid != 1 && (crid < ltid - 2)) {
+					if(ltid > 5 && crid != 1 && (crid < ltid - 2)) {
 						if(!ambx) {
 							content += `
 								<div>
@@ -114,27 +108,29 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				
 				content += '</div>';
 			}
-			content += '<a href="?state=close">[닫힌 토론]</a>';
+			content += '<a href="?state=close">[닫힌 토론 목록]</a>';
 			
 			content += `
+				<br><br>
+				
 				<h4 class="wiki-heading">토론 발제하기</h4>
 				
-				<form method="post" class="new-thread-form" id="topicForm">
-					<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
+				<form method=post class=new-thread-form>
+					<input type=hidden name=identifier value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 					
 					<div class="form-group">
-						<label>주제:</label>
+						<label>토론할 주제:</label>
 						<input type="text" class="form-control" name="topic">
 					</div>
->
+
 					<div class="form-group">
-						<label>내용:</label
+						<label>내 의견:</label>
 						<textarea name="text" class="form-control" rows="5"></textarea>
 					</div>
 					
 
 					<div class="btns">
-						<button id="createBtn" class="btn btn-primary" style="width: 8rem;">전송</button>
+						<button id="createBtn" class="btn btn-info" style="width: 120px;">확인</button>
 					</div>
 				</form>
 			`;
@@ -149,6 +145,11 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 	if(config.getString('disable_discuss', '0') == '1') {
 		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
+	if(!req.body['topic'] || !req.body['text']) {
+		res.send(await showError(req, 'invalid_request_body'));
 		return;
 	}
 	

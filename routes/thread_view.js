@@ -60,7 +60,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			</div>
 		</div>
 		
-		<h2 class=wiki-heading style="cursor: pointer;">댓글 달기</h2>
+		<h2 class=wiki-heading style="cursor: pointer;">내 의견</h2>
 	`;
 	
 	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
@@ -124,7 +124,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			<textarea class=form-control rows=5 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '동결된 토론입니다.' : (status == 'close' ? '닫힌 토론입니다.' : '')}</textarea>
 			
 			<div class=btns>
-				<button type=submit class="btn btn-primary" style="width: 120px;">전송</button>
+				<button type=submit class="btn btn-info" style="width: 120px;">전송</button>
 			</div>
 		</form>
 	`;
