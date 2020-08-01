@@ -2,7 +2,7 @@
 
 const fs = require('fs');
 
-const filename = "chick.tcv";
+const filename = "snow.tcv";
 const bytes    = fs.readFileSync(filename, 'utf8');
 
 if(bytes.slice(0, 3) != "TCV") {
@@ -47,7 +47,11 @@ var _timer = setInterval(function() {
 	for(var i=0; i<topMargin; i++) process.stdout.write('\n');
 	
 	for(var line=(frm-1)*frameLines+2; line<(frm-1)*frameLines+2+frameLines; line++) {
-		if(bytes.split('\n')[line-1].endsWith('') || bytes.split('\n')[line-1] == '') continue;
+		try {
+			if(bytes.split('\n')[line-1].endsWith('') || bytes.split('\n')[line-1] == '') continue;
+		} catch(e) {
+			break;
+		}
 		for(var i=0; i<rightMargin; i++) process.stdout.write(' ');
 		process.stdout.write(bytes.split('\n')[line-1] + '\n');
 	}

@@ -127,7 +127,11 @@ function TCVreader(filename, timerName) {
 		for(var i=0; i<topMargin; i++) process.stdout.write('\n');
 		
 		for(var line=(frm-1)*frameLines+2; line<(frm-1)*frameLines+2+frameLines; line++) {
-			if(bytes.split('\n')[line-1].endsWith('') || bytes.split('\n')[line-1] == '') continue;
+			try {
+				if(bytes.split('\n')[line-1].endsWith('') || bytes.split('\n')[line-1] == '') continue;
+			} catch(e) {
+				break;
+			}
 			for(var i=0; i<rightMargin; i++) process.stdout.write(' ');
 			process.stdout.write(bytes.split('\n')[line-1] + '\n');
 		}
@@ -391,7 +395,7 @@ try {
 		
 		const defskin = hostconfig['skin'];
 		
-		TCVreader('chick', '_initializing');
+		TCVreader('snow', '_initializing');
 		
 		const tables = {
 			'documents': ['title', 'content'],
