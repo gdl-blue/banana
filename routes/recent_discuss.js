@@ -43,6 +43,18 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 	const trds = curs.fetchall();
 	
 	for(trd of trds) {
+		await curs.execute("select username, content from res where tnum = ? order by cast(id as integer) desc limit 1", [trd['tnum']]);
+		const _0x123456 = curs.fetchall();
+		
+		var prv = '', un = '';
+		
+		if(_0x123456.length) {
+			if(_0x123456[0]['content'].length > 80) prv = _0x123456[0]['content'].slice(0, 80) + '...';
+			else prv = _0x123456[0]['content'];
+			
+			un = _0x123456[0]['username'];
+		}
+		
 		content += `
 			<tr>
 				<td>
@@ -51,6 +63,12 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 				
 				<td>
 					${generateTime(toDate(trd['time']), timeFormat)}
+				</td>
+			</tr>
+			
+			<tr>
+				<td colspan=2>
+					${html.escape(un)} - ${html.escape(prv)}
 				</td>
 			</tr>
 		`;

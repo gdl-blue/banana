@@ -81,6 +81,74 @@ function sound(a) {
 	shell('beep.exe ' + a);
 }
 
+var tcvTimers = {};
+
+function TCVreader(filename, timerName) {
+	// Text-based Console Video (텍스트 기반 콘솔 화상)
+
+	const fs = require('fs');
+
+	const bytes = fs.readFileSync('./animations/' + filename + '.tcv', 'utf8');  // 바이너리로 했었는데 한글이 안돼서 유니코드로함
+
+	if(bytes.slice(0, 3) != "TCV") {
+		return;
+	}
+
+	if(bytes[4].charCodeAt() != 101) {
+		return;
+	}
+
+	if(bytes[5].charCodeAt() != 16) {
+		return;
+	}
+
+	if(bytes[6].charCodeAt() != 100) {
+		return;
+	}
+
+	const frameLines = bytes[7].charCodeAt();
+	const frameCount = bytes[8].charCodeAt();
+	const frameDelay = bytes[9].charCodeAt();
+
+	const topMargin = bytes[10].charCodeAt();
+	const rightMargin = bytes[11].charCodeAt();
+
+	const loopCount = bytes[12].charCodeAt();
+
+	const clearScreen = bytes[13].charCodeAt();
+
+	var frm  = 1;
+	var loop = 0;
+
+	console.clear();
+	tcvTimers[timerName] = setInterval(function() {
+		console.clear();
+		
+		for(var i=0; i<topMargin; i++) process.stdout.write('\n');
+		
+		for(var line=(frm-1)*frameLines+2; line<(frm-1)*frameLines+2+frameLines; line++) {
+			if(bytes.split('\n')[line-1].endsWith('') || bytes.split('\n')[line-1] == '') continue;
+			for(var i=0; i<rightMargin; i++) process.stdout.write(' ');
+			process.stdout.write(bytes.split('\n')[line-1] + '\n');
+		}
+		
+		frm++;
+		
+		if(frm > frameCount) {
+			loop++;
+			
+			if(loopCount < 255 && loop >= loopCount) {
+				clearInterval(tcvTimers[timerName]);
+				return;
+			} else {
+				frm = 1;
+			}
+		}
+	}, frameDelay * 100);
+
+	if(clearScreen) console.clear();
+}
+
 // https://stackoverflow.com/questions/1183872/put-a-delay-in-javascript
 function timeout(ms) {
 	var s = new Date().getTime();
@@ -323,7 +391,7 @@ try {
 		
 		const defskin = hostconfig['skin'];
 		
-		print("\n기본 설정을 구성하고 있습니다. 잠시만 기다려 주세요~^^");
+		TCVreader('chick', '_initializing');
 		
 		const tables = {
 			'documents': ['title', 'content'],
@@ -391,8 +459,11 @@ try {
 		fs.writeFileSync('config.json', JSON.stringify(hostconfig), 'utf8');
 
 		await curs.execute("insert into config (key, value) values ('default_skin', ?)", [defskin]);
-
-		print("\n설정이 완료되었습니다. 5초 후에 엔진을 다시 시작하십시오.");
+		
+		clearInterval(tcvTimers["_initializing"]);
+		console.clear();
+		
+		print("설정이 완료되었습니다. 5초 후에 엔진을 다시 시작하십시오.");
 		
 		timeout(5000);
 		
@@ -1564,17 +1635,7 @@ wiki.use(function(req, res, next) {
 
 if(firstrun) {
 	(async function setCacheData() {
-		const SML = [
-			"바나나를 불러오는 중...",
-			"바나나를 꺼내는 중...",
-			"바나나 껍질을 까는 중...",
-			"바나나 나무를 찾는 중..."
-		];
-		
-		print(
-			SML[ Math.floor(Math.random() * SML.length) ] + 
-			'\n'
-		);
+		TCVreader('chick', '_starting');
 		
 		await curs.execute("select key, value from config");
 		
@@ -1604,10 +1665,14 @@ if(firstrun) {
 				permlist[prm['username']].push(prm['perm']);
 		}
 		
+		// setTimeout(()=>{
 		const server = wiki.listen(hostconfig['port']); // 서버실행
+		clearInterval(tcvTimers['_starting']);
+		console.clear();
 		print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
 		
 		sound('500,100 750,150');
+		// },10000);
 		
 		// 활성화된 경우 텔넷 서버 열기
 		if(config.getString('allow_telnet', '0') == '1') {
