@@ -2,3 +2,4 @@ node_modules/
 /wikidata.db
 /config.json
 skins/
+plugins/theseed-acl/

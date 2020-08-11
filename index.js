@@ -968,7 +968,9 @@ function fetchErrorString(code) {
 		'insufficient_privileges_read': '읽을 권한이 없습니다.',
 		'invalid_value': '전송한 값 중 하나가 정해진 형식을 위반했습니다.',
 		'invalid_request_body': '필요한 값 중 일부가 빠져서 처리가 불가능합니다.',
-		'thread_not_found': '토론을 찾을 수 없습니다.'
+		'thread_not_found': '토론을 찾을 수 없습니다.',
+		'user_not_found': '사용자를 찾을 수 없습니다.',
+		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.'
 	};
 	
 	if(typeof(codes[code]) == 'undefined') return `알 수 없는 오류 ${code}이 발생하였습니다.`;
@@ -1579,7 +1581,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 	content = '';
 	for(rs of curs.fetchall()) {
 		var hbtn = ''
-		if(getperm('hide_thread_comment', ip_check(req))) {
+		if((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000)) {
 			hbtn += `
 				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[댓글 ${rs['hidden'] == '1' ? '표시' : '숨기기'}]</a>
 			`;
@@ -1598,7 +1600,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 						${
 							rs['hidden'] == '1'
 							? (
-								getperm('hide_thread_comment', ip_check(req))
+								((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))
 								? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'])
 								: '[' + rs['hider'] + '가 숨긴 댓글입니다.]'
 							  )
@@ -1676,7 +1678,7 @@ if(firstrun) {
 		print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
 		
 		sound('500,100 750,150');
-		// },10000);
+		// },10000000);
 		
 		// 활성화된 경우 텔넷 서버 열기
 		if(config.getString('allow_telnet', '0') == '1') {

@@ -7,11 +7,11 @@ $(function() {
 	$('.noscript-alert').remove();
 	$('.for-script').show();
 	
-	if($(window).width() >= 460 && typeof(ActiveXObject) != 'function') {  /* 모니터 1600*1200인데 최대화할 때 너비 1585로 나옴*/
+	$('isindex').replaceWith($('<form><label>검색: </label> <input type=text class=form-control name=isindex></form>'));
+	
+	if($(window).width() >= 460 && typeof(ActiveXObject) != 'function') {
 		try {
 			$('.vertical-tablist .tablist').show();
-			/* $('.vertical-tablist .tablist').css({'width': '120px', 'float': 'left'}); */
-			/* $('.vertical-tablist .tab-content').css({'width': 'calc(100% - 141px)', 'float': 'right'}); */
 			$('.vertical-tablist .tab-content .tab-page').hide();
 			$('.vertical-tablist .tab-content .tab-page')[0].style.display = '';
 			$('.vertical-tablist .tab-content h2.tab-page-title').hide();
@@ -55,8 +55,8 @@ $(function() {
 		);
 	}
 	
-	const itoa = String;
-	const atoi = Number;
+	const itoa = e => String(e);
+	const atoi = e => Number(e);
 	
 	$('.input-examples').on('change click', function() {
 		$(this).prev().val($(this).val());
