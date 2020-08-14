@@ -77,6 +77,10 @@ function shell(c, l = '') {
 }
 
 function sound(a) {
+	if(!require('os').platform() != 'win32') return;
+	if(!require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\MSVBVM.DLL')) return;
+	if(!require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\VB6KO.DLL')) return;
+	
 	shell('beep.exe ' + a);
 }
 
@@ -370,7 +374,7 @@ try {
 	firstrun = 0;
 	(async function setupWiki() {
 		if(!fs.existsSync('./config.json')) {
-			if(require('os').platform() == 'win32') {
+			if(require('os').platform() == 'win32' && require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\MSVBVM.DLL') && require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\VB6KO.DLL')) {
 				print("설치 프로그램을 불러오는 중입니다 . . .");
 				conn.close(e => {});
 				(require("child_process")).exec('banana.exe /i', {}, (a, b, c) => process.exit());
