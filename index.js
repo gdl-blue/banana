@@ -62,8 +62,7 @@ const find = (obj, fnc) => {
 			cnt++;
 		}
 		return -1;
-	}
-	else {
+	} else {
 		for(i in obj) {
 			if(fnc(obj[i])) return i;
 		}
@@ -202,7 +201,7 @@ const random = {
 				return x[ Math.floor(Math.random() * x.length) ];
 		}
 	}
-}
+};
 
 const timeFormat = 'Y-m-d H:i:s';
 
@@ -308,7 +307,7 @@ const wiki = express();
 function getTime() { return Math.floor(new Date().getTime()); }; const get_time = getTime;
 
 function toDate(t) {
-	if(isNaN(Number(t))) return t;  // 문자열(1983-04-22 12:45:56 등)로 되어있는 경우 기냥 반환
+	if(isNaN(Number(t))) return t;  // 문자열(1983-04-22 12:45:56 등)로 되어있는 경우 그냥 반환
 	
 	var date = new Date(Number(t));
 	
@@ -473,9 +472,7 @@ try {
 		
 		process.exit(0);
 	})();
-}
-
-if(firstrun){
+}if(firstrun){
 
 wiki.use(bodyParser.json());
 wiki.use(bodyParser.urlencoded({ extended: true }));
@@ -609,7 +606,7 @@ function compatMode(req) {
 		const useragent = req.headers['user-agent'];
 		if(!useragent) return false;
 		
-		if(useragent.includes('Mypal') || useragent.includes('Centaury')) {
+		if(useragent.includes('Mypal') || useragent.includes('Centaury') || useragent.includes('PaleMoon') || useragent.includes('Basilisk')) {
 			return false;
 		}
 		
@@ -623,13 +620,12 @@ function compatMode(req) {
 		if(navigatorName == 'chrome') navigatorName = 'chromium';
 		
 		switch(navigatorName) {
-			case 'chrome':
 			case 'chromium':
 				if(navigatorVersion < 30) {
 					return true;
 				}
 			break; case 'firefox':
-				if(navigatorVersion < 40) {
+				if(navigatorVersion < 52) {
 					return true;
 				}
 			break; case 'ie':
@@ -867,7 +863,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	if(islogin(req)) {
 		templateVariables['member'] = {
 			username: req.session.username
-		}
+		};
 	}
 	
 	const nslist = await fetchNamespaces();
@@ -911,7 +907,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 				
 				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
 				
-				return c;
+				return swig.render(tmplt, { locals: templateVariables });
 			break; case 'the seed':
 				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
 		}
@@ -948,8 +944,11 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	
 	header += skinconfig['additional_heads'];
 	header += '</head><body class="';
-	for(var i=0; i<skinconfig['body_classes'].length; i++) {
-		header += skinconfig['body_classes'][i] + ' ';
+	
+	const bcll = skinconfig['body_classes'].length;
+	
+	for(var i=0; i<bcll; i++) {
+		header += skinconfig['body_classes'][i] + (i == bcll - 1 ? '' : ' ');
 	}
 	header += '">';
 	var footer = '</body></html>';
@@ -1267,6 +1266,8 @@ for(pi of getPlugins('all')) {
 	const picod = require('./plugins/' + pi + '/index.js');
 	
 	for(table in picod['create_table']) {
+		if(table.match(/(?:[^a-zA-Z0-9_])/)) continue;  // SQL 주입 방지
+		
 		var sql = '';
 		sql = `CREATE TABLE ${table} ( `;
 		
@@ -1483,7 +1484,7 @@ wiki.get('/recent_changes', function redirectA(req, res) {
 });
 
 wiki.get('/recent_discuss', function redirectB(req, res) {
-	res.redirect('/RecentChanges');
+	res.redirect('/RecentDiscuss');
 });
 
 async function redirectD(req, res) {
@@ -1531,7 +1532,7 @@ wiki.get(/^\/record\/(.*)$/, async function redirectJ(req, res) {
 });
 
 function redirectToFrontPage(req, res) {
-	res.redirect('/w/' + config.getString('frontpage', 'FrontPage'));
+	res.redirect('/w/' + config.getString('frontpage', '대문'));
 }
 
 wiki.get('/w', redirectToFrontPage);
@@ -1602,7 +1603,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 							? (
 								((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))
 								? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'])
-								: '[' + rs['hider'] + '가 숨긴 댓글입니다.]'
+								: '[' + rs['hider'] + '가 숨긴 댓글입니다. 관리자에게 문의하십시오.]'
 							  )
 							: (
 								rs['status'] == 1
@@ -1634,8 +1635,9 @@ for(src of fs.readdirSync('./routes', { withFileTypes: true }).filter(dirent => 
 }
 
 wiki.use(function(req, res, next) {
+	// 나중에 제대로 만들 예정
     return res.status(404).send(`
-		접속한 페이지가 없음.
+		<h1>접속하신 페이지가 존재하지 않습니다.
 	`);
 });
 
