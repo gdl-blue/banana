@@ -35,11 +35,6 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	var content = `
 		<h2 class=wiki-heading style="cursor: pointer;">
 			${trtopic}
-			${
-				getperm('delete_thread', ip_check(req))
-				? '<span class=pull-right><a onclick="return confirm(\'삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
-				: ''
-			}
 		</h2>
 		
 		<div class=wiki-heading-content>
@@ -114,6 +109,12 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
         		<button type=button data-status=close>종결</button>
         		<button type=button data-status=pause>동결</button>
         		<button type=button data-status=normal>계속</button>
+				
+				${
+					getperm('delete_thread', ip_check(req))
+					? '<span class=pull-right><a onclick="return confirm(\'삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
+					: ''
+				}
         	</form>
 		`;
 	}
