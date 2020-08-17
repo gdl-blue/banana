@@ -161,7 +161,7 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 		return;
 	}
 	
-	if(!await getacl(req, title, 'discuss')) {
+	if(!await getacl(req, title, 'create_thread')) {
 		res.send(await showError(req, 'insufficient_privileges'));
 		
 		return;

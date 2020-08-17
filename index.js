@@ -549,9 +549,11 @@ function getUsername(req, forceIP = 0) {
 		return req.session.username;
 	} else {
 		if(req.headers['x-forwarded-for']) {
+			if(req.headers['x-forwarded-for'] == '::ffff:127.0.0.1') return '127.0.0.1';
 			return req.headers['x-forwarded-for'];
 		} else {
 			try {
+				if(req.connection.remoteAddress == '::ffff:127.0.0.1') return '127.0.0.1';
 				return req.connection.remoteAddress;
 			} catch(e) {
 				return '???';
@@ -565,14 +567,18 @@ const nodemailer = require('nodemailer');
 // module.exports에 들어가야 해서 var
 var ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
 
-async function isBanned(req, ismember, username = '') {
-	// 미완성
+async function isBanned(req, ismember = '', username = '') {
 	return false;
 	
-	if(!islogin(req)) {
-		await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req, 1), ismember]);
-		if(curs.fetchall().length) return true;
+	if(username == '') {
+		ismember = islogin(req) ? 'author' : 'ip';
+		username = ip_check(req);
 	}
+	
+	await curs.execute("delete from banned_users where cast(startingdate as integer) > ?", new Date().getTime());
+	
+	await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req, 1), ismember]);
+	if(curs.fetchall().length) return true;
 	
 	await curs.execute("select username from banned_users where username = ? and ismember = ? and al = '0'", [ip_check(req, 1), ismember]);
 	if(curs.fetchall().length) return true;
@@ -922,7 +928,16 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 				
 				return swig.render(tmplt, { locals: templateVariables });
 			break; case 'the seed':
-				template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
+				if(varlist['__isSkinSettingsPage'] && !fs.existsSync('./skins/' + getSkin(req) + '/views/settings.html')) {
+					templateVariables['content'] = '<h2>이 스킨은 스킨 설정 기능을 지원하지 않거나 동작 방식이 맞지 않습니다.</h2>';
+					template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
+				}
+				else if(varlist['__isSkinSettingsPage']) {
+					template = swig.compileFile('./skins/' + getSkin(req) + '/views/settings.html');
+				}
+				else {
+					template = swig.compileFile('./skins/' + getSkin(req) + '/views/default.html');
+				}
 		}
 	} catch(e) {
 		print(`[오류!] ${e}`);
@@ -1070,6 +1085,9 @@ function ip_pas(ip = '', ismember = '', isadmin = null) {
 async function getacl(req, title, action) {
 	const acltyp = config.getString('acl_type', 'action-based');
 	
+	if(action == 'write_thread_comment') action = 'discuss';
+	if(action == 'create_thread') action = 'discuss';
+	
 	switch(acltyp) {
 		case 'action-based':
 			var fullacllst = [];
@@ -1214,17 +1232,17 @@ function stringInFormat(pattern, string) {
 
 const html = {
 	escape: function(content = '') {
-		content = content.replace(/[<]/gi, '&lt;');
-		content = content.replace(/[>]/gi, '&gt;');
 		content = content.replace(/["]/gi, '&quot;');
 		content = content.replace(/[&]/gi, '&amp;');
+		content = content.replace(/[<]/gi, '&lt;');
+		content = content.replace(/[>]/gi, '&gt;');
 		
 		return content;
 	}
 }
 
 // global에 함수가 안 들어가있다
-module.exports = { generateCaptcha: generateCaptcha, validateCaptcha: validateCaptcha, timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
+module.exports = { fetchNamespaces: fetchNamespaces, generateCaptcha: generateCaptcha, validateCaptcha: validateCaptcha, timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
 
 function getSkins() {
 	var retval = [];
@@ -1655,6 +1673,10 @@ async function getThreadData(req, tnum, tid = '-1') {
 	
 	return content;
 }
+
+wiki.get('/settings', async function skinSettings(req, res) {
+	res.send(await render(req, '스킨 설정', '.', { __isSkinSettingsPage: 1 }));
+});
 
 for(src of fs.readdirSync('./routes', { withFileTypes: true }).filter(dirent => !dirent.isDirectory()).map(dirent => dirent.name)) {
 	// require로 하면 여기서 정의한 함수도 바로 사용이 안 되고 module.exports로 다 다시 해야 함

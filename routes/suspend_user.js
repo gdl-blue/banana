@@ -87,6 +87,8 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
 	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
 	
+	await curs.execute("delete from banned_users where cast(startingdate as integer) > ?", new Date().getTime());
+	
 	if(from) {
 		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview from banned_users \
 								where username >= ? order by username limit 100", [from]);
@@ -102,7 +104,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 				<td>${html.escape(row['username'])}</td>
 				<td>${html.escape(row['blocker'])}</td>
 				<td>${generateTime(toDate(row['startingdate']), timeFormat)}</td>
-				<td>${generateTime(toDate(row['endingdate']), timeFormat)}</td>
+				<td>${row['endingdate'] != '0' ? generateTime(toDate(row['endingdate']), timeFormat) : '영구'}</td>
 				<td>${row['ismember'] == 'ip' ? 'IP' : '계정'}</td>
 				<td>${row['blockview'] == '1' ? '불가' : '가능'}</td>
 				<td>${row['al'] == '1' ? '가능' : (row['ismember'] == 'ip' ? '불가' : '-')}</td>
@@ -136,6 +138,7 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	const isPermanant      = req.body['permanant'];
 	const expirationDate   = req.body['expiration-date'];
 	const expirationTime   = req.body['expiration-time'];
+	const fake             = req.body['fakepermanant'];
 	const expirationString = `${expirationDate} ${expirationTime}:00`;
 	
 	if(!getperm('ban_users', ip_check(req))) {
@@ -148,12 +151,12 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 		return;
 	}
 	
-	if(!['author', 'ip'].includes(usertype) || !stringInFormat(/^\d{1,}[-]\d{2,2}[-]\d{2,2}$/, expirationDate) || !stringInFormat(/^\d{2,2}[:]\d{2,2}$/, expirationTime)) {
+	if(!['author', 'ip'].includes(usertype) || (isPermanant != 'true' && (!stringInFormat(/^\d{1,}[-]\d{2,2}[-]\d{2,2}$/, expirationDate) || !stringInFormat(/^\d{2,2}[:]\d{2,2}$/, expirationTime)))) {
 		res.send(await showError(req, 'invalid_value'));
 		return;
 	}
 	
-	if(isNaN(Date.parse(expirationString))) {
+	if(isPermanant != 'true' && isNaN(Date.parse(expirationString))) {
 		res.send(await showError(req, 'invalid_value'));
 		return;
 	}
@@ -165,20 +168,20 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 			username += '/128';
 	}
 	
-	const expiration = new Date(expirationString).getTime();
+	const expiration = isPermanant == 'true' ? '0' : new Date(expirationString).getTime();
 	const startTime  = new Date().getTime();
 	
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
 	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
 	
-	curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview) \
-					values (?, ?, ?, ?, ?, ?, ?)", [
-						username, ip_check(req), startTime, expiration, usertype, al, blockview
+	curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake) \
+					values (?, ?, ?, ?, ?, ?, ?, ?)", [
+						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0'
 					]);
 	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al) \
-					values (?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0'
 					]);
 	
 	res.redirect('/admin/ban_users');

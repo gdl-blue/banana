@@ -200,7 +200,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 		return;
 	}
 	
-	if(!await getacl(req, title, 'discuss')) {
+	if(!await getacl(req, title, 'write_thread_comment')) {
 		res.send(await showError(req, 'insufficient_privileges'));
 		
 		return;

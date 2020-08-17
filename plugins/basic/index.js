@@ -58,22 +58,31 @@ module.exports = {
 				<form method=post>
 					<div class=form-group>
 						<label>읽기: </label><br>
-						<select name=read class=form-control size=5>${permopts}</select>
+						<select name=read class=form-control>${permopts}</select>
 					</div>
 					
 					<div class=form-group>
 						<label>편집: </label><br>
-						<select name=edit class=form-control size=5>${permopts}</select>
+						<select name=edit class=form-control>${permopts}</select>
 					</div>
 					
 					<div class=form-group>
 						<label>토론: </label><br>
-						<select name=discuss class=form-control size=5>${permopts}</select>
+						<select name=discuss class=form-control>${permopts}</select>
 					</div>
 					
 					<div class=form-group>
 						<label>편집 요청: </label><br>
-						<select name=edit_request class=form-control size=5>${permopts}</select>
+						<select name=edit_request class=form-control>${permopts}</select>
+					</div>
+					
+					<div class=form-group>
+						<label>요약: </label><br>
+						<input name=log class=form-control>
+					</div>
+					
+					<div class=btns>
+						<button type=submit class="btn btn-primary" style="width: 100px;">확인</button>
 					</div>
 				</form>
 			`;
