@@ -4,7 +4,14 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		return;
 	}
 	
+	var deleted = 0;
+	
 	const tnum = req.params["tnum"];
+	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if((deleted = curs.fetchall().length) && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
@@ -109,15 +116,27 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
         		<button type=button data-status=close>종결</button>
         		<button type=button data-status=pause>동결</button>
         		<button type=button data-status=normal>계속</button>
-				
-				${
-					getperm('delete_thread', ip_check(req))
-					? '<span class=pull-right><a onclick="return confirm(\'삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
-					: ''
-				}
         	</form>
 		`;
 	}
+	
+	content += `
+		${
+			(!deleted && getperm('delete_thread', ip_check(req)))
+			? '<span class=pull-right><a onclick="return confirm(\'삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
+			: ''
+		}
+		${
+			(deleted && getperm('developer', ip_check(req)))
+			? '<span class=pull-right><a onclick="return confirm(\'삭제복구하시겠습니까?\');" href="/admin/thread/' + tnum + '/restore" class="btn btn-warning btn-sm">삭제 복구</a></span>'
+			: ''
+		}
+		${
+			(getperm('developer', ip_check(req)))
+			? '<span class=pull-right><a onclick="return confirm(\'영구 삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/permanant_delete" class="btn btn-danger btn-sm">완전 삭제</a></span>'
+			: ''
+		}
+	`;
 	
 	if(getperm('update_thread_document', ip_check(req))) {
 		content += `
@@ -182,6 +201,11 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 	}
 	
 	const tnum = req.params["tnum"];
+	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if(curs.fetchall().length && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	

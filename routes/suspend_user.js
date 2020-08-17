@@ -65,7 +65,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 				<col style="width: 60px;">
 				<col style="width: 60px;">
 				<col style="width: 80px;">
-				<col style="width: 50px;">
+				<col style="width: 60px;">
 			</colgroup>
 			
 			<thead>
@@ -87,7 +87,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
 	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
 	
-	await curs.execute("delete from banned_users where cast(startingdate as integer) > ?", new Date().getTime());
+	// await curs.execute("delete from banned_users where cast(endingdate as integer) < ? and not endingdate = '0'", [new Date().getTime()]);
 	
 	if(from) {
 		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview from banned_users \
@@ -127,7 +127,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 		${navbtn(0, 0, 0, 0)}
 	`;
 	
-	res.send(await render(req, '사용자 차단', content, _, _, _, 'ban_users'));
+	res.send(await render(req, '차단', content, _, _, _, 'ban_users'));
 });
 
 wiki.post('/admin/ban_users', async function banUser(req, res) {
@@ -174,12 +174,12 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
 	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
 	
-	curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake) \
+	await curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake) \
 					values (?, ?, ?, ?, ?, ?, ?, ?)", [
 						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0'
 					]);
 	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake) \
+	await curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0'
 					]);

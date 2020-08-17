@@ -6,6 +6,11 @@ wiki.post('/notify/thread/:tnum', async function notifyEvent(req, res) {
 	
 	var tnum = req.params["tnum"];
 	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if(curs.fetchall().length && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
+	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
 	const rescount = curs.fetchall().length;

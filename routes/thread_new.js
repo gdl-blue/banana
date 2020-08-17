@@ -50,6 +50,11 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			
 			cnt = 0;
 			for(trd of trdlst) {
+				await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [trd['tnum']]);
+				if((curs.fetchall().length) && !getperm('developer', ip_check(req))) {
+					continue;
+				}
+				
 				content += `
 					<h3 class=wiki-heading id="${++cnt}">
 						${cnt}. <a href="/thread/${trd['tnum']}">${html.escape(trd['topic'])}</a>

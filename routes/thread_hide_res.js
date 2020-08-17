@@ -7,6 +7,11 @@ wiki.get('/admin/thread/:tnum/:id/show', async function showHiddenComment(req, r
 	const tnum = req.params["tnum"];
 	const tid = req.params["id"];
 	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if(curs.fetchall().length && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
+	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
 	const rescount = curs.fetchall().length;
@@ -35,6 +40,11 @@ wiki.get('/admin/thread/:tnum/:id/hide', async function hideComment(req, res) {
 	
 	const tnum = req.params["tnum"];
 	const tid = req.params["id"];
+	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if(curs.fetchall().length && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	

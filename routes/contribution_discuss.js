@@ -48,6 +48,11 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 	const dd = curs.fetchall();
 	
 	for(row of dd) {
+		await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [row['tnum']]);
+		if((curs.fetchall().length) && !getperm('developer', ip_check(req))) {
+			continue;
+		}
+		
 		await curs.execute("select title, topic from threads where tnum = ?", [row['tnum']]);
 		const td = curs.fetchall()[0];
 		

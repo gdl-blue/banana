@@ -43,6 +43,11 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 	const trds = curs.fetchall();
 	
 	for(trd of trds) {
+		await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [trd['tnum']]);
+		if((curs.fetchall().length) && !getperm('developer', ip_check(req))) {
+			continue;
+		}
+		
 		await curs.execute("select username, content from res where tnum = ? order by cast(id as integer) desc limit 1", [trd['tnum']]);
 		const _0x123456 = curs.fetchall();
 		

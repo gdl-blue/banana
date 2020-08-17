@@ -6,6 +6,11 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 	
 	const tnum = req.params["tnum"];
 	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if(curs.fetchall().length && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
+	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	const rescount = curs.fetchall().length;
 	
@@ -44,6 +49,11 @@ wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(re
 	
 	const tnum = req.params["tnum"];
 	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if(curs.fetchall().length && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
+	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	
 	const rescount = curs.fetchall().length;
@@ -78,6 +88,11 @@ wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res
 	}
 	
 	const tnum = req.params["tnum"];
+	
+	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
+	if(curs.fetchall().length && !getperm('developer', ip_check(req))) {
+		res.send(await showError(req, "thread_not_found")); return;
+	}
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
 	

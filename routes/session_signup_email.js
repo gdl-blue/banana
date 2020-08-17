@@ -111,7 +111,7 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	
 	res.send(await render(req, '계정 만들기', `
 		<p>
-			입력한 주소로 인증 우편을 전송했습니다. 우편에 적혀있는 키를 다음 상자에 입력하십시오<label class=noscript-alert>(자바스크립트 활성화 필요)</label>. 우편이 안보일 경우 스팸함을 확인하십시오.
+			입력한 주소로 인증 우편을 전송했습니다. 우편에 적혀있는 키를 다음 상자에 입력하십시오. 우편이 안보일 경우 스팸함을 확인하십시오.
 		</p>
 		
 		<form method=get action=/member/signup_key>

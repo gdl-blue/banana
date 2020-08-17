@@ -260,10 +260,12 @@ conn.query = function (sql, params) {
 	var that = this;
 		return new Promise(function (resolve, reject) {
 		that.all(sql, params, function asyncSQLRun(error, rows) {
-			if (error)
+			if(error) {
+				print(error);
 				resolve(-1);  // 추후에 UPRW 뜨면 프로그램이 종료된다고 해서 reject 제거
-			else
+			} else {
 				resolve(rows);
+			}
 		});
 	});
 };
@@ -272,10 +274,12 @@ conn.exec = function (sql, params) {
 	var that = this;
 		return new Promise(function (resolve, reject) {
 		that.run(sql, params, function asyncSQLRun(error) {
-			if (error)
+			if(error) {
+				print(error);
 				resolve(-1);
-			else
+			} else {
 				resolve(0);
+			}
 		});
 	});
 };
@@ -412,15 +416,15 @@ try {
 			'email_filters': ['address'],
 			'stars': ['title', 'username', 'lastedit'],
 			'perms': ['perm', 'username'],
-			'threads': ['title', 'topic', 'status', 'time', 'tnum'],
+			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted'],
 			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin', 'stype'],
 			'useragents': ['username', 'string'],
 			'login_history': ['username', 'ip'],
 			'account_creation': ['key', 'email', 'time'],
 			'files': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category'],
 			'filehistory': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category', 'username', 'rev'],
-			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al', 'blockview'],
-			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'isip', 'blockview'],
+			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al', 'blockview', 'fake'],
+			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'isip', 'blockview', 'fake'],
 			'filelicenses': ['license', 'creator'],
 			'filecategories': ['category', 'creator'],
 			'tokens': ['username', 'token'],
@@ -449,6 +453,7 @@ try {
 		}
 		
 		const fcates = ['동물', '게임', '컴퓨터', '요리', '탈것', '전화기', '기계', '광고', '도구', '만화/애니메이션', '아이콘/기호'];
+		// 버전 및 국가는 나중에 추가 예정
 		const flices = ['CC BY', 'CC BY-NC', 'CC BY-NC-ND', 'CC BY-NC-SA', 'CC BY-ND', 'CC BY-SA', 'CC-0', 'PD-author', 'PD-self', 'PD-software'];
 		const bcates = {
 			'문의': ['대기', '완료'],
@@ -493,8 +498,8 @@ wiki.use(session({
 	cookie: {
 		expires: false
 	},
-	resave: true,
-	saveUninitialized: true
+	resave: false,
+	saveUninitialized: false
 }));
 
 function markdown(content) {
