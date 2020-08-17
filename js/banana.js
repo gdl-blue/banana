@@ -257,6 +257,28 @@ $(function() {
 			return false;
 		});
 		
+		$('form#new-thread-status-form button').click(function() {
+			var statusName = $(this).attr('data-status');
+			
+			$.ajax({
+				type: "POST",
+				dataType: 'json',
+				data: {
+					status: statusName
+				},
+				url: '/admin/thread/' + tnum + '/status',
+				success: function(d) {
+					submitBtn.removeAttr('disabled');
+					history.go(0);
+				},
+				error: function(d) {
+					alert('처리 중에 오류가 발생했습니다.');
+				}
+			});
+			
+			return false;
+		});
+		
 		$('form#thread-document-form').submit(function() {
 			var submitBtn = $(this).find('button[type="submit"]');
 			submitBtn.attr('disabled', '');
@@ -278,6 +300,26 @@ $(function() {
 		});
 		
 		$('form#thread-topic-form').submit(function() {
+			var submitBtn = $(this).find('button[type="submit"]');
+			submitBtn.attr('disabled', '');
+			
+			$.ajax({
+				type: "POST",
+				dataType: 'json',
+				data: $(this).serialize(),
+				url: '/admin/thread/' + tnum + '/topic',
+				success: function(d) {
+					submitBtn.removeAttr('disabled');
+				},
+				error: function(d) {
+					alert('처리 중에 오류가 발생했습니다.');
+				}
+			});
+			
+			return false;
+		});
+		
+		$('form#new-thread-topic-form').submit(function() {
 			var submitBtn = $(this).find('button[type="submit"]');
 			submitBtn.attr('disabled', '');
 			

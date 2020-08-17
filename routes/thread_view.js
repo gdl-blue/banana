@@ -23,9 +23,18 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		return;
 	}
 	
+	var trtopic = html.escape(topic);
+	
+	if(getperm('update_thread_topic', ip_check(req))) {
+		trtopic = `<form id=new-thread-topic-form>
+						<input style="font-size: inherit;" name=topic value="${html.escape(topic)}">
+						<button type=submit style="font-size: inherit;">→</button>
+					</form>`;
+	}
+	
 	var content = `
 		<h2 class=wiki-heading style="cursor: pointer;">
-			${html.escape(topic)}
+			${trtopic}
 			${
 				getperm('delete_thread', ip_check(req))
 				? '<span class=pull-right><a onclick="return confirm(\'삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
@@ -95,10 +104,16 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		}
 		
 		content += `
-		    <form method="post" id="thread-status-form">
+		    <form method="post" id="thread-status-form" style="display: none;">
         		토론 상태: 
         		<select name="status">${sts}</select>
         		<button>변경</button>
+        	</form>
+			
+		    <form method=post id=new-thread-status-form>
+        		<button type=button data-status=close>종결</button>
+        		<button type=button data-status=pause>동결</button>
+        		<button type=button data-status=normal>계속</button>
         	</form>
 		`;
 	}
@@ -115,7 +130,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	if(getperm('update_thread_topic', ip_check(req))) {
 		content += `
-        	<form method="post" id="thread-topic-form">
+        	<form method="post" id="thread-topic-form" style="display: none;">
         		토론 주제: 
         		<input type="text" name="topic" value="${topic}">
         		<button>변경</button>

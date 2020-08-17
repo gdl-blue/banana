@@ -114,11 +114,11 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 			입력한 주소로 인증 우편을 전송했습니다. 우편에 적혀있는 키를 다음 상자에 입력하십시오<label class=noscript-alert>(자바스크립트 활성화 필요)</label>. 우편이 안보일 경우 스팸함을 확인하십시오.
 		</p>
 		
-		<form>
-			<input type=text id=keyInput class=form-control>
+		<form method=get action=/member/signup_key>
+			<input type=text id=keyInput name=key class=form-control>
 			
 			<div class=btns>
-				<button type=button class="btn btn-info" style="width: 100px;" onclick="location.href = '/member/signup/' + $('#keyInput').val();">확인</button>
+				<button type=submit class="btn btn-info" style="width: 100px;">확인</button>
 			</div>
 		</form>
 		

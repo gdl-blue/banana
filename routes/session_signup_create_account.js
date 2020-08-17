@@ -1,4 +1,8 @@
 wiki.get('/member/signup/:key', async function signupScreen(req, res) {
+	res.redirect('/member/signup_key?key=' + req.params['key']);
+});
+
+wiki.get('/member/signup_key', async function signupScreen(req, res) {
 	await curs.execute("delete from account_creation where cast(time as integer) < ?", [Number(getTime()) - 86400000]);
 	
 	await curs.execute("select username from users");
@@ -9,7 +13,7 @@ wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 		return;
 	}
 	
-	const key = req.params['key'];
+	const key = req.query['key'].toString();
 	await curs.execute("select key from account_creation where key = ?", [key]);
 	if(!curs.fetchall().length) {
 		res.send(await showError(req, 'invalid_signup_key'));
@@ -62,7 +66,7 @@ wiki.get('/member/signup/:key', async function signupScreen(req, res) {
 	`, {}));
 });
 
-wiki.post('/member/signup/:key', async function createAccount(req, res) {
+wiki.post('/member/signup_key', async function createAccount(req, res) {
 	await curs.execute("delete from account_creation where cast(time as integer) < ?", [Number(getTime()) - 86400000]);
 	
 	await curs.execute("select username from users");
@@ -73,7 +77,7 @@ wiki.post('/member/signup/:key', async function createAccount(req, res) {
 		return;
 	}
 	
-	const key = req.params['key'];
+	const key = req.query['key'];
 	await curs.execute("select key from account_creation where key = ?", [key]);
 	if(!curs.fetchall().length) {
 		res.send(await showError(req, 'invalid_signup_key'));

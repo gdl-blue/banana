@@ -754,7 +754,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			templateVariables['imp'] = [
 				title,  // 페이지 제목 (imp[0])
 				[  // 위키 설정 (imp[1][x])
-					config.getString('wiki.site_name', c),  // 위키 이름
+					config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
 					config.getString('wiki.copyright_text', '') +  // 위키 
 					config.getString('wiki.footer_text', ''),      // 라이선스
 					'',  // 전역 CSS
@@ -842,7 +842,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					islogin(req) ? (getperm('admin', ip_check(req)) ? 1 : 0) : 0,
 					isBanned(req, islogin(req) ? 'author' : 'ip', ip_check(req)),
 					0,
-					prmret,
+					'0',  // prmret,
 					ip_check(req),
 					user_document_discuss ? 1 : 0
 				], 
@@ -897,15 +897,19 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					for(ifstatement of tmplt.match(/[{][%]\s{0,}if(.+)\s{0,}[%][}]/g)) {
 						tmplt = tmplt.replace(ifstatement, ifstatement.replace(/None/g, 'null').replace(/\snot\s/g, ' !'));
 						
-						const _0x3af4e6 = ifstatement.match(/(.+)\sin\s(.+)/);
+						/*
+						const _0x3af4e6 = ifstatement.match(/(+)\sin\s(.+)/);
 						if(!_0x3af4e6) continue;
 						
 						const find = _0x3af4e6[1];
 						const seed = _0x3af4e6[2];
 						
+						print(find, seed)
+						
 						if(isArray(templateVariables[seed])) {
 							tmplt = tmplt.replace(ifstatement, `${seed}.includes(${find})`);
 						}
+						*/
 					}
 				} catch(e){}
 				
@@ -1222,7 +1226,14 @@ function getSkins() {
 	
 	// 밑의 fileExplorer 함수에 출처 적음.
 	for(dir of fs.readdirSync('./skins', { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
-		const skincfg = require('./skins/' + dir + '/config.json');
+		var skincfg;
+		try {
+			skincfg = require('./skins/' + dir + '/config.json');
+		} catch(e) {
+			skincfg = {
+				type: 'openNAMU'
+			};
+		}
 		
 		if(skincfg['type'] && skincfg['type'].toLowerCase() == 'opennamu' && config.getString('enable_opennamu_skins', '1') != '1') continue;
 		
@@ -1317,7 +1328,14 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropSkinFile(req, res)
 wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function dropOpennamuSkinFile(req, res) {
 	const skinname = req.params[0];
 	const filepath = req.params[1];
-	const skincfg = require('./skins/' + skinname + '/config.json');
+	var skincfg;
+	try {
+		skincfg = require('./skins/' + skinname + '/config.json');
+	} catch(e) {
+		skincfg = {
+			type: 'openNAMU'
+		};
+	}
 	
 	if(skincfg['type'] && skincfg['type'].toLowerCase() != 'opennamu') {
 		res.send(await showError(req, 'file_not_found'));
