@@ -7,8 +7,10 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 	const tnum = req.params["tnum"];
 	
 	await curs.execute("select id from res where tnum = ?", [tnum]);
-	
 	const rescount = curs.fetchall().length;
+	
+	await curs.execute("select status from threads where tnum = ?", [tnum]);
+	const ostatus = curs.fetchall()[0]['status'];
 	
 	if(!rescount) { res.send(await showError(req, "thread_not_found")); return; }
 
@@ -17,7 +19,11 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 	
 	if(!getperm('update_thread_status', ip_check(req))) {
 		res.send(await showError(req, 'insufficient_privileges'));
-		
+		return;
+	}
+	
+	if(ostatus == newstatus) {
+		res.send(await showError(req, 'no_change'));
 		return;
 	}
 	

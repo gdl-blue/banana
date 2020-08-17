@@ -478,8 +478,13 @@ try {
 	})();
 }if(firstrun){
 
-wiki.use(bodyParser.json());
-wiki.use(bodyParser.urlencoded({ extended: true }));
+wiki.use(bodyParser.json({
+    limit: '50mb'
+}));
+wiki.use(bodyParser.urlencoded({ 
+	limit: '50mb',
+	extended: false
+}));
 wiki.use(express.static('public'));
 wiki.use(cookieParser());
 wiki.use(session({
@@ -1012,7 +1017,7 @@ async function showError(req, code) {
 function ip_pas(ip = '', ismember = '', isadmin = null) {
 	// https://www.w3schools.com/howto/howto_css_glowing_text.asp
 	var color = ' style="color: x;"';
-	const glowstyle = ' text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff;';
+	const glowstyle = '';  // ' text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff;';
 	
 	if(ismember == 'author') {
 		if(getperm('developer', ip)) {
@@ -1631,11 +1636,11 @@ async function getThreadData(req, tnum, tid = '-1') {
 								rs['status'] == 1
 								? (
 									rs['stype'] == 'status'
-									? '[토론을 <strong>' + html.escape(rs['content']) + '</strong> 상태로 표시했읍니다.]'
+									? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 상태로 표시'
 									: (
 										rs['stype'] == 'document'
-										? '[토론을 <strong>' + html.escape(rs['content']) + '</strong> 문서로 이동했읍니다.]'
-										: '[토론의 주제를 <strong>' + html.escape(rs['content']) + '</strong>(으)로 변경했읍니다.]'
+										? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 문서로 이동'
+										: '토론의 주제를 <strong>' + html.escape(rs['content']) + '</strong>(으)로 변경'
 									)
 								)
 								: markdown(rs['content'])

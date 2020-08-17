@@ -206,6 +206,12 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 		return;
 	}
 	
+	if(status != 'normal') {
+		res.send(await showError(req, 'insufficient_privileges'));
+		
+		return;
+	}
+	
 	await curs.execute("select id from res where tnum = ? order by cast(id as integer) desc limit 1", [tnum]);
 	const lid = Number(curs.fetchall()[0]['id']);
 	

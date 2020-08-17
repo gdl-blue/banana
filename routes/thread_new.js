@@ -70,7 +70,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				
 				for(rs of td) {
 					const crid = Number(rs['id']);
-					if(ltid > 4 && crid != 1 && crid != 2 && (crid < ltid - 1)) {
+					if(ltid > 4 && crid != 1 && (crid < ltid - 3)) {
 						if(!ambx) {
 							content += `
 								<div>
