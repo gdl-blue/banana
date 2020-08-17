@@ -60,11 +60,11 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			<colgroup>
 				<col>
 				<col style="width: 140px;">
-				<col style="width: 140px;">
-				<col style="width: 140px;">
+				<col style="width: 170px;">
+				<col style="width: 170px;">
 				<col style="width: 60px;">
 				<col style="width: 60px;">
-				<col style="width: 60px;">
+				<col style="width: 80px;">
 				<col style="width: 50px;">
 			</colgroup>
 			
@@ -75,8 +75,8 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 					<td><strong>차단일</strong></td>
 					<td><strong>만료일</strong></td>
 					<td><strong>유형</strong></td>
-					<td><strong>접속차단</strong></td>
-					<td><strong>AL</strong></td>
+					<td><strong>접속</strong></td>
+					<td><strong>로그인</strong></td>
 					<td><strong>해제</strong></td>
 				</tr>
 			</thead>
@@ -101,11 +101,11 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			<tr>
 				<td>${html.escape(row['username'])}</td>
 				<td>${html.escape(row['blocker'])}</td>
-				<td>${generateTime(row['startingdate'])}</td>
-				<td>${row['endingdate']}</td>
+				<td>${generateTime(toDate(row['startingdate']), timeFormat)}</td>
+				<td>${generateTime(toDate(row['endingdate']), timeFormat)}</td>
 				<td>${row['ismember'] == 'ip' ? 'IP' : '계정'}</td>
-				<td>${row['blockview'] == '1' ? '예' : '아니오'}</td>
-				<td>${row['al'] == '1' ? '예' : '아니오'}</td>
+				<td>${row['blockview'] == '1' ? '불가' : '가능'}</td>
+				<td>${row['al'] == '1' ? '가능' : (row['ismember'] == 'ip' ? '불가' : '-')}</td>
 				<td>
 					<form method=post action="/admin/unban_users" onsubmit="사용자를 차단해제하시겠습니까?">
 						<input type=hidden name=username value="${html.escape(row['username'])}">
@@ -129,10 +129,11 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 });
 
 wiki.post('/admin/ban_users', async function banUser(req, res) {
-	const username         = req.body['username'];
+	var   username         = req.body['username'];
 	const usertype         = req.body['usertype'];
 	const blockview        = req.body['blockview'];
 	const al               = req.body['al'];
+	const isPermanant      = req.body['permanant'];
 	const expirationDate   = req.body['expiration-date'];
 	const expirationTime   = req.body['expiration-time'];
 	const expirationString = `${expirationDate} ${expirationTime}:00`;
@@ -142,7 +143,7 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 		return;
 	}
 	
-	if(!username || !usertype || !expirationDate || !expirationTime) {
+	if(!username || !usertype || !isPermanant || (isPermanant == 'false' && (!expirationDate || !expirationTime))) {
 		res.send(await showError(req, 'invalid_request_body'));
 		return;
 	}
@@ -155,6 +156,13 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	if(isNaN(Date.parse(expirationString))) {
 		res.send(await showError(req, 'invalid_value'));
 		return;
+	}
+	
+	if(usertype == 'ip' && !username.match(/\/(\d+)$/)) {
+		if(username.match(/\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}/))
+			username += '/32';
+		else
+			username += '/128';
 	}
 	
 	const expiration = new Date(expirationString).getTime();
