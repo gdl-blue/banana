@@ -123,16 +123,43 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				<form method=post class=new-thread-form>
 					<input type=hidden name=identifier value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 					
-					<div class="form-group">
-						<label>토론할 주제:</label>
-						<input type="text" class="form-control" name="topic">
-					</div>
+					<table>
+						<colgroup>
+							<col style="width: 120px;">
+							<col>
+						</colgroup>
+					
+						<tbody>
+							<tr>
+								<td style="padding: 0 5px 0 0;">
+									<div class="form-group">
+										<label>유형:</label>
+										<select class="form-control" name=type>
+											<option value=normal>토론</option>
+											<option value=edit_request disabled>편집요청</option>
+										</select>
+									</div>
+								</td>
+								
+								<td style="padding: none;">
+									<div class="form-group">
+										<label>토론할 주제:</label>
+										<input type="text" class="form-control" name="topic">
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
 
 					<div class="form-group">
 						<label>내 의견:</label>
 						<textarea name="text" class="form-control" rows="5"></textarea>
 					</div>
 					
+					<div class=form-group style="display: none;">
+						<label>문서 수정: </label>
+						<textarea name=raw class=form-control rows=20></textarea>
+					</div>
 
 					<div class="btns">
 						<button id="createBtn" class="btn btn-info" style="width: 120px;">발제!</button>

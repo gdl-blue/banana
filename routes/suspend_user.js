@@ -22,6 +22,11 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			</div>
 			
 			<div class=form-group>
+				<label>차단 사유:</label><br>
+				<input type=text name=note id=noteInput class=form-control>
+			</div>
+			
+			<div class=form-group>
 				<label>접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[!]</a></sup>:</label><br>
 				<div class=checkbox>
 					<input ${req.query['blockview'] == '1' ? 'checked' : ''} type=checkbox name=blockview>
@@ -134,11 +139,12 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	var   username         = req.body['username'];
 	const usertype         = req.body['usertype'];
 	const blockview        = req.body['blockview'];
-	const al               = req.body['al'];
+	const al               = req.body['al'] == 'on' ? '1' : '0';
 	const isPermanant      = req.body['permanant'];
 	const expirationDate   = req.body['expiration-date'];
 	const expirationTime   = req.body['expiration-time'];
 	const fake             = req.body['fakepermanant'];
+	const note             = req.body['note'];
 	const expirationString = `${expirationDate} ${expirationTime}:00`;
 	
 	if(!getperm('ban_users', ip_check(req))) {
@@ -146,7 +152,7 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 		return;
 	}
 	
-	if(!username || !usertype || !isPermanant || (isPermanant == 'false' && (!expirationDate || !expirationTime))) {
+	if(!note || !username || !usertype || !isPermanant || (isPermanant == 'false' && (!expirationDate || !expirationTime))) {
 		res.send(await showError(req, 'invalid_request_body'));
 		return;
 	}
@@ -174,14 +180,14 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
 	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
 	
-	await curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake) \
-					values (?, ?, ?, ?, ?, ?, ?, ?)", [
-						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0'
+	await curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake, note) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0', note
 					]);
 	
-	await curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake) \
-					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0'
+	await curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0', note
 					]);
 	
 	res.redirect('/admin/ban_users');
