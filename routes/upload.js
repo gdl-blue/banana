@@ -150,7 +150,7 @@ wiki.get('/Upload', async function fileUploadPage(req, res) {
 		`;
 	}
 	
-	res.send(await render(req, '그림 올리기', content, {}));
+	res.send(await render(req, '그림 올리기', content, {}, _, _, 'upload'));
 });
 
 wiki.post('/Upload', async function saveFile(req, res) {

@@ -166,7 +166,7 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 		return;
 	}
 	
-	if(!req.cookies.dooly) {
+	if(!req.cookies.dooly && config.getString('enable_captcha', '1') != '0') {
 		try {
 			if(req.body['captcha'].replace(/\s/g, '') != req.session.captcha) {
 				res.send(await showError(req, 'invalid_captcha_number'));
@@ -191,6 +191,14 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 	
 	const content = req.body['text'];
 	const rawChanges = content.length - original.length;
+	
+	try {
+		markdown(content);
+	} catch(e) {
+		print(e);
+		res.send(await showError(req, 'syntax_error'));
+		return;
+	}
 	
 	const changes = (rawChanges > 0 ? '+' : '') + String(rawChanges);
 	

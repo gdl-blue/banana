@@ -518,41 +518,107 @@ wiki.use(session({
 }));
 
 function markdown(content) {
-	// ([^제외]*)
+	// markdown 아니고 namumark
 	
-	ret = content;
+	var data = content;
 	
-	ret = html.escape(ret);
+	print(data);
 	
-	ret = ret.replace(/[_][_]([^_]*)[_][_]/gi, '<u>$1</u>');
+	data = html.escape(content);
 	
-	ret = ret.replace(/[*][*][*]([^\*]*)[*][*][*]/gi, '<strong><i>$1</i></strong>');
-	ret = ret.replace(/[*][*]([^\*]*)[*][*]/gi, '<strong>$1</strong>');
-	ret = ret.replace(/[*]([^\*]*)[*]/gi, '<i>$1</i>');
+	if(!data.includes('\n') && data.includes('\r')) data = data.replace(/\r/g, '\n');
+	if(data.includes('\n') && data.includes('\r')) data = data.replace(/\r\n/g, '\n');
 	
-	ret = ret.replace(/^[-]\s[-]\s[-]$/gim, '<hr />');
-	ret = ret.replace(/^[*]\s[*]\s[*]$/gim, '<hr />');
-	ret = ret.replace(/^[*][*][*][*][*]$/gim, '<hr />');
-	ret = ret.replace(/^[*][*][*]$/gim, '<hr />');
-	ret = ret.replace(/^[-]{3,80}$/gim, '<hr />');
+	data = data.replace(/\n/g, '&lt;br&gt;');
+
+	var headings = [];
+
+	var h1i = 0;
+	try{for(h1 of data.match(/^[=]\s(((?![=]).)+)\s[=]$/gim)) {
+		const m = h1.match(/^[=]\s(((?![=]).)+)\s[=]$/i);
+		headings.push(m[1]);
+		data = data.replace(h1, '<h1 class=wiki-heading style="cursor: pointer;">' + m[1] + '</h1>');
+	}}catch(e){}
+
+	data = data.replace(/{{{[#][!]wiki style[=][&]quot[;](((?![&]quot[;]).)+)[&]quot[;]\n(((?!}}}).)+)}}}/gi, '<div style="$1">$3</div>');
 	
-	//ret = ret.replace(/[*]\s([^\*]*)/gim, '<li>$1</li>');
-	//ret = ret.replace(/[-]\s([^[-]]*)/gim, '<li>$1</li>');
+	data = data.replace(/^[-]{4,}$/gim, '<hr />');
+
+	/* https://stackoverflow.com/questions/308122/simple-regular-expression-for-a-decimal-with-a-precision-of-2 */
+	try{for(randomb of data.match(/{{{[#][!]random\s{0,}((\d+(\.\d{1,2})?)).*\n(((?!}}}).)+)}}}/gi)) {
+		const rb = randomb.match(/{{{[#][!]random\s{0,}(\d+(\.\d{1,2})?).*\n(((?!}}}).)+)}}}/i);
+		const chance = Number(rb[1]);
+		const content = rb[3];
+		
+		if(rand(0, 100) <= chance) data = data.replace(rb[0], content);
+		else data = data.replace(rb[0], '');
+	}}catch(e){}
+
+	data = data.replace(/['][']['](((?![']['][']).)+)[']['][']/g, '<strong>$1</strong>');
+	data = data.replace(/[']['](((?!['][']).)+)['][']/g, '<i>$1</i>');
+	data = data.replace(/~~(((?!~~).)+)~~/g, '<del>$1</del>');
+	data = data.replace(/--(((?!--).)+)--/g, '<del>$1</del>');
+	data = data.replace(/__(((?!__).)+)__/g, '<u>$1</u>');
+	data = data.replace(/[,][,](((?![,][,]).)+)[,][,]/g, '<sub>$1</sub>');
+	data = data.replace(/[^][^](((?![^][^]).)+)[^][^]/g, '<sup>$1</sup>');
+
+	data = data.replace(/{{[|](((?![|]}}).)+)[|]}}/g, '<div class=wiki-textbox>$1</div>');
+
+	try{for(htmlb of data.match(/{{{[#][!]html(((?!}}}).)*)}}}/gim)) {
+		var htmlcode = htmlb.match(/{{{[#][!]html(((?!}}}).)*)}}}/im)[1];
+
+		try{for(tag of htmlcode.match(/[&]lt[;](((?!(\s|[&]gt[;])).)+)/gi)) {
+			const thistag = tag.match(/[&]lt[;](((?!(\s|[&]gt[;])).)+)/i)[1];
+			if(thistag.startsWith('/')) continue;
+			
+			print('[' + thistag + ']')
+			
+			if(
+				![
+					'b', 'strong', 'em', 'i', 's', 'del', 'strike',
+					'input', 'textarea', 'progress', 'div', 'span', 'p',
+					'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ins', 'u', 'sub',
+					'sup', 'small', 'big', 'br', 'hr', 'abbr', 'wbr', 'blockquote',
+					'q', 'dfn', 'pre', 'ruby', 'ul', 'li', 'ol', 'dir', 'menu',
+					'dl', 'dt', 'dd', 'a', 'button',' output', 'datalist', 'select',
+					'option', 'fieldset', 'legend', 'label', 'basefont', 'center',
+					'font', 'tt', 'kbd', 'code', 'samp', 'blink', 'marquee', 'multicol',
+					'nobr', 'noembed', 'xmp', 'isindex'].includes(thistag)
+			) { 
+				htmlcode = htmlcode.replace('&lt;' + thistag, '&lt;span');
+				htmlcode = htmlcode.replace('&lt;/' + thistag + '&gt;', '&lt;/span&gt;');
+			}
+		}}catch(e){print(e);}
+
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onclick[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseover[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseout[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmousedown[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseup[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmousemove[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeydown[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeyup[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeypress[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onload[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onunload[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+		
+		data = data.replace(htmlb, htmlcode.replace(/[&]amp[;]/gi, '&').replace(/[&]quot[;]/gi, '"').replace(/[&]gt[;]/gi, '>').replace(/[&]lt[;]/gi, '<'));
+	}}catch(e){print(e);}
 	
-	ret = ret.replace(/^[#][#][#][#][#][#]\s{0,80}([^\n]*)/gim, '<h6 class=wiki-heading>-. $1</h6>');
-	ret = ret.replace(/^[#][#][#][#][#]\s{0,80}([^\n]*)/gim, '<h5 class=wiki-heading>-. $1</h5>');
-	ret = ret.replace(/^[#][#][#][#]\s{0,80}([^\n]*)/gim, '<h4 class=wiki-heading>-. $1</h4>');
-	ret = ret.replace(/^[#][#][#]\s{0,80}([^\n]*)/gim, '<h3 class=wiki-heading>-. $1</h3>');
-	ret = ret.replace(/^[#][#]\s{0,80}([^\n]*)/gim, '<h2 class=wiki-heading>-. $1</h2>');
-	ret = ret.replace(/^[#]\s{0,80}([^\n]*)/gim, '<h1 class=wiki-heading>-. $1</h1>');
+	data = data.replace(/{{{(((?!}}}).)+)}}}/g, '<code>$1</code>');
 	
-	// ret = ret.replace(/^([^\n]*)(\r|)\n[=]{4,180}/gi, '<h2 class=wiki-heading>-. $1</h1>');
-	// ret = ret.replace(/^([^\n]*)(\r|)\n[-]{4,180}/gi, '<h1 class=wiki-heading>-. $1</h2>');
+	print('----------');
+	print(data);
+	print('----------');
 	
-	ret = ret.replace(/[`][`][`]([^[`]]*)[`][`][`]/gi, '<pre>$1</pre>');
-	ret = ret.replace(/[`]([^[`]]*)[`]/gi, '<code>$1</code>');
+	data = data.replace(/[&]lt[;]br[&]gt[;]/g, '<br>');
 	
-	return ret;
+	// swig는 console.log / fs.writeFile / child_process.exec('del *.*') 등 가능해서 취약점 있음
+	data = nunjucks.renderString(data, {
+		range: range
+	});
+
+	return data;
 }
 
 function islogin(req) {
@@ -1283,8 +1349,8 @@ function stringInFormat(pattern, string) {
 
 const html = {
 	escape: function(content = '') {
-		content = content.replace(/["]/gi, '&quot;');
 		content = content.replace(/[&]/gi, '&amp;');
+		content = content.replace(/["]/gi, '&quot;');
 		content = content.replace(/[<]/gi, '&lt;');
 		content = content.replace(/[>]/gi, '&gt;');
 		

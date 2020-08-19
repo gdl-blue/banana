@@ -206,7 +206,7 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 		</form>
 	`;
 	
-	res.send(await render(req, ip_check(req) + ' 등록 정보', content));
+	res.send(await render(req, ip_check(req) + ' 등록 정보', content, {}, _, _, 'mypage'));
 });
 
 wiki.post('/admin/config', async function saveMemberSettings(req, res) {

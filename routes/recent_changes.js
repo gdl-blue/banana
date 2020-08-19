@@ -20,6 +20,9 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 		break;case 'revert':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where not title like '사용자:%' and advance like '(%복원)' order by cast(time as integer) desc limit 100");
+		break;case 'modify':
+			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where not title like '사용자:%' and advance = '' order by cast(time as integer) desc limit 100");
 		break;default:
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where not title like '사용자:%' order by cast(time as integer) desc limit 100");
@@ -105,5 +108,5 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 		</table>
 	`;
 	
-	res.send(await render(req, '최근 변경된 문서', content, {}, _, _, 'recent_changes'));
+	res.send(await render(req, '최근 변경된 문서', content, {}, _, _, 'recent'));
 });

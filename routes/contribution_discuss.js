@@ -74,5 +74,5 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 		</table>
 	`;
 	
-	res.send(await render(req, `${username}의 토론 참여 내역`, content, {}));
+	res.send(await render(req, `${username}의 토론 참여 내역`, content, {}, _, _, 'contribution_discuss'));
 });

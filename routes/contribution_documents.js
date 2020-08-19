@@ -97,5 +97,5 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		</table>
 	`;
 	
-	res.send(await render(req, `${username}의 문서 기여 목록`, content, {}));
+	res.send(await render(req, `${username}의 문서 기여 목록`, content, {}, _, _, 'contribution'));
 });
