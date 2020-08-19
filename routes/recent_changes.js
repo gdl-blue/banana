@@ -31,7 +31,7 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 	var content = `
 		<ol class="breadcrumb link-nav">
 			<li><a href="?logtype=all">[전체]</a></li>
-			<li><a href="?logtype=edit">[일반 편집]</a></li>
+			<li><a href="?logtype=modify">[일반 편집]</a></li>
 			<li><a href="?logtype=create">[새 문서]</a></li>
 			<li><a href="?logtype=delete">[삭제]</a></li>
 			<li><a href="?logtype=move">[이동]</a></li>

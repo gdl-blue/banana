@@ -14,15 +14,13 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 	
 	await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 				where cast(time as integer) >= ? and ismember = ? and username = ? order by cast(time as integer) desc", [
-					Number(getTime()) - 2592000000, ismember, username
+					Number(getTime()) - 5184000000, ismember, username
 				]);
 	
 //			<li><a href="/contribution/${ismember}/${username}/document">[문서]</a></li>
 //			<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
 	
 	var content = `
-		<p>최근 30일동안의 기여 목록입니다.</p>
-	
 		<ol class="breadcrumb link-nav">
 			<li><strong>[문서]</strong></li>
 			<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>

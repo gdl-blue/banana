@@ -14,15 +14,13 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 	
 	await curs.execute("select id, tnum, time, username, ismember from res \
 				where cast(time as integer) >= ? and ismember = ? and username = ? order by cast(time as integer) desc", [
-					Number(getTime()) - 2592000000, ismember, username
+					Number(getTime()) - 5184000000, ismember, username
 				]);
 	
 //			<li><a href="/contribution/${ismember}/${username}/document">[문서]</a></li>
 //			<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
 	
 	var content = `
-		<p>최근 30일동안의 기여 목록입니다.</p>
-	
 		<ol class="breadcrumb link-nav">
 			<li><a href="/contribution/${ismember}/${username}/document">[문서]</a></li>
 			<li><strong>[토론]</strong></li>

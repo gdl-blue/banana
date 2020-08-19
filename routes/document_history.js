@@ -14,7 +14,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		return;
 	}
 	
-	if(from) { // 더시드에서 from이 더 우선임
+	if(from) {
 		await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and (cast(rev as integer) <= ? AND cast(rev as integer) > ?) \
 						order by cast(rev as integer) desc",
@@ -30,7 +30,10 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 						[title]);
 	}
 	
-	if(!curs.fetchall().length) res.send(await showError(req, 'document_dont_exists'));
+	if(!curs.fetchall().length) {
+		res.send(await showError(req, 'document_not_found'));
+		return;
+	}
 	
 	const navbtns = navbtn(0, 0, 0, 0);
 	
