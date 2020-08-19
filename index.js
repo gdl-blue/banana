@@ -576,7 +576,7 @@ function markdown(content, discussion = 0) {
 		});
 	}
 	
-	data = html.escape(content);
+	data = html.escape(data);
 	
 	if(!data.includes('\n') && data.includes('\r')) data = data.replace(/\r/g, '\n');
 	if(data.includes('\n') && data.includes('\r')) data = data.replace(/\r\n/g, '\n');
