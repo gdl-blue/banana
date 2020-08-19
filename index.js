@@ -488,7 +488,8 @@ try {
 			'bbs_comments': ['userid', 'postid', 'content', 'id', 'deleted', 'edited', 'time'],
 			'bbs_ids': ['id'],
 			'bots': ['username', 'token', 'owner'],
-			'email_config': ['service', 'email', 'password']
+			'email_config': ['service', 'email', 'password'],
+			'edit_requests': ['baserev', 'author', 'slug', 'original', 'content']
 		};
 		
 		for(var table in tables) {

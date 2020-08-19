@@ -141,7 +141,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 									</div>
 								</td>
 								
-								<td style="padding: none;">
+								<td style="padding: 0 0 0 5px;">
 									<div class="form-group">
 										<label>토론할 주제:</label>
 										<input type="text" class="form-control" name="topic">

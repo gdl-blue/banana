@@ -90,7 +90,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	content += `
 						<script>$(function() { discussPollStart("${tnum}"); });</script>
 					
-						<textarea class=form-control style="border: none; background: transparent;" placeholder="의견 입력" rows=3 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '[동결된 토론입니다.]' : (status == 'close' ? '[닫힌 토론입니다.]' : '')}</textarea>
+						<textarea style="border: none; background: transparent; width: 100%;" placeholder="의견 입력" rows=3 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '[동결된 토론입니다.]' : (status == 'close' ? '[닫힌 토론입니다.]' : '')}</textarea>
 					</div>
 				</div>
 			</div>

@@ -19,7 +19,8 @@ wiki.get('/admin/thread/:tnum/:id/show', async function showHiddenComment(req, r
 	if(!rescount) { res.send(await showError(req, "thread_not_found")); return; }
 	
 	if((rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) > 180000)) {
-		res.send(await showError(req, 'h_time_expired'))
+		res.send(await showError(req, 'h_time_expired'));
+		return;
 	}
 	
 	if(!getperm('hide_thread_comment', ip_check(req)) && !((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))) {
@@ -53,7 +54,8 @@ wiki.get('/admin/thread/:tnum/:id/hide', async function hideComment(req, res) {
 	if(!rescount) { res.send(await showError(req, "thread_not_found")); return; }
 	
 	if((rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) > 180000)) {
-		res.send(await showError(req, 'h_time_expired'))
+		res.send(await showError(req, 'h_time_expired'));
+		return;
 	}
 	
 	if(!getperm('hide_thread_comment', ip_check(req)) && !((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))) {
