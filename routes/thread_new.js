@@ -78,9 +78,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 					if(ltid > 4 && crid != 1 && (crid < ltid - 3)) {
 						if(!ambx) {
 							content += `
-								<div>
-									<a class=more-box href="/thread/${trd['tnum']}">더보기...</a>
-								</div>
+								<br>
 							`;
 							
 							ambx = true;
