@@ -61,12 +61,22 @@ const _range = (sv, ev, pv) => {
 		throw new Error('Invalid step value');
 	}
 	
+	var cnt = 0;
+	
 	if(s > e) {
 		if(p > 0) throw new Error('Invalid step value');
-		for(i=s; i>e; i+=p) retval.push(i);
+		for(i=s; i>e; i+=p) {
+			retval.push(i);
+			cnt++;
+			if(cnt > 2000) break;
+		}
 	} else {
 		if(p < 0) throw new Error('Invalid step value');
-		for(i=s; i<e; i+=p) retval.push(i);
+		for(i=s; i<e; i+=p) {
+			retval.push(i);
+			cnt++;
+			if(cnt > 2000) break;
+		}
 	}
 	
 	return retval;
