@@ -43,6 +43,34 @@ const range = (sv, ev, pv) => {
 	
 	return retval;
 }
+const _range = (sv, ev, pv) => {
+	var retval = [];
+	
+	var s = sv, e = ev, p = pv;
+	
+	if(s && !e && !p) {
+		s = 0;
+		e = sv;
+		p = 1;
+	}
+	else if(s && e && !p) {
+		p = 1;
+	}
+	
+	if(s != e && p == 0) {
+		throw new Error('Invalid step value');
+	}
+	
+	if(s > e) {
+		if(p > 0) throw new Error('Invalid step value');
+		for(i=s; i>e; i+=p) retval.push(i);
+	} else {
+		if(p < 0) throw new Error('Invalid step value');
+		for(i=s; i<e; i+=p) retval.push(i);
+	}
+	
+	return retval;
+}
 const find = (obj, fnc) => {
 	if(typeof(obj) != 'object') {
 		throw TypeError(`Cannot find from ${typeof(obj)}`);
@@ -517,7 +545,7 @@ wiki.use(session({
 	saveUninitialized: false
 }));
 
-function markdown(content) {
+function markdown(content, discussion = 0) {
 	// markdown 아니고 namumark
 	
 	var data = content;
@@ -540,7 +568,13 @@ function markdown(content) {
 		data = data.replace(h1, '<h1 class=wiki-heading style="cursor: pointer;">' + m[1] + '</h1>');
 	}}catch(e){}
 
-	data = data.replace(/{{{[#][!]wiki style[=][&]quot[;](((?![&]quot[;]).)+)[&]quot[;]\n(((?!}}}).)+)}}}/gi, '<div style="$1">$3</div>');
+	try{for(wikib of data.match(/{{{[#][!]wiki style[=][&]quot[;](((?![&]quot[;]).)+)[&]quot[;][&]lt[;]br[&]gt[;](((?!}}}).)+)}}}/gi)) {
+		const thwib = wikib.match(/{{{[#][!]wiki style[=][&]quot[;](((?![&]quot[;]).)+)[&]quot[;][&]lt[;]br[&]gt[;](((?!}}}).)+)}}}/i);
+		print(thwib);
+		data = data.replace(wikib, '<div style="' + thwib[1] + '">' + thwib[3] + '</div>');
+	}}catch(e){}
+	
+	// data = data.replace(/{{{[#][!]wiki style[=][&]quot[;](((?![&]quot[;]).)+)[&]quot[;]\n(((?!}}}).)+)}}}/gi, '<div style="$1">$3</div>');
 	
 	data = data.replace(/^[-]{4,}$/gim, '<hr />');
 
@@ -564,46 +598,50 @@ function markdown(content) {
 
 	data = data.replace(/{{[|](((?![|]}}).)+)[|]}}/g, '<div class=wiki-textbox>$1</div>');
 
-	try{for(htmlb of data.match(/{{{[#][!]html(((?!}}}).)*)}}}/gim)) {
-		var htmlcode = htmlb.match(/{{{[#][!]html(((?!}}}).)*)}}}/im)[1];
+	if(!discussion) {
+		try{for(htmlb of data.match(/{{{[#][!]html(((?!}}}).)*)}}}/gim)) {
+			var htmlcode = htmlb.match(/{{{[#][!]html(((?!}}}).)*)}}}/im)[1];
 
-		try{for(tag of htmlcode.match(/[&]lt[;](((?!(\s|[&]gt[;])).)+)/gi)) {
-			const thistag = tag.match(/[&]lt[;](((?!(\s|[&]gt[;])).)+)/i)[1];
-			if(thistag.startsWith('/')) continue;
+			try{for(tag of htmlcode.match(/[&]lt[;](((?!(\s|[&]gt[;])).)+)/gi)) {
+				const thistag = tag.match(/[&]lt[;](((?!(\s|[&]gt[;])).)+)/i)[1];
+				if(thistag.startsWith('/')) continue;
+				
+				print('[' + thistag + ']')
+				
+				if(
+					![
+						'b', 'strong', 'em', 'i', 's', 'del', 'strike',
+						'input', 'textarea', 'progress', 'div', 'span', 'p',
+						'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ins', 'u', 'sub',
+						'sup', 'small', 'big', 'br', 'hr', 'abbr', 'wbr', 'blockquote',
+						'q', 'dfn', 'pre', 'ruby', 'ul', 'li', 'ol', 'dir', 'menu',
+						'dl', 'dt', 'dd', 'a', 'button',' output', 'datalist', 'select',
+						'option', 'fieldset', 'legend', 'label', 'basefont', 'center',
+						'font', 'tt', 'kbd', 'code', 'samp', 'blink', 'marquee', 'multicol',
+						'nobr', 'noembed', 'xmp', 'isindex'].includes(thistag)
+				) { 
+					htmlcode = htmlcode.replace('&lt;' + thistag, '&lt;span');
+					htmlcode = htmlcode.replace('&lt;/' + thistag + '&gt;', '&lt;/span&gt;');
+				}
+			}}catch(e){print(e);}
+
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onclick[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseover[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseout[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmousedown[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseup[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmousemove[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeydown[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeyup[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeypress[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onload[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
+			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onunload[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
 			
-			print('[' + thistag + ']')
-			
-			if(
-				![
-					'b', 'strong', 'em', 'i', 's', 'del', 'strike',
-					'input', 'textarea', 'progress', 'div', 'span', 'p',
-					'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'ins', 'u', 'sub',
-					'sup', 'small', 'big', 'br', 'hr', 'abbr', 'wbr', 'blockquote',
-					'q', 'dfn', 'pre', 'ruby', 'ul', 'li', 'ol', 'dir', 'menu',
-					'dl', 'dt', 'dd', 'a', 'button',' output', 'datalist', 'select',
-					'option', 'fieldset', 'legend', 'label', 'basefont', 'center',
-					'font', 'tt', 'kbd', 'code', 'samp', 'blink', 'marquee', 'multicol',
-					'nobr', 'noembed', 'xmp', 'isindex'].includes(thistag)
-			) { 
-				htmlcode = htmlcode.replace('&lt;' + thistag, '&lt;span');
-				htmlcode = htmlcode.replace('&lt;/' + thistag + '&gt;', '&lt;/span&gt;');
-			}
+			data = data.replace(htmlb, htmlcode.replace(/[&]amp[;]/gi, '&').replace(/[&]quot[;]/gi, '"').replace(/[&]gt[;]/gi, '>').replace(/[&]lt[;]/gi, '<'));
 		}}catch(e){print(e);}
-
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onclick[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseover[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseout[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmousedown[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseup[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmousemove[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeydown[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeyup[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onkeypress[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onload[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onunload[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
-		
-		data = data.replace(htmlb, htmlcode.replace(/[&]amp[;]/gi, '&').replace(/[&]quot[;]/gi, '"').replace(/[&]gt[;]/gi, '>').replace(/[&]lt[;]/gi, '<'));
-	}}catch(e){print(e);}
+	}
+	
+	data = data.replace(/{{{[#](((?!\s)[a-zA-Z0-9])+)\s(((?!}}}).)+)}}}/g, '<font color="$1">$3</font>');
 	
 	data = data.replace(/{{{(((?!}}}).)+)}}}/g, '<code>$1</code>');
 	
@@ -614,9 +652,17 @@ function markdown(content) {
 	data = data.replace(/[&]lt[;]br[&]gt[;]/g, '<br>');
 	
 	// swig는 console.log / fs.writeFile / child_process.exec('del *.*') 등 가능해서 취약점 있음
-	data = nunjucks.renderString(data, {
-		range: range
-	});
+	if(discussion) {
+		try {
+			data = nunjucks.renderString(data, {
+				range: _range
+			});
+		} catch(e) {}
+	} else {
+		data = nunjucks.renderString(data, {
+			range: _range
+		});
+	}
 
 	return data;
 }
@@ -1438,7 +1484,7 @@ for(pi of getPlugins('all')) {
 	}
 }
 
-wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropSkinFile(req, res) {
+wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropTheseedSkinFile(req, res) {
 	const skinname = req.params[0];
 	const filepath = req.params[1];
 	
@@ -1776,7 +1822,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 							rs['hidden'] == '1'
 							? (
 								((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))
-								? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'])
+								? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'], 1)
 								: '[' + rs['hider'] + '가 숨긴 댓글입니다. 관리자에게 문의하십시오.]'
 							  )
 							: (
@@ -1790,7 +1836,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 										: '토론의 주제를 <strong>' + html.escape(rs['content']) + '</strong>(으)로 변경'
 									)
 								)
-								: markdown(rs['content'])
+								: markdown(rs['content'], 1)
 							)
 						}
 					</div>

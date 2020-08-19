@@ -6,7 +6,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	var deleted = 0;
 	
-	const tnum = req.params["tnum"];
+	const tnum = slug = req.params["tnum"];
 	
 	await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [tnum]);
 	if((deleted = curs.fetchall().length) && !getperm('developer', ip_check(req))) {
@@ -69,20 +69,45 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	content += `
 			</div>
-		</div>
-		
-		<div class=res-wrapper data-id="-1" data-locked=true data-visible=false>
-			<div class="res res-type-normal">
-				<div class="r-head">
-					<span class="num">*. <strong>내 의견</strong>&nbsp;</span>
-				</div>
-				
-				<div class="r-body">
-	`;
+		</div>`;
 	
 	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
 		content += alertBalloon('경고', '지원되지 않는 브라우저를 사용하기 때문에 새로운 댓글을 자동으로 불러올 수 없습니다. <small>지원되며, 사용자 에이전트를 변경한 것이라면 <a href="?nojs=0">여기</a>를 누르십시오.</small>', 'warning');
 	}
+	
+	content += `
+		<form id=new-thread-form method=post>
+			<div class=res-wrapper data-id="-1" data-locked=true data-visible=false>
+				<div class="res res-type-normal">
+					<div class="r-head">
+						<strong>내 의견</strong>
+						<button type=submit style="width: 120px; float: right;">전송하기!</button>
+					</div>
+					
+					<div class="r-body">
+	`;
+	
+	content += `
+						<script>$(function() { discussPollStart("${tnum}"); });</script>
+					
+						<textarea class=form-control style="border: none; background: transparent;" placeholder="의견 입력" rows=3 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '[동결된 토론입니다.]' : (status == 'close' ? '[닫힌 토론입니다.]' : '')}</textarea>
+					</div>
+				</div>
+			</div>
+		</form>
+		
+		<div class=res-wrapper data-id="-2" data-locked=true data-visible=false>
+			<div class="res res-type-normal">
+				<div class="r-head">
+					<strong>토론 설정</strong>&nbsp;</span>
+				</div>
+				
+				<div class="r-body">
+					<div class=form-group>
+						<a href="/member/star_thread/${slug}">[이 토론 주시(미구현)] </a>
+						<a href="/member/unstar_thread/${slug}">[이 토론 주시 해제(미구현)] </a>
+					</div>
+	`;
 	
 	if(getperm('update_thread_status', ip_check(req))) {
 		var sts = '';
@@ -112,10 +137,30 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
         		<button>변경</button>
         	</form>
 			
-		    <form method=post id=new-thread-status-form>
+		    <form method=post id=new-thread-status-form style="display: inline-block;">
         		<button type=button data-status=close>종결</button>
         		<button type=button data-status=pause>동결</button>
         		<button type=button data-status=normal>계속</button>
+        	</form>
+		`;
+	}
+	
+	if(getperm('update_thread_document', ip_check(req))) {
+		content += `
+        	<form method="post" id="thread-document-form" style="display: inline-block;">
+        		토론 문서: 
+        		<input type="text" name="document" value="${title}">
+        		<button>변경</button>
+        	</form>
+		`;
+	}
+	
+	if(getperm('update_thread_topic', ip_check(req))) {
+		content += `
+        	<form method="post" id="thread-topic-form" style="display: inline-block;">
+        		토론 주제: 
+        		<input type="text" name="topic" value="${topic}">
+        		<button>변경</button>
         	</form>
 		`;
 	}
@@ -138,36 +183,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		}
 	`;
 	
-	if(getperm('update_thread_document', ip_check(req))) {
-		content += `
-        	<form method="post" id="thread-document-form">
-        		토론 문서: 
-        		<input type="text" name="document" value="${title}">
-        		<button>변경</button>
-        	</form>
-		`;
-	}
-	
-	if(getperm('update_thread_topic', ip_check(req))) {
-		content += `
-        	<form method="post" id="thread-topic-form" style="display: none;">
-        		토론 주제: 
-        		<input type="text" name="topic" value="${topic}">
-        		<button>변경</button>
-        	</form>
-		`;
-	}
-	
 	content += `
-					<script>$(function() { discussPollStart("${tnum}"); });</script>
-				
-					<form id=new-thread-form method=post>
-						<textarea class=form-control style="border: none; background: transparent;" placeholder="의견을 입력해주세요." rows=3 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '[동결된 토론입니다.]' : (status == 'close' ? '[닫힌 토론입니다.]' : '')}</textarea>
-						
-						<div class=btns>
-							<button type=submit class="btn btn-sm" style="width: 120px;">전송하기!</button>
-						</div>
-					</form>
 				</div>
 			</div>
 		</div>
