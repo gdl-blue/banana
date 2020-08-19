@@ -561,7 +561,20 @@ function markdown(content, discussion = 0) {
 	
 	var data = content;
 	
-	print(data);
+	// print(data);
+	
+	// swig는 console.log / fs.writeFile / child_process.exec('del *.*') 등 가능해서 취약점 있음
+	if(discussion) {
+		try {
+			data = nunjucks.renderString(data, {
+				range: _range
+			});
+		} catch(e) {}
+	} else {
+		data = nunjucks.renderString(data, {
+			range: _range
+		});
+	}
 	
 	data = html.escape(content);
 	
@@ -581,7 +594,7 @@ function markdown(content, discussion = 0) {
 
 	try{for(wikib of data.match(/{{{[#][!]wiki style[=][&]quot[;](((?![&]quot[;]).)+)[&]quot[;][&]lt[;]br[&]gt[;](((?!}}}).)+)}}}/gi)) {
 		const thwib = wikib.match(/{{{[#][!]wiki style[=][&]quot[;](((?![&]quot[;]).)+)[&]quot[;][&]lt[;]br[&]gt[;](((?!}}}).)+)}}}/i);
-		print(thwib);
+		// print(thwib);
 		data = data.replace(wikib, '<div style="' + thwib[1] + '">' + thwib[3] + '</div>');
 	}}catch(e){}
 	
@@ -617,7 +630,7 @@ function markdown(content, discussion = 0) {
 				const thistag = tag.match(/[&]lt[;](((?!(\s|[&]gt[;])).)+)/i)[1];
 				if(thistag.startsWith('/')) continue;
 				
-				print('[' + thistag + ']')
+				//print('[' + thistag + ']')
 				
 				if(
 					![
@@ -634,7 +647,7 @@ function markdown(content, discussion = 0) {
 					htmlcode = htmlcode.replace('&lt;' + thistag, '&lt;span');
 					htmlcode = htmlcode.replace('&lt;/' + thistag + '&gt;', '&lt;/span&gt;');
 				}
-			}}catch(e){print(e);}
+			}}catch(e){}
 
 			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onclick[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
 			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onmouseover[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
@@ -649,31 +662,18 @@ function markdown(content, discussion = 0) {
 			htmlcode = htmlcode.replace(/&lt;(.+)\s(.*)onunload[=]["](.*)["](.*)&gt;/gi, '&lt;$1 $2 $4&gt;');
 			
 			data = data.replace(htmlb, htmlcode.replace(/[&]amp[;]/gi, '&').replace(/[&]quot[;]/gi, '"').replace(/[&]gt[;]/gi, '>').replace(/[&]lt[;]/gi, '<'));
-		}}catch(e){print(e);}
+		}}catch(e){}
 	}
 	
 	data = data.replace(/{{{[#](((?!\s)[a-zA-Z0-9])+)\s(((?!}}}).)+)}}}/g, '<font color="$1">$3</font>');
 	
 	data = data.replace(/{{{(((?!}}}).)+)}}}/g, '<code>$1</code>');
 	
-	print('----------');
-	print(data);
-	print('----------');
+	// print('----------');
+	// print(data);
+	// print('----------');
 	
 	data = data.replace(/[&]lt[;]br[&]gt[;]/g, '<br>');
-	
-	// swig는 console.log / fs.writeFile / child_process.exec('del *.*') 등 가능해서 취약점 있음
-	if(discussion) {
-		try {
-			data = nunjucks.renderString(data, {
-				range: _range
-			});
-		} catch(e) {}
-	} else {
-		data = nunjucks.renderString(data, {
-			range: _range
-		});
-	}
 
 	return data;
 }
