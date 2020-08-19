@@ -304,10 +304,10 @@ wiki.get(/\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) {
 			username: rs['username'],
 			content: rs['hidden'] == '1' ? (
 								getperm('hide_thread_comment', ip_check(req))
-								? markdown(rs['content'])
+								? markdown(rs['content'], 1)
 								: ''
 							  ) : (
-								markdown(rs['content'])
+								markdown(rs['content'], 1)
 							),
 			raw: rs['hidden'] == '1' ? (
 								getperm('hide_thread_comment', ip_check(req))
