@@ -149,7 +149,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 	res.status(httpstat).send(await render(req, title, content, {
 		token: token,
 		captcha: 0,
-		body {
+		body: {
 			baserev: baserev,
 			text: rawContent,
 			section: null
