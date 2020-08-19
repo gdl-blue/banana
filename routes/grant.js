@@ -34,7 +34,7 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 	
 	for(prm of perms) {
 		chkbxs += `
-			<label><input type=checkbox ${getperm(prm, username) ? 'checked' : ''} name="${prm}"> ${prm}</label><br />
+			<label><input type=checkbox ${getperm(prm, username, 1) ? 'checked' : ''} name="${prm}"> ${prm}</label><br />
 		`;
 	}
 	
@@ -70,13 +70,13 @@ wiki.post('/admin/grant', async function grantPermissions(req, res) {
 	var logstring = '';
 	
 	for(prm of perms) {
-		if(!getperm('developer', ip_check(req)) && ['developer'].includes(prm)) continue;
-		if(getperm(prm, username) && !req.body[prm]) {
+		if(!getperm('developer', ip_check(req), 1) && ['developer'].includes(prm)) continue;
+		if(getperm(prm, username, 1) && !req.body[prm]) {
 			logstring += '-' + prm + ' ';
 			if(permlist[username]) permlist[username].splice(find(permlist[username], item => item == prm), 1);
 			curs.execute("delete from perms where perm = ? and username = ?", [prm, username]);
 		}
-		else if(!getperm(prm, username) && req.body[prm] == 'on') {
+		else if(!getperm(prm, username, 1) && req.body[prm] == 'on') {
 			logstring += '+' + prm + ' ';
 			if(!permlist[username]) permlist[username] = [prm];
 			else permlist[username].push(prm);

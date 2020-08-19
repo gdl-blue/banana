@@ -164,11 +164,14 @@ function timeout(ms) {
 	}
 }
 
+// 호환용 권한은 쌍따옴표
 const perms = [
-	'admin', 'suspend_account', 'developer', 'update_thread_document', 'ipacl',
-	'update_thread_status', 'update_thread_topic', 'hide_thread_comment', 'grant',
-	'login_history', 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote',
-	'ban_users', 'tribune', 'arbiter', 'highspeed', 'head_admin'
+	'admin', "suspend_account", 'developer', 'update_thread_document', "ipacl",
+	'update_thread_status', 'update_thread_topic', "hide_thread_comment", 'grant',
+	"login_history", 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote',
+	'ban_users', 'tribune', 'arbiter', 'highspeed', "nsacl", 'head_admin', 'edit_board_post',
+	'delete_board_post', 'edit_board_comment', 'delete_board_comment', 'bot', 
+	'edit_namespace_acl', 'view_login_history', 'blind_thread_comment'
 ];
 
 const _perms = perms;
@@ -311,6 +314,16 @@ const session = require('express-session');
 const swig = require('swig'); // swig 호출
 
 const wiki = express();
+
+function updateTheseedPerm(perm) {
+	if(perm == 'ipacl') perm = 'ban_users';
+	if(perm == 'suspend_account') perm = 'ban_users';
+	if(perm == 'nsacl') perm = 'edit_namespace_acl';
+	if(perm == 'login_history') perm = 'view_login_history';
+	if(perm == 'hide_thread_comment') perm = 'blind_thread_comment';
+	
+	return perm;
+}
 
 function getTime() { return Math.floor(new Date().getTime()); }; const get_time = getTime;
 
@@ -674,9 +687,9 @@ function getSkin(req) {
 		: config.getString('default_skin', hostconfig['skin']);
 }
 
-function getperm(perm, username) {
+function getperm(perm, username, noupdating = false) {
 	try {
-		return permlist[username].includes(perm)
+		return permlist[username].includes(noupdating ? perm : updateTheseedPerm(perm))
 	} catch(e) {
 		return false;
 	}
@@ -749,7 +762,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	};
 	
 	function getpermForSkin(permname) {
-		return getperm(permname, ip_check(req));
+		return getperm(permname, ip_check(req), 1);
 	}
 	
 	var user_document_discuss = false;
@@ -802,7 +815,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					0,  // 역사 숨기기였는데 구현 안함
 					getperm('grant'),  // 권한부여 권한 유무(데프리케잇; imp[1][8] 사용)
 					getperm('developer'),  // 소유자 권한 유무(데프리케잇; imp[1][8] 사용)
-					user_document_discuss,  // 사용자 토론 존재여부
+					user_document_discuss ? 1 : 0,  // 사용자 토론 존재여부
 					getperm('ipacl'),  // IPACL 권한 유무(데프리케잇; imp[1][8] 사용)
 					getperm('admin'),  // 중재자 권한인데 admin으로 통합
 					getperm('admin'),  // 호민관 권한인데 admin으로 통합
@@ -858,7 +871,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					islogin(req) ? (getperm('admin', ip_check(req)) ? 1 : 0) : 0,
 					isBanned(req, islogin(req) ? 'author' : 'ip', ip_check(req)),
 					0,
-					'0',  // prmret,
+					prmret,
 					ip_check(req),
 					user_document_discuss ? 1 : 0
 				], 
@@ -889,7 +902,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	const nslist = await fetchNamespaces();
 	
 	if(['wiki', 'notfound', 'edit', 'thread', 'thread_list', 'thread_list_close',
-			'move', 'delete', 'xref', 'history', 'acl'].includes(viewname)) {
+			'move', 'delete', 'xref', 'history', 'acl', 'edit_edit_request'].includes(viewname)) {
 		const ns = title.split(':')[0];
 		
 		templateVariables['document'] = {
@@ -1031,7 +1044,8 @@ function alertBalloon(title, content, type = 'danger', dismissible = true, class
 }
 
 async function showError(req, code) {
-	return await render(req, "오류가 발생했습니다.", `<h2>${fetchErrorString(code)}</h2>`);
+	// {% if skinInfo.viewName == 'error' %}문제가 발생했습니다!{% else %}{{ skinInfo.title }}{% endif %}
+	return await render(req, "문제가 있습니다.", `<h2>${fetchErrorString(code)}</h2>`, _, _, _, 'error');
 }
 
 function ip_pas(ip = '', ismember = '', isadmin = null) {
@@ -1721,10 +1735,12 @@ if(firstrun) {
 		await curs.execute("select username, perm from perms order by username");
 		
 		for(var prm of curs.fetchall()) {
+			perm = updateTheseedPerm(prm['perm']);
+			
 			if(typeof(permlist[prm['username']]) == 'undefined')
-				permlist[prm['username']] = [prm['perm']];
+				permlist[prm['username']] = [perm];
 			else
-				permlist[prm['username']].push(prm['perm']);
+				permlist[prm['username']].push(perm);
 		}
 		
 		// setTimeout(()=>{

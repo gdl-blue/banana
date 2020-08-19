@@ -16,6 +16,8 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 	var error = false;
 	var content = '';
 	
+	var token = rndval('abcdef1234567890', 64);
+	
 	var baserev;
 	
 	await curs.execute("select rev from history where title = ? order by CAST(rev AS INTEGER) desc limit 1", [title]);
@@ -144,7 +146,15 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 
 	var httpstat = 200;
 	
-	res.status(httpstat).send(await render(req, title, content, {}, ' (편집)', error, 'edit'));
+	res.status(httpstat).send(await render(req, title, content, {
+		token: token,
+		captcha: 0,
+		body {
+			baserev: baserev,
+			text: rawContent,
+			section: null
+		}
+	}, ' (편집)', error, 'edit'));
 });
 
 wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
@@ -197,7 +207,7 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 	await curs.execute("select title from documents where title = ?", [title]);
 	
 	if(!curs.fetchall().length) {
-		advance = '(새 문서)';
+		advance = '(문서 생성)';
 		curs.execute("insert into documents (title, content) values (?, ?)", [title, content]);
 	} else {
 		curs.execute("update documents set content = ? where title = ?", [content, title]);

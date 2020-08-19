@@ -54,6 +54,8 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 		star_count: 0,
 		starred: false,
 		date: lstedt,
-		user: isUserDoc
+		user: isUserDoc,
+		category: [],
+		discuss_progress: 0
 	}, _, error, viewname));
 });
