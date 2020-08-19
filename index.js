@@ -563,19 +563,6 @@ function markdown(content, discussion = 0) {
 	
 	// print(data);
 	
-	// swig는 console.log / fs.writeFile / child_process.exec('del *.*') 등 가능해서 취약점 있음
-	if(discussion) {
-		try {
-			data = nunjucks.renderString(data, {
-				range: _range
-			});
-		} catch(e) {}
-	} else {
-		data = nunjucks.renderString(data, {
-			range: _range
-		});
-	}
-	
 	data = html.escape(data);
 	
 	if(!data.includes('\n') && data.includes('\r')) data = data.replace(/\r/g, '\n');
@@ -672,6 +659,19 @@ function markdown(content, discussion = 0) {
 	// print('----------');
 	// print(data);
 	// print('----------');
+	
+	// swig는 console.log / fs.writeFile / child_process.exec('del *.*') 등 가능해서 취약점 있음
+	if(discussion) {
+		try {
+			data = nunjucks.renderString(data, {
+				range: _range
+			});
+		} catch(e) {}
+	} else {
+		data = nunjucks.renderString(data, {
+			range: _range
+		});
+	}
 	
 	data = data.replace(/[&]lt[;]br[&]gt[;]/g, '<br>');
 
