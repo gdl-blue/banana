@@ -715,6 +715,10 @@ if(config.getString('enable_opennamu_skins', '1') != '0') {
 		return url_pas(input);
 	});
 
+	nunjucks.addFilter('url_encode', function filter_encodeURL2(input) {
+		return url_pas(input);
+	});
+
 	// 이거...
 	nunjucks.addFilter('load_lang', function filter_loadLang(input) {
 		return ({
