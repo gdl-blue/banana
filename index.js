@@ -313,6 +313,8 @@ const express = require('express');
 const session = require('express-session');
 const swig = require('swig'); // swig 호출
 
+const nunjucks = new (require('nunjucks')).Environment();
+
 const wiki = express();
 
 function updateTheseedPerm(perm) {
@@ -701,19 +703,29 @@ function loadLang(kor, eng) {
 
 if(config.getString('enable_opennamu_skins', '1') != '0') {
 	// 오픈나무(터보위키) 스킨 호환용
-	swig.setFilter('cut_100', function filter_slice100Chars(input) {
+	nunjucks.addFilter('cut_100', function filter_slice100Chars(input) {
 		return input.slice(0, 100);
 	});
 
-	swig.setFilter('md5_replace', function filter_MD5Hash(input) {
+	nunjucks.addFilter('md5_replace', function filter_MD5Hash(input) {
 		return md5(input);
 	});
 
-	swig.setFilter('url_pas', function filter_encodeURL(input) {
+	nunjucks.addFilter('url_pas', function filter_encodeURL(input) {
 		return url_pas(input);
 	});
 
-	swig.setFilter('CEng', loadLang);
+	// 이거...
+	nunjucks.addFilter('load_lang', function filter_loadLang(input) {
+		return ({
+			recent_change: '최근 변경',
+			recent_discussion: '최근 토론',
+			other: '특수 기능',
+			user: '사용자'
+		})[input];
+	});
+
+	nunjucks.addFilter('CEng', loadLang);
 }
 
 async function fetchNamespaces() {
@@ -749,6 +761,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	var template;
 	var _0xa9fc3e = skinconfig['type'];
 	const skintype = _0xa9fc3e ? _0xa9fc3e : 'the seed';
+	
+	var nunvars = {};
 
 	var output;
 	var templateVariables = varlist;
@@ -778,9 +792,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	
 	if(config.getString('enable_opennamu_skins', '1') == '1') {
 		// 오픈나무 스킨 호환용
-		
 		if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu-seed') {
-			templateVariables['imp'] = [
+			nunvars['imp'] = [
 				title,  // 페이지 제목 (imp[0])
 				[  // 위키 설정 (imp[1][x])
 					config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
@@ -789,7 +802,13 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					'',  // 전역 CSS
 					'',  // 전역 JS
 					config.getString('wiki.logo_url', '') + config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 로고
-					'',  // 전역 <HEAD>
+					`
+						<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
+						<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
+						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
+						<script type="text/javascript" src="/js/banana.js"></script>
+						<link rel="stylesheet" href="/css/banana.css">
+					`,  // 전역 <HEAD>
 					config.getString('wiki.site_notice', ''),  // 공지
 					getpermForSkin,  // 권한 유무 여부 함수
 					toDate(getTime())  // 시간
@@ -836,8 +855,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					 )
 				]
 			];
-			templateVariables['data'] = content;
-			templateVariables['menu'] = menu;
+			nunvars['data'] = content;
+			nunvars['menu'] = menu;
 		}
 		else if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu') {
 			var prmret = [];
@@ -850,7 +869,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		
 			if(!prmret.length) prmret = '0';
 			
-			templateVariables['imp'] = [
+			nunvars['imp'] = [
 				title,  // 페이지 제목 (imp[0])
 				[  // 위키 설정 (imp[1][x])
 					config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 위키 이름
@@ -885,11 +904,18 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 						)
 					 ) : (
 						''
-					 )
+					 ),  // 필수 CSS, JS
+					`
+						<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
+						<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
+						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
+						<script type="text/javascript" src="/js/banana.js"></script>
+						<link rel="stylesheet" href="/css/banana.css">
+					`
 				]
 			];
-			templateVariables['data'] = content;
-			templateVariables['menu'] = menu;
+			nunvars['data'] = content;
+			nunvars['menu'] = menu;
 		}
 	}
 	
@@ -922,11 +948,12 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			case 'opennamu-seed':
 				var tmplt = fs.readFileSync('./skins/' + getSkin(req) + '/index.html').toString();
 				
+				/*
 				try {
 					for(ifstatement of tmplt.match(/[{][%]\s{0,}if(.+)\s{0,}[%][}]/g)) {
 						tmplt = tmplt.replace(ifstatement, ifstatement.replace(/None/g, 'null').replace(/\snot\s/g, ' !'));
 						
-						/*
+						/ *
 						const _0x3af4e6 = ifstatement.match(/(+)\sin\s(.+)/);
 						if(!_0x3af4e6) continue;
 						
@@ -938,13 +965,14 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 						if(isArray(templateVariables[seed])) {
 							tmplt = tmplt.replace(ifstatement, `${seed}.includes(${find})`);
 						}
-						*/
+						* /
 					}
 				} catch(e){}
 				
 				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
+				*/
 				
-				return swig.render(tmplt, { locals: templateVariables });
+				return nunjucks.renderString(tmplt, nunvars);
 			break; case 'the seed':
 				if(varlist['__isSkinSettingsPage'] && !fs.existsSync('./skins/' + getSkin(req) + '/views/settings.html')) {
 					templateVariables['content'] = '<h2>이 스킨은 스킨 설정 기능을 지원하지 않거나 동작 방식이 맞지 않습니다.</h2>';
@@ -1593,6 +1621,18 @@ wiki.get(/^\/record\/(.*)$/, async function redirectJ(req, res) {
 			}
 		</script>
 	`);
+});
+
+wiki.get('/login', function redirectK(req, res) {
+	res.redirect('/member/login');
+});
+
+wiki.get('/logout', function redirectK(req, res) {
+	res.redirect('/member/logout');
+});
+
+wiki.get('/register', function redirectK(req, res) {
+	res.redirect('/member/signup');
 });
 
 function redirectToFrontPage(req, res) {
