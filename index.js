@@ -1307,6 +1307,7 @@ async function getacl(req, title, action) {
 				['blocked_before', '차단된 적이 있는 사용자'],
 				['discussed_document', '이 문서에서 토론한 사용자'],
 				['discussed', '토론한 적이 있는 사용자'],
+				['userdoc_owner', '사용자문서 소유자'],
 				['has_starred_document', '이 문서를 주시하는 사용자']
 				
 				switch(acl['value']) {
