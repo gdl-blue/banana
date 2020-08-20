@@ -1185,20 +1185,8 @@ function fetchErrorString(code) {
 function alertBalloon(title, content, type = 'danger', dismissible = true, classes = '') {
 	return `
 		<div class=alert>
-			<div class=alert-title>
-				${title}
-			</div>
-			
-			<div class=alert-content>
-				<img src="${
-					{
-						none: '',
-						danger: '',
-						warning: '',
-						info: '',
-						success: ''
-					}[type]
-				}" class=alert-icon> ${content}
+			<div class="alert alert-${type}${dismissible ? ' alert-dismissible' : ''}">
+				${content}
 			</div>
 		</div>`;
 }
@@ -1211,7 +1199,7 @@ async function showError(req, code) {
 function ip_pas(ip = '', ismember = '', isadmin = null) {
 	// https://www.w3schools.com/howto/howto_css_glowing_text.asp
 	var color = ' style="color: x;"';
-	const glowstyle = '';  // ' text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff;';
+	const glowstyle = ' text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff;';
 	
 	if(ismember == 'author') {
 		if(getperm('developer', ip)) {
@@ -1910,7 +1898,7 @@ if(firstrun) {
 		await curs.execute("select username, perm from perms order by username");
 		
 		for(var prm of curs.fetchall()) {
-			perm = updateTheseedPerm(prm['perm']);
+			perm = (prm['perm']);
 			
 			if(typeof(permlist[prm['username']]) == 'undefined')
 				permlist[prm['username']] = [perm];

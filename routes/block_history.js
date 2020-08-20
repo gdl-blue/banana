@@ -7,6 +7,8 @@ wiki.get('/BlockHistory', async function(req, res) {
 	await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order by cast(startingdate as integer) desc limit 100");
 	
 	var content = `
+		${alertBalloon('[알림!]', '2020년 8월 20일 이전 차단 내역은 <a href="/LegacyBlockHistory">이곳</a>에서 조회할 수 있습니다.', 'info')}
+	
 		<table class="table table-hover">
 			<colgroup>
 				<col style="width: 180px;">

@@ -448,25 +448,25 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 			
 			// update 쓰려면 복잡해져서(값이 이미 있는지 확인해야함) 안 씀
 			await curs.execute("delete from config where key = ?", [setting]);
-			await curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
+			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
 			
 			wikiconfig[setting] = req.body[setting] ? '1' : '0';
 		} else {
 			const setting = settingi;
 			
 			await curs.execute("delete from config where key = ?", [setting]);
-			await curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
+			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
 			
 			wikiconfig[setting] = req.body[setting];
 		}
 	}
 	
 	await curs.execute("delete from email_config");
-	await curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]);
+	curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]);
 	
 	if(req.body['clear_login_history']) {
-		await curs.execute("delete from login_history");
-		await curs.execute("delete from useragents");
+		curs.execute("delete from login_history");
+		curs.execute("delete from useragents");
 	}
 	
 	fs.writeFileSync('./welcome.html', req.body['welcome_page']);
