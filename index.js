@@ -1332,6 +1332,18 @@ async function getacl(req, title, action) {
 					break;case 'document_contributor':
 						await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
 						condition = curs.fetchall().length > 0;
+					break;case 'userdoc_owner':
+						var ns = '';
+				
+						if((await fetchNamespaces()).includes(title.split(':')[0]) && title.startsWith(title.split(':')[0] + ':')) {
+							ns = title.split(':')[0];
+						} else {
+							ns = '문서';
+						}
+						
+						ns += ':';
+						
+						condition = ip_check(req) == title.replace(new RegExp('^' + ns), '') && islogin(req)
 					break;default:
 						try {
 							if(value.startsWith('member:')) {
