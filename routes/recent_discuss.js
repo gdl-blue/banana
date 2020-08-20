@@ -48,7 +48,7 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 			continue;
 		}
 		
-		await curs.execute("select username, content from res where tnum = ? order by cast(id as integer) desc limit 1", [trd['tnum']]);
+		await curs.execute("select username, content, hidden from res where tnum = ? order by cast(id as integer) desc limit 1", [trd['tnum']]);
 		const _0x123456 = curs.fetchall();
 		
 		var prv = '', un = '';
@@ -58,6 +58,8 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 			else prv = _0x123456[0]['content'];
 			
 			un = _0x123456[0]['username'];
+			
+			if(_0x123456[0]['hidden'] == '1') prv = '[숨겨진 글]';
 		}
 		
 		content += `
