@@ -302,7 +302,7 @@ wiki.get(/\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) {
 			status_type: rs['status'] == '1' ? rs['stype'] : null,
 			timestamp: rs['time'],
 			username: rs['username'],
-			content: rs['hidden'] == '1' ? (
+			content: rs['hidden'] == '1' || rs['hidden'] == 'O' ? (
 								getperm('hide_thread_comment', ip_check(req))
 								? markdown(rs['content'], 1)
 								: ''

@@ -259,7 +259,7 @@ wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
 	for(rs of curs.fetchall()) {
 		ret[rs['id']] = {
 			id: rs['id'],
-			hidden: rs['hidden'] == '1' ? true : false,
+			hidden: rs['hidden'] == '1' || rs['hidden'] == 'O' ? true : false,
 			hider: rs['hidden'] == '1' ? rs['hider'] : null,
 			type: rs['status'] == '1' ? 'status' : 'normal',
 			contribution_type: rs['ismember'],

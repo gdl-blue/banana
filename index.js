@@ -1841,7 +1841,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 						<span style="float: right;">${generateTime(toDate(rs['time']), "Y년 m월 d일 H시 i분")}</span>
 					</div>
 					
-					<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">
+					<div class="r-body${rs['hidden'] == '1' || rs['hidden'] == 'O' ? ' r-hidden-body' : ''}">
 						${
 							rs['hidden'] == '1' || rs['hidden'] == 'O'
 							? (
