@@ -119,9 +119,9 @@ function shell(c, l = '') {
 }
 
 function sound(a) {
-	if(!require('os').platform() != 'win32') return;
-	if(!require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\MSVBVM60.DLL')) return;
-	if(!require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\VB6KO.DLL')) return;
+	if(require('os').platform() != 'win32') return;
+	if(!(require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\MSVBVM60.DLL'))) return;
+	if(!(require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\VB6KO.DLL'))) return;
 	
 	shell('beep.exe ' + a);
 }
@@ -1242,7 +1242,7 @@ function ip_pas(ip = '', ismember = '', isadmin = null) {
 		}
 	}
 	
-	if(isadmin) {
+	if(isadmin != null) {
 		if(ismember == 'author') {
 			if(isadmin == '1') {
 				return `<strong><a${color} href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
@@ -1818,18 +1818,19 @@ async function getThreadData(req, tnum, tid = '-1') {
 	const status = curs.fetchall()[0]['status'];
 	
 	if(tid == '-1') {
-		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype from res where tnum = ? order by cast(id as integer) asc", [tnum]);
+		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype, isadmin from res where tnum = ? order by cast(id as integer) asc", [tnum]);
 	} else {
-		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
+		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype, isadmin from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
 	}
 	content = '';
 	for(rs of curs.fetchall()) {
 		var hbtn = ''
-		if((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000)) {
+		if((getperm('blind_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000)) {
 			hbtn += `
 				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[댓글 ${rs['hidden'] == '1' ? '표시' : '숨기기'}]</a>
 			`;
 		}
+		
 		content += `
 			<div class=res-wrapper data-id="${rs['id']}">
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
