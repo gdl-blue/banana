@@ -168,6 +168,7 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 			const value  = req.body['value'];
 			const mode   = req.body['mode'];
 			const not    = req.body['not'] ? '1' : '0';
+			const high   = req.body['high'] ? '1' : '0';
 			
 			if(!action || !type || !value || !mode || !not) {
 				res.send(await showError(req, 'invalid_request_body'));
@@ -186,12 +187,12 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 			
 			switch(mode) {
 				case 'add':
-					await curs.execute("insert into acl (title, action, value, type, notval) values (?, ?, ?, ?, ?)", [
-						title, action, value, type, not
+					await curs.execute("insert into acl (title, action, value, type, notval, hipri) values (?, ?, ?, ?, ?, ?)", [
+						title, action, value, type, not, high
 					]);
 				break;case 'remove':
-					await curs.execute("delete from acl where value = ? and title = ? and notval = ? and type = ? and action = ?", [
-						value, title, not, type, action
+					await curs.execute("delete from acl where value = ? and title = ? and notval = ? and type = ? and action = ? and hipri = ?", [
+						value, title, not, type, action, high
 					]);
 			}
 			
