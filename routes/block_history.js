@@ -4,7 +4,7 @@
 */
 
 wiki.get('/BlockHistory', async function(req, res) {
-	await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order by cast(startingdate as integer) limit 100");
+	await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order by cast(startingdate as integer) desc limit 100");
 	
 	var content = `
 		<table class="table table-hover">
@@ -34,7 +34,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 			<tr>
 				<td>${generateTime(toDate(row.startingdate), timeFormat)}</td>
 				<td>${ip_pas(row.blocker, 'author')}</td>
-				<td>${row.username}</td>
+				<td>${html.escape(row.username)}</td>
 				<td>${generateTime(toDate(row.endingdate), timeFormat)}</td>
 				<td>${
 					row.type == 'suspend' ? (
@@ -67,7 +67,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 			
 			<tr>
 				<td colspan=5>
-					${row.note}
+					${html.escape(row.note)}
 				</td>
 			</tr>
 		`;

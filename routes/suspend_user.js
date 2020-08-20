@@ -216,6 +216,8 @@ wiki.post('/admin/unban_user', async function unban(req, res) {
 	
 	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl_remove' : 'unsuspend', ip_check(req), username, '', getTime(), '-1', '0', '0', ''
+						usertype, usertype == 'ip' ? 'ipacl_remove' : 'unsuspend', ip_check(req), username, '', getTime(), '-1', '0', '0', '(차단 해제)'
 					]);
+					
+	res.redirect('/admin/ban_users');
 });
