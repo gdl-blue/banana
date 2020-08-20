@@ -493,7 +493,8 @@ try {
 			'bots': ['username', 'token', 'owner'],
 			'email_config': ['service', 'email', 'password'],
 			'edit_requests': ['baserev', 'author', 'slug', 'original', 'content'],
-			'login_attempts': ['ip', 'username']
+			'login_attempts': ['ip', 'username'],
+			'rb': ['block', 'end', 'today', 'blocker', 'why', 'band', 'ipacl']  // 구조적으로 많이 달라서...
 		};
 		
 		for(var table in tables) {
@@ -866,7 +867,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	const perms = {
 		has: function(perm) {
 			try {
-				return permlist[ip_check(req)].includes(perm);
+				return permlist[ip_check(req)].includes(updateTheseedPerm(perm));
 			} catch(e) {
 				return false;
 			}
@@ -905,7 +906,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	templateVariables['req_ip'] = ip_check(req, 1);
 	
 	function getpermForSkin(permname) {
-		return getperm(permname, ip_check(req), 1);
+		return getperm(permname, ip_check(req));
 	}
 	
 	var user_document_discuss = false;

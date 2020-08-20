@@ -10,22 +10,22 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 	switch(flag) {
 		case 'create':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where not title like '사용자:%' and (advance like '(문서 생성)' or advance like '<i>(새 문서)</i>') order by (case round(time) when 0 then cast(time as integer) else time end) desc limit 100");
+						where not title like '사용자:%' and (advance like '(문서 생성)' or advance like '<i>(새 문서)</i>') order by time desc limit 100");
 		break;case 'delete':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where not title like '사용자:%' and (advance like '(삭제)' or advance like '<i>(삭제)</i>') order by (case round(time) when 0 then cast(time as integer) else time end) desc limit 100");
+						where not title like '사용자:%' and (advance like '(삭제)' or advance like '<i>(삭제)</i>') order by time desc limit 100");
 		break;case 'move':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where not title like '사용자:%' and (advance like '(%제목 변경)' or advance like '<i>(%이동)</i>') order by (case round(time) when 0 then cast(time as integer) else time end) desc limit 100");
+						where not title like '사용자:%' and (advance like '(%제목 변경)' or advance like '<i>(%이동)</i>') order by time desc limit 100");
 		break;case 'revert':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where not title like '사용자:%' and (advance like '(%복원)' or advance like '<i>(%로 되돌림)</i>') order by (case round(time) when 0 then cast(time as integer) else time end) desc limit 100");
+						where not title like '사용자:%' and (advance like '(%복원)' or advance like '<i>(%로 되돌림)</i>') order by time desc limit 100");
 		break;case 'modify':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where not title like '사용자:%' and advance = '' order by (case round(time) when 0 then cast(time as integer) else time end) desc limit 100");
+						where not title like '사용자:%' and advance = '' order by time desc limit 100");
 		break;default:
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where not title like '사용자:%' order by (case round(time) when 0 then cast(time as integer) else time end) desc limit 100");
+						where not title like '사용자:%' order by time desc limit 100");
 	}
 	
 	var content = `
