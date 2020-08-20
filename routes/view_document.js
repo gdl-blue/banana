@@ -48,6 +48,15 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 				` + content;
 			}
 			
+			if(title.startsWith("사용자:") && ban_check(req, 'author', title.replace(/^사용자[:]/, ''))) {
+				content = `
+					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: red gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'blue\';" onmouseout="this.style.borderTopColor=\'red\';">
+						<span style="font-size: 14pt;">이 사용자는 관리자에 의해 차단되었습니다.</span><br>
+						차단 사유:
+					</div>
+				` + content;
+			}
+			
 			await curs.execute("select time from history where title = ? order by cast(rev as integer) desc limit 1", [title]);
 			lstedt = Number(curs.fetchall()[0]['time']);
 		}

@@ -5,8 +5,8 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 		case 'action-based':
 			const title = req.params[0];
 			
-			const dispname = ['읽기', '편집', '토론', '편집 요청'];
-			const aclname  = ['read', 'edit', 'discuss', 'edit_request'];
+			const dispname = ['읽기', '편집', '토론 발제', '토론 참여', '편집 요청'];
+			const aclname  = ['read', 'edit', 'create_thread', 'write_thread_comment', 'edit_request'];
 			
 			const permlist = [
 				['any', '모두'],

@@ -855,7 +855,7 @@ if(config.getString('enable_opennamu_skins', '1') != '0') {
 }
 
 async function fetchNamespaces() {
-	return ['문서', '틀', '분류', '파일', '사용자', 'wiki', '휴지통', '파일휴지통'];
+	return ['문서', '틀', '분류', '파일', '사용자', config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])), '휴지통', '파일휴지통'];
 }
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
@@ -1252,26 +1252,23 @@ function ip_pas(ip = '', ismember = '', isadmin = null) {
 async function getacl(req, title, action) {
 	const acltyp = config.getString('acl_type', 'action-based');
 	
-	if(action == 'write_thread_comment') action = 'discuss';
-	if(action == 'create_thread') action = 'discuss';
-	
 	switch(acltyp) {
 		case 'action-based':
 			var fullacllst = [];
 			
 			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
-			fullacllst.push(curs.fetchall());
+			fullacllst = fullacllst.concat(curs.fetchall());
 			
 			await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
-			fullacllst.push(curs.fetchall());
+			fullacllst = fullacllst.concat(curs.fetchall());
 			
 			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
-			fullacllst.push(curs.fetchall());
+			fullacllst = fullacllst.concat(curs.fetchall());
 			
 			if(!fullacllst.length) {
 				var ns = '';
 				
-				if(await fetchNamespaces().includes(title.split(':')[0]) && title.startsWith(title.split(':')[0] + ':')) {
+				if((await fetchNamespaces()).includes(title.split(':')[0]) && title.startsWith(title.split(':')[0] + ':')) {
 					ns = title.split(':')[0];
 				} else {
 					ns = '문서';
@@ -1280,97 +1277,95 @@ async function getacl(req, title, action) {
 				title = ns + ':';
 			
 				await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
-				fullacllst.push(curs.fetchall());
+				fullacllst = fullacllst.concat(curs.fetchall());
 				
 				await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
-				fullacllst.push(curs.fetchall());
+				fullacllst = fullacllst.concat(curs.fetchall());
 				
-				await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
-				fullacllst.push(curs.fetchall());
+				await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and not hipri = '1' and title = ? and type = ?", [title, action]);
+				fullacllst = fullacllst.concat(curs.fetchall());
 				
 				// 왜 goto가 없어
 			}
 			
-			for(var acllst of fullacllst) {
-				for(var acl of acllst) {
-					var   condition = true;
-					const action    = acl['action'];
-					const high      = acl['hipri'] == '1' ? true : false;
-					const not       = acl['not'] == '1' ? true : false;
-					const value     = acl['value'];
-					
-					['any', '모두'],
-					['member', '로그인된 사용자'],
-					['blocked_ip', '차단된 아이피'],
-					['blocked_member', '차단된 계정'],
-					['admin', '관리자'],
-					['developer', '소유자'],
-					['document_creator', '문서를 만든 사용자'],
-					['document_last_edited', '문서에 마지막으로 기여한 사용자'],
-					['document_contributor', '문서 기여자'],
-					['blocked_before', '차단된 적이 있는 사용자'],
-					['discussed_document', '이 문서에서 토론한 사용자'],
-					['discussed', '토론한 적이 있는 사용자'],
-					['has_starred_document', '이 문서를 주시하는 사용자']
-					
-					switch(acl['value']) {
-						case 'any':
-							condition = true;
-						break;case 'member':
-							condition = islogin(req);
-						break;case 'blocked_ip':
-							condition = !islogin(req) && isBanned(req, 'ip', ip_check(req));
-						break;case 'blocked_member':
-							condition = islogin(req) && isBanned(req, 'ip', ip_check(req));
-						break;case 'admin':
-							condition = getperm('admin', ip_check(req)) || getperm('developer', ip_check(req));
-						break;case 'developer':
-							condition = getperm('developer', ip_check(req));
-						break;case 'document_creator':
-							await curs.execute("select username from history where title = ? and username = ? and ismember = ? and rev = '1' and advance = '(새 문서)'", [title, ip_check(req), islogin(req) ? 'author' : 'ip']);
-							condition = curs.fetchall().length;
-						break;case 'document_last_edited':
-							await curs.execute("select username from history where title = ? and ismember = ? order by cast(rev as integer) desc limit 1", [title, islogin(req) ? 'author' : 'ip']);
-							condition = curs.fetchall()[0]['username'] == ip_check(req);
-						break;case 'document_contributor':
-							await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
-							condition = curs.fetchall().length > 0;
-						break;default:
-							try {
-								if(value.startsWith('member:')) {
-									condition = islogin(req) && ip_check(req).toUpperCase() == value.replace(/^member[:]/i, '').toUpperCase();
-								}
-								else if(value.startsWith('ip:')) {
-									condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
-								}
-								else {
-									condition = false;
-								}
-							} catch(e) {
+			for(var acl of fullacllst) {
+				var   condition = true;
+				const action    = acl['action'];
+				const high      = acl['hipri'] == '1' ? true : false;
+				const not       = acl['not'] == '1' ? true : false;
+				const value     = acl['value'];
+				
+				['any', '모두'],
+				['member', '로그인된 사용자'],
+				['blocked_ip', '차단된 아이피'],
+				['blocked_member', '차단된 계정'],
+				['admin', '관리자'],
+				['developer', '소유자'],
+				['document_creator', '문서를 만든 사용자'],
+				['document_last_edited', '문서에 마지막으로 기여한 사용자'],
+				['document_contributor', '문서 기여자'],
+				['blocked_before', '차단된 적이 있는 사용자'],
+				['discussed_document', '이 문서에서 토론한 사용자'],
+				['discussed', '토론한 적이 있는 사용자'],
+				['has_starred_document', '이 문서를 주시하는 사용자']
+				
+				switch(acl['value']) {
+					case 'any':
+						condition = true;
+					break;case 'member':
+						condition = islogin(req);
+					break;case 'blocked_ip':
+						condition = !islogin(req) && isBanned(req, 'ip', ip_check(req));
+					break;case 'blocked_member':
+						condition = islogin(req) && isBanned(req, 'ip', ip_check(req));
+					break;case 'admin':
+						condition = getperm('admin', ip_check(req)) || getperm('developer', ip_check(req));
+					break;case 'developer':
+						condition = getperm('developer', ip_check(req));
+					break;case 'document_creator':
+						await curs.execute("select username from history where title = ? and username = ? and ismember = ? and rev = '1' and advance = '(새 문서)'", [title, ip_check(req), islogin(req) ? 'author' : 'ip']);
+						condition = curs.fetchall().length;
+					break;case 'document_last_edited':
+						await curs.execute("select username from history where title = ? and ismember = ? order by cast(rev as integer) desc limit 1", [title, islogin(req) ? 'author' : 'ip']);
+						condition = curs.fetchall()[0]['username'] == ip_check(req);
+					break;case 'document_contributor':
+						await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
+						condition = curs.fetchall().length > 0;
+					break;default:
+						try {
+							if(value.startsWith('member:')) {
+								condition = islogin(req) && ip_check(req).toUpperCase() == value.replace(/^member[:]/i, '').toUpperCase();
+							}
+							else if(value.startsWith('ip:')) {
+								condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
+							}
+							else {
 								condition = false;
 							}
+						} catch(e) {
+							condition = false;
+						}
+				}
+				
+				if(action == 'allow') {
+					if(!not && condition) {
+						return true;
 					}
-					
-					if(action == 'allow') {
-						if(!not && condition) {
-							return true;
-						}
-						else if(not && !condition) {
-							return true;
-						}
-						else {
-							return false;
-						}
-					} else {
-						if(!not && !condition) {
-							return true;
-						}
-						else if(not && condition) {
-							return true;
-						}
-						else {
-							return false;
-						}
+					else if(not && !condition) {
+						return true;
+					}
+					else {
+						return false;
+					}
+				} else {
+					if(!not && !condition) {
+						return true;
+					}
+					else if(not && condition) {
+						return true;
+					}
+					else {
+						return false;
 					}
 				}
 			}
