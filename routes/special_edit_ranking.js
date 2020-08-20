@@ -1,5 +1,5 @@
 wiki.get('/EditRanking', async function editRankingView(req, res) {
-	await curs.execute("select count(username), ismember, username from history where not title like '사용자:%' and (advance = '' or advance = '(새 문서)') order by count(username) desc limit 100");
+	await curs.execute("select count(username), ismember, username from history where not title like '사용자:%' and (advance = '' or advance = '(새 문서)' or advance = '(문서 생성)') order by count(username) desc limit 100");
 	
 	var content = `
 		<p>편집 순위 (사용자 문서 편집 제외)

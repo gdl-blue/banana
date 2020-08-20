@@ -84,5 +84,10 @@ wiki.post('/admin/grant', async function grantPermissions(req, res) {
 		}
 	}
 	
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
+				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+					'author', 'grant', ip_check(req), username, '', getTime(), '-1', '0', '0', logstring
+				]);
+	
 	res.redirect('/admin/grant?username=' + encodeURIComponent(username));
 });

@@ -114,7 +114,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 				<td>${row['blockview'] == '1' ? '불가' : '가능'}</td>
 				<td>${row['al'] == '1' ? '가능' : (row['ismember'] == 'ip' ? '불가' : '-')}</td>
 				<td>
-					<form method=post action="/admin/unban_users" onsubmit="사용자를 차단해제하시겠습니까?">
+					<form method=post action="/admin/unban_user" onsubmit="사용자를 차단해제하시겠습니까?">
 						<input type=hidden name=username value="${html.escape(row['username'])}">
 						<input type=hidden name=usertype value="${html.escape(row['ismember'])}">
 						
@@ -191,4 +191,31 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 					]);
 	
 	res.redirect('/admin/ban_users');
+});
+
+wiki.post('/admin/unban_user', async function unban(req, res) {
+	const username = req.body['username'];
+	const usertype = req.body['usertype'];
+	
+	if(!getperm('ban_users', ip_check(req))) {
+		res.send(await showError(req, 'insufficient_privileges'));
+		return;
+	}
+	
+	if(!username || !usertype) {
+		res.send(await showError(req, 'invalid_request_body'));
+		return;
+	}
+	
+	if(!['ip', 'author'].includes(usertype)) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
+	
+	curs.execute("delete from banned_users where username = ? and ismember = ?", [username, usertype]);
+	
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl_remove' : 'unsuspend', ip_check(req), username, '', getTime(), '-1', '0', '0', ''
+					]);
 });
