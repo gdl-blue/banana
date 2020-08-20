@@ -13,7 +13,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 				<col>
 				<col>
 				<col style="width: 180px;">
-				<col style="width: 120px;">
+				<col style="width: 150px;">
 			</colgroup>
 			
 			<thead>
@@ -33,9 +33,9 @@ wiki.get('/BlockHistory', async function(req, res) {
 		content += `
 			<tr>
 				<td>${generateTime(toDate(row.startingdate), timeFormat)}</td>
-				<td>${row.blocker}</td>
+				<td>${ip_pas(row.blocker, 'author')}</td>
 				<td>${row.username}</td>
-				<td>${row.endingdate}</td>
+				<td>${generateTime(toDate(row.endingdate), timeFormat)}</td>
 				<td>${
 					row.type == 'suspend' ? (
 						'계정 차단'
@@ -43,7 +43,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 						row.type == 'unsuspend' ? (
 							'계정 차단해제'
 						) : (
-							row.type == 'ban_ip' ? (
+							row.type == 'ipacl_add' ? (
 								'IP 차단'
 							) : (
 								row.type == 'login_history' ? (
@@ -52,7 +52,11 @@ wiki.get('/BlockHistory', async function(req, res) {
 									row.type == 'grant' ? (
 										'권한 부여'
 									) : (
-										'불분명'
+										row.type == 'ipacl_remove' ? (
+											'IP 차단 해제'
+										) : (
+											'불분명'
+										)
 									)
 								)
 							)

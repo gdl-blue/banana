@@ -180,14 +180,14 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
 	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
 	
-	await curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake, note) \
+	curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake, note) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0', note
 					]);
 	
-	await curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0', note
+						usertype, usertype == 'ip' ? 'ipacl_add' : 'suspend', ip_check(req), username, '', startTime, expiration, al, fake == 'on' ? '1' : '0', note
 					]);
 	
 	res.redirect('/admin/ban_users');
