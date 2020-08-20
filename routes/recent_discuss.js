@@ -9,7 +9,7 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 	
 	var content = `
 		<ol class="breadcrumb link-nav">
-			<li><a href="?logtype=normal_thread">[열린 토론]</a></li>
+			<li><a href="?logtype=normal_thread">[최근 토론]</a></li>
 			<li><a href="?logtype=old_thread">[오래된 토론]</a></li>
 			<li><a href="?logtype=closed_thread">[닫힌 토론]</a></li>
 		</ol>

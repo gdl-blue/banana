@@ -34,7 +34,7 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 			<li><a href="?logtype=modify">[일반 편집]</a></li>
 			<li><a href="?logtype=create">[새 문서]</a></li>
 			<li><a href="?logtype=delete">[삭제]</a></li>
-			<li><a href="?logtype=move">[이동]</a></li>
+			<li><a href="?logtype=move">[제목변경]</a></li>
 			<li><a href="?logtype=revert">[되돌림]</a></li>
 		</ol>
 		

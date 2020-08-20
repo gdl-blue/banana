@@ -4,7 +4,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	if(title.replace(/\s/g, '') == '') res.redirect('/w/' + config.getString('frontpage'));
 	
 	await curs.execute("select content from documents where title = ?", [title]);
-	const rawContent = curs.fetchall();
+	var rawContent = curs.fetchall();
 
 	var content = '';
 	
@@ -16,6 +16,8 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	
 	var lstedt = undefined;
 	
+	var rev = undefined;
+	
 	try {
 		if(!await getacl(req, title, 'read')) {
 			httpstat = 403;
@@ -24,6 +26,18 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			
 			return;
 		} else {
+			if(req.query['rev']) {
+				rev = req.query['rev'];
+				
+				await curs.execute("select content from history where rev = ? and title = ?", [rev, title]);
+				rawContent = curs.fetchall();
+				
+				if(!rawContent.length) {
+					res.send(await showError(req, 'rev_not_found'));
+					return;
+				}
+			}
+			
 			content = markdown(rawContent[0]['content']);
 			
 			if(title.startsWith("사용자:") && getperm('admin', title.replace(/^사용자[:]/, ''))) {
@@ -56,6 +70,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 		date: lstedt,
 		user: isUserDoc,
 		category: [],
-		discuss_progress: 0
+		discuss_progress: 0,
+		rev: rev
 	}, _, error, viewname));
 });
