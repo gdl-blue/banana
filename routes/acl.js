@@ -21,6 +21,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 				['blocked_before', '차단된 적이 있는 사용자'],
 				['discussed_document', '이 문서에서 토론한 사용자'],
 				['discussed', '토론한 적이 있는 사용자'],
+				['userdoc_owner', '사용자 문서 소유자'],
 				['has_starred_document', '이 문서를 주시하는 사용자']
 			];
 			
@@ -66,12 +67,12 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 			for(var acl=0; acl<dispname.length; acl++) {
 				var ret1 = '', ret2 = '';
 			
-				await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+				await curs.execute("select value, notval, hipri from acl where action = ? and title = ? and type = ? order by value", [
 					'allow', title, aclname[acl]
 				]);
 				
 				for(var aclitm of curs.fetchall()) {
-					ret1 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
+					ret1 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}${aclitm['hipri'] == '1' ? '_h' : ''}</option>`;
 				}
 				
 				await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
@@ -79,7 +80,7 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 				]);
 				
 				for(var aclitm of curs.fetchall()) {
-					ret2 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
+					ret2 += `<option>${aclitm['notval'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
 				}
 				
 				content += `
@@ -167,8 +168,8 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 			const type   = req.body['type'];
 			const value  = req.body['value'];
 			const mode   = req.body['mode'];
-			const not    = req.body['not'] ? '1' : '0';
-			const high   = req.body['high'] ? '1' : '0';
+			const not    = req.body['not'] == 'on' ? '1' : '0';
+			const high   = req.body['high'] == 'on' ? '1' : '0';
 			
 			if(!action || !type || !value || !mode || !not) {
 				res.send(await showError(req, 'invalid_request_body'));
