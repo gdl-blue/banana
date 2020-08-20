@@ -210,7 +210,7 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 	
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
 					(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-					['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0']);
+					['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0']);
 					
 	res.redirect('/thread/' + tnum);
 });

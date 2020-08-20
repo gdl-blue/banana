@@ -213,7 +213,7 @@ const perms = [
 	"login_history", 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote',
 	'ban_users', 'tribune', 'arbiter', 'highspeed', "nsacl", 'head_admin', 'edit_board_post',
 	'delete_board_post', 'edit_board_comment', 'delete_board_comment', 'bot', 
-	'edit_namespace_acl', 'view_login_history', 'blind_thread_comment'
+	'edit_namespace_acl', 'view_login_history', 'blind_thread_comment', 'fake_admin'
 ];
 
 const _perms = perms;

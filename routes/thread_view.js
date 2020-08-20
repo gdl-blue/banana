@@ -257,7 +257,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 	
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						String(lid + 1), req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0'
+						String(lid + 1), req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0'
 					]);
 					
 	curs.execute("update threads set time = ? where tnum = ?", [getTime(), tnum]);

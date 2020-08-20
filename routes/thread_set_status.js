@@ -35,7 +35,7 @@ wiki.post('/admin/thread/:tnum/status', async function updateThreadStatus(req, r
 	curs.execute("update threads set status = ? where tnum = ?", [newstatus, tnum]);
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin, stype) \
 					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?, 'status')", [
-						String(rescount + 1), newstatus, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
+						String(rescount + 1), newstatus, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
@@ -75,7 +75,7 @@ wiki.post('/admin/thread/:tnum/document', async function updateThreadDocument(re
 	curs.execute("update threads set title = ? where tnum = ?", [newdoc, tnum]);
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin, stype) \
 					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?, 'document')", [
-						String(rescount + 1), newdoc, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
+						String(rescount + 1), newdoc, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
@@ -115,7 +115,7 @@ wiki.post('/admin/thread/:tnum/topic', async function updateThreadTopic(req, res
 	curs.execute("update threads set topic = ? where tnum = ?", [newtopic, tnum]);
 	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin, stype) \
 					values (?, ?, ?, ?, '0', '', '1', ?, ?, ?, 'topic')", [
-						String(rescount + 1), newtopic, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) ? '1' : '0' 
+						String(rescount + 1), newtopic, ip_check(req), getTime(), tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0' 
 					]);
 	
 	res.json({});
