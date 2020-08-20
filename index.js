@@ -110,6 +110,10 @@ const find = (obj, fnc) => {
 	return -1;
 }
 
+module.exports = {
+	update_flags: ''
+};
+
 function shell(c, l = '') {
 	(require("child_process")).exec(require('os').platform() == 'win32' ? c : l);
 }
