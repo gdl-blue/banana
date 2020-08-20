@@ -13,7 +13,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 	}
 	
 	await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-				where ismember = ? and username = ? order by time desc limit 1500", [
+				where ismember = ? and username = ? order by cast(time as integer) desc limit 1500", [
 					ismember, username
 				]);
 	
