@@ -898,9 +898,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	templateVariables['content'] = content;
 	templateVariables['perms'] = perms;
 	templateVariables['url'] = req.path;
-	templateVariables['req'] = {
-		ip: ip_check(req, 1)
-	};
+	templateVariables['req_ip'] = ip_check(req, 1);
 	
 	function getpermForSkin(permname) {
 		return getperm(permname, ip_check(req), 1);

@@ -250,7 +250,7 @@ $(function() {
 					history.go(0);
 				},
 				error: function(d) {
-					alert('처리 중에 오류가 발생했습니다.');
+					alert('처리 중 오류가 발생했습니다.');
 				}
 			});
 			
@@ -272,7 +272,7 @@ $(function() {
 					history.go(0);
 				},
 				error: function(d) {
-					alert('처리 중에 오류가 발생했습니다.');
+					alert('처리 중 오류가 발생했습니다.');
 				}
 			});
 			
@@ -292,7 +292,7 @@ $(function() {
 					submitBtn.removeAttr('disabled');
 				},
 				error: function(d) {
-					alert('처리 중에 오류가 발생했습니다.');
+					alert('처리 중 오류가 발생했습니다.');
 				}
 			});
 			
@@ -312,7 +312,7 @@ $(function() {
 					submitBtn.removeAttr('disabled');
 				},
 				error: function(d) {
-					alert('처리 중에 오류가 발생했습니다.');
+					alert('처리 중 오류가 발생했습니다.');
 				}
 			});
 			
@@ -332,7 +332,7 @@ $(function() {
 					submitBtn.removeAttr('disabled');
 				},
 				error: function(d) {
-					alert('처리 중에 오류가 발생했습니다.');
+					alert('처리 중 오류가 발생했습니다.');
 				}
 			});
 			
