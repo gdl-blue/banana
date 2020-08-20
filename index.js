@@ -349,8 +349,7 @@ const curs = {
 
 const express = require('express');
 const session = require('express-session');
-const swig = require('swig'); // swig 호출
-
+const swig = require('swig');
 const nunjucks = new (require('nunjucks')).Environment();
 
 const wiki = express();
@@ -469,7 +468,7 @@ try {
 			'email_filters': ['address'],
 			'stars': ['title', 'username', 'lastedit'],
 			'perms': ['perm', 'username'],
-			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type'],
+			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system'],
 			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin', 'stype'],
 			'useragents': ['username', 'string'],
 			'login_history': ['username', 'ip'],
@@ -489,7 +488,8 @@ try {
 			'bbs_ids': ['id'],
 			'bots': ['username', 'token', 'owner'],
 			'email_config': ['service', 'email', 'password'],
-			'edit_requests': ['baserev', 'author', 'slug', 'original', 'content']
+			'edit_requests': ['baserev', 'author', 'slug', 'original', 'content'],
+			'login_attempts': ['ip', 'username']
 		};
 		
 		for(var table in tables) {
@@ -552,8 +552,8 @@ wiki.use(session({
 	cookie: {
 		expires: false
 	},
-	resave: false,
-	saveUninitialized: false
+	resave: true,
+	saveUninitialized: true
 }));
 
 function markdown(content, discussion = 0) {
@@ -889,7 +889,13 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	var _0xa9fc3e = skinconfig['type'];
 	const skintype = _0xa9fc3e ? _0xa9fc3e : 'the seed';
 	
-	var nunvars = {};
+	var nunvars = {
+		strd: varlist['starred'],
+		strc: varlist['star_count'],
+		us: varlist['user'],
+		un: title.replace(/^사용자[:]/, ''),
+		cont: viewname == 'contribution' || viewname == 'contribution_discuss' ? '1' : undefined
+	};
 
 	var output;
 	var templateVariables = varlist;
@@ -1168,6 +1174,8 @@ function fetchErrorString(code) {
 		'invalid_request_body': '필요한 값 중 일부가 빠져서 처리가 불가능합니다.',
 		'thread_not_found': '토론을 찾을 수 없습니다.',
 		'user_not_found': '사용자를 찾을 수 없습니다.',
+		'document_not_found': '문서를 찾을 수 없습니다.',
+		'syntax_error': '구문오류',
 		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.'
 	};
 	
@@ -1684,7 +1692,7 @@ function generateCaptcha(req, cnt = 3) {
 
 function validateCaptcha(req) {
 	if(ip_check(req) in botlist) return true;
-	if(permlist[ip_check(req)].includes('bot') || permlist[ip_check(req)].includes('no_captcha')) return true;
+	try{if(permlist[ip_check(req)].includes('bot') || permlist[ip_check(req)].includes('no_captcha')) return true;}catch(e){}
 	if(config.getString('enable_captcha', '1') == '0') return true;
 	
 	try {
@@ -1694,6 +1702,8 @@ function validateCaptcha(req) {
 	} catch(e) {
 		return false;
 	}
+	
+	return true;
 }
 
 wiki.get('/recent_changes', function redirectA(req, res) {

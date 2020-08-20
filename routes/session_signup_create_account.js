@@ -94,17 +94,17 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 	const pw = req.body['password'];
 	const pw2 = req.body['password_check'];
 	
-	if(!validateCaptcha){ res.send(await showError(req, 'invalid_captcha_number'));return; }
+	if(!validateCaptcha(req)){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
 	const captcha = generateCaptcha(req, 2);
 	
-	if(id.match(/(?:[^A-Za-z0-9_ㄱ-힣?!&lt;&gt;※★☆♣♤☎☏♨ -])/)) {  // 터보위키와 동일한 문자허용 방식임
+	if(id.match(/(?:[^A-Za-z0-9_ㄱ-힣?!&lt;&gt;※#★☆♣♠♤☎☏♨ -])/)) {  // 터보위키와 동일한 문자허용 방식임
 		res.send(await render(req, '계정 만들기', `
 			<form class=signup-form method=post>
 				<div class=form-group>
 					<label>사용자 이름: </label><br>
 					<input class=form-control name="username" type="text">
-					<p class=error-desc>사용자 이름은 한글, 영어 대/소문자, 숫자, 밑줄, 느낌표, 삼각괄호, 당구장, 별, 빵꾸난별, 클로버, 빵꾸난 스페이드, 전화기, 흰전화기, 목욕탕, 공백, 대시만 들어갈 수 있습니다.</p>
+					<p class=error-desc>사용자 이름은 한글, 영어 대/소문자, 숫자, 밑줄, 느낌표, 우물정자, 삼각괄호, 당구장, 별, 빵꾸난별, 클로버, 스페이드, 빵꾸난 스페이드, 전화기, 흰전화기, 목욕탕, 공백, 대시만 들어갈 수 있습니다.</p>
 				</div>
 
 				<div class=form-group>

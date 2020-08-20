@@ -51,7 +51,7 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
-	if(!validateCaptcha){ res.send(await showError(req, 'invalid_captcha_number'));return; }
+	if(!validateCaptcha(req)){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
 	const captcha = generateCaptcha(req, 1);
 	

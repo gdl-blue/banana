@@ -55,8 +55,8 @@ $(function() {
 		);
 	}
 	
-	const itoa = e => String(e);
-	const atoi = e => Number(e);
+	const itoa = String;
+	const atoi = Number;
 	
 	$('.input-examples').on('change click', function() {
 		$(this).prev().val($(this).val());
@@ -216,6 +216,7 @@ $(function() {
 		$('form#new-thread-form').submit(function() {
 			var submitBtn = $('form#new-thread-form').find('button[type="submit"]');
 			submitBtn.attr('disabled', '');
+			submitBtn.text('대기 중...');
 			
 			$.ajax({
 				type: "POST",
@@ -225,10 +226,12 @@ $(function() {
 				},
 				success: function(d) {
 					submitBtn.removeAttr('disabled');
+					submitBtn.text('전송하기!');
 					$('textarea[name="text"]').val('');
 				},
 				error: function(d) {
 					submitBtn.removeAttr('disabled');
+					submitBtn.text('전송하기!');
 					alert('댓글을 달 수 없습니다.');
 				}
 			});
