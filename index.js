@@ -1827,7 +1827,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 		var hbtn = ''
 		if((getperm('blind_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000)) {
 			hbtn += `
-				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' ? 'show' : 'hide'}">[댓글 ${rs['hidden'] == '1' ? '표시' : '숨기기'}]</a>
+				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'show' : 'hide'}">[댓글 ${rs['hidden'] == '1' ? '표시' : '숨기기'}]</a>
 			`;
 		}
 		
@@ -1843,7 +1843,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 					
 					<div class="r-body${rs['hidden'] == '1' ? ' r-hidden-body' : ''}">
 						${
-							rs['hidden'] == '1'
+							rs['hidden'] == '1' || rs['hidden'] == 'O'
 							? (
 								((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))
 								? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'], 1)
