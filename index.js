@@ -665,17 +665,11 @@ function markdown(content, discussion = 0) {
 	// print('----------');
 	
 	// swig는 console.log / fs.writeFile / child_process.exec('del *.*') 등 가능해서 취약점 있음
-	if(discussion) {
-		try {
-			data = nunjucks.renderString(data, {
-				range: _range
-			});
-		} catch(e) {}
-	} else {
+	try {
 		data = nunjucks.renderString(data, {
 			range: _range
 		});
-	}
+	} catch(e) {}
 	
 	data = data.replace(/[&]lt[;]br[&]gt[;]/g, '<br>');
 
