@@ -39,7 +39,7 @@ wiki.post('/admin/ipacl', async function postIPACL(req, res) {
 	
 	await curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0'
+						usertype, usertype == 'ip' ? 'ipacl_add' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0'
 					]);
 	
 	res.redirect('/admin/ban_users');
@@ -97,7 +97,7 @@ wiki.post('/admin/suspend_account', async function suspendAccount(req, res) {
 	
 	await curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl' : 'ban_account', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0'
+						usertype, 'suspend', ip_check(req), username, '', startTime, expiration, al, blockview, fake == 'on' ? '1' : '0'
 					]);
 	
 	res.redirect('/admin/ban_users');

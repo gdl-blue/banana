@@ -903,6 +903,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	templateVariables['content'] = content;
 	templateVariables['perms'] = perms;
 	templateVariables['url'] = req.path;
+	templateVariables['error'] = error;
 	templateVariables['req_ip'] = ip_check(req, 1);
 	
 	function getpermForSkin(permname) {
@@ -1316,9 +1317,9 @@ async function getacl(req, title, action) {
 					break;case 'member':
 						condition = islogin(req);
 					break;case 'blocked_ip':
-						condition = !islogin(req) && isBanned(req, 'ip', ip_check(req));
+						condition = await isBanned(req, 'ip', ip_check(req, 1));
 					break;case 'blocked_member':
-						condition = islogin(req) && isBanned(req, 'ip', ip_check(req));
+						condition = islogin(req) && await isBanned(req, 'author', ip_check(req));
 					break;case 'admin':
 						condition = getperm('admin', ip_check(req)) || getperm('developer', ip_check(req));
 					break;case 'developer':

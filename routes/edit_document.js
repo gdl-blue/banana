@@ -36,14 +36,12 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 	if(!await getacl(req, title, 'edit')) {
 		error = true;
 		content = `
-			${alertBalloon('권한 부족', '편집 권한이 부족합니다. 대신 <strong><a href="/new_edit_request/' + html.escape(title) + '">편집 요청</a></strong>을 생성하실 수 있습니다.', 'danger', true)}
+			${alertBalloon('[권한 부족]', '편집할 권한이 없습니다. 토론에서 편집할 내용을 올리십시오.', 'danger', true)}
 		
 			<textarea id="textInput" name="text" wrap="soft" class="form-control" readonly=readonly>${html.escape(rawContent)}</textarea>
 		`;
 	} else {
 		content = `
-			<!-- hidden input 가지고 장난치지 말 것. -->
-		
 			<ul class="nav nav-pills">
 				<li class="nav-item">
 					<a class="nav-link active" data-toggle="tab" href="#edit" role="tab">편집기</a>
@@ -152,7 +150,8 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 		body: {
 			baserev: baserev,
 			text: rawContent,
-			section: null
+			section: null,
+			error: error
 		}
 	}, ' (편집)', error, 'edit'));
 });
