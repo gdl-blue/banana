@@ -207,7 +207,7 @@ function timeout(ms) {
 }
 
 // 호환용 권한은 쌍따옴표
-const perms = [
+var perms = [
 	'admin', "suspend_account", 'developer', 'update_thread_document', "ipacl",
 	'update_thread_status', 'update_thread_topic', "hide_thread_comment", 'grant',
 	"login_history", 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote',
@@ -215,8 +215,39 @@ const perms = [
 	'delete_board_post', 'edit_board_comment', 'delete_board_comment', 'bot', 
 	'edit_namespace_acl', 'view_login_history', 'blind_thread_comment', 'fake_admin'
 ];
+	
+var permnames = {
+	'admin': '관리자', 
+	"suspend_account": '사용자 차단',
+	'developer': '개발자',
+	'update_thread_document': '토론 상태 변경', 
+	"ipacl": 'IPACL',
+	'update_thread_status': '토론 상태 변경',
+	'update_thread_topic': '토론 주제 변경',
+	"hide_thread_comment": '토론 댓글 숨기기', 
+	'grant': '권한 부여',
+	"login_history": '로그인 내역', 
+	'delete_thread': '토론 삭제', 
+	'acl': 'ACL 조정', 
+	'create_vote': '투표 추가', 
+	'delete_vote': '투표 삭제', 
+	'edit_vote': '투표 수정',
+	'ban_users': '이용자 차단', 
+	'tribune': '호민관', 
+	'arbiter': '중재자', 
+	"nsacl": 'NSACL', 
+	'head_admin': '최고 관리자', 
+	'edit_board_post': 'BBS 글 수정',
+	'delete_board_post': 'BBS 글 삭제', 
+	'edit_board_comment': 'BBS 댓글 수정', 
+	'delete_board_comment': 'BBS 댓글 삭제', 
+	'bot': '봇', 
+	'edit_namespace_acl': '이름공간 ACL 수정', 
+	'view_login_history': '로그인 내역', 
+	'blind_thread_comment': '토론 댓글 블라인드'
+};
 
-const _perms = perms;
+var _perms = perms;
 
 function print(x) { console.log(x); }
 function prt(x) { process.stdout.write(x); }
@@ -561,8 +592,40 @@ wiki.use(session({
 	saveUninitialized: true
 }));
 
+class stack {
+	constructor() {
+		this.internalArray = [];
+	}
+	
+	push(x) {
+		this.internalArray.push(x);
+	}
+	
+	pop() {
+		return this.internalArray.pop();
+	}
+	
+	top() {
+		return this.internalArray[this.internalArray.length - 1];
+	}
+	
+	size() {
+		return this.internalArray.length;
+	}
+	
+	empty() {
+		return this.internalArray.length ? false : true;
+	}
+};
+
 function markdown(content, discussion = 0) {
 	// markdown 아니고 namumark
+	
+	var footnotes = new stack();
+	var blocks    = new stack();
+	
+	var fnNames = {};
+	var fnNums  = 0;
 	
 	var data = content;
 	
@@ -660,6 +723,23 @@ function markdown(content, discussion = 0) {
 	data = data.replace(/{{{[#](((?!\s)[a-zA-Z0-9])+)\s(((?!}}}).)+)}}}/g, '<font color="$1">$3</font>');
 	
 	data = data.replace(/{{{(((?!}}}).)+)}}}/g, '<code>$1</code>');
+	
+	data = data.replace(/\[br\]/gi, '&lt;br&gt;');
+	data = data.replace(/\[(date|datetime)\]/gi, generateTime(toDate(getTime()), timeFormat));
+	
+	/*
+	do {
+		const fn = data.match(/\[[*]\s(((?!\]).)*)\]/i);
+		if(fn) {
+			footnotes.push(++fnNums);
+			data.replace(/\[[*]\s/i, '<a class=wiki-fn-content href="#fn-' + fnNums + '" title="');
+		}
+		
+		const fnclose = reverse(data).match(/\]/i);
+		footnotes.pop();
+		data.replace(/\]/i, '"><span>')
+	} while(footnotes.size());
+	*/
 	
 	// print('----------');
 	// print(data);
@@ -1467,12 +1547,13 @@ for(pi of getPlugins()) {
 		if(picod['codes'][u]['method'].toLowerCase() == 'post') {
 			wiki.post(picod['urls'][u], picod['codes'][u]['code']);
 		} else {
-			wiki.get (picod['urls'][u], picod['codes'][u]['code']);
+			wiki.get(picod['urls'][u], picod['codes'][u]['code']);
 		}
 	}
 	
 	for(prm of picod['permissions']) {
 		perms.push(prm);
+		permnames[prm] = picod['permission_descriptions'][prm];
 	}
 }
 

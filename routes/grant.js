@@ -34,7 +34,7 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 	
 	for(prm of perms) {
 		chkbxs += `
-			<label><input type=checkbox ${getperm(prm, username, 1) ? 'checked' : ''} name="${prm}"> ${prm}</label><br />
+			<label><input type=checkbox ${getperm(prm, username, 1) ? 'checked' : ''} name="${prm}"> ${permnames[prm] ? permnames[prm] : prm}</label><br />
 		`;
 	}
 	

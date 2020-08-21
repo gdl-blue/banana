@@ -266,9 +266,12 @@ module.exports = {
 	],
 	// 권한 부여(grant) 페이지에서 다음 권한 부여 가능
 	permissions: ['create_vote'],
+	permission_descriptions: {
+		'create_vote': '투표 등록'
+	},
 	// DB를 쓴다면...
 	create_table: {
 		'elections': ['num', 'name', 'start', 'end', 'required_date', 'options'],
 		'votedata': ['data', 'username', 'date', 'num']
 	}
-}
+};
