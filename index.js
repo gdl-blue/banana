@@ -1030,6 +1030,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	if(config.getString('enable_opennamu_skins', '1') == '1') {
 		// 오픈나무 스킨 호환용
 		if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu-seed') {
+			nunvars['None'] = null;
+			
 			nunvars['imp'] = [
 				title,  // 페이지 제목 (imp[0])
 				[  // 위키 설정 (imp[1][x])
@@ -1046,7 +1048,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 						<script type="text/javascript" src="/js/banana.js"></script>
 						<link rel="stylesheet" href="/css/banana.css">
 					`,  // 전역 <HEAD>
-					config.getString('wiki.site_notice', ''),  // 공지
+					config.getString('wiki.sitenotice', ''),  // 공지
 					getpermForSkin,  // 권한 유무 여부 함수
 					toDate(getTime())  // 시간
 				], 
@@ -1105,6 +1107,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			}
 		
 			if(!prmret.length) prmret = '0';
+			
+			nunvars['None'] = null;
 			
 			nunvars['imp'] = [
 				title,  // 페이지 제목 (imp[0])
