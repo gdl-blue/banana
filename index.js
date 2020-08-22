@@ -883,13 +883,20 @@ function compatMode(req) {
 }
 
 function getSkin(req) {
-	return islogin(req)
-		? getUserset(ip_check(req), 'skin', 
-				compatMode(req)
+	return (islogin(req)
+		? (getUserset(ip_check(req), 'skin', 
+				(
+					compatMode(req)
+						? config.getString('default_skin_legacy', hostconfig['skin'])
+						: config.getString('default_skin', hostconfig['skin'])
+				)
+			)
+		) : (
+			compatMode(req)
 				? config.getString('default_skin_legacy', hostconfig['skin'])
 				: config.getString('default_skin', hostconfig['skin'])
-			)
-		: config.getString('default_skin', hostconfig['skin']);
+		)
+	);
 }
 
 function getperm(perm, username, noupdating = false) {

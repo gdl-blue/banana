@@ -209,47 +209,30 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 	res.send(await render(req, ip_check(req) + ' 등록 정보', content, {}, _, _, 'mypage'));
 });
 
-wiki.post('/admin/config', async function saveMemberSettings(req, res) {
-	if(!getperm('developer', ip_check(req))) {
-		res.send(await showError(req, 'insufficient_privileges'));
+wiki.post('/member/mypage', async function saveMemberSettings(req, res) {
+	if(!islogin(req)) {
+		res.redirect('/member/login?redirect=' + encodeURIComponent('/member/mypage'));
 		return;
 	}
 	
-	// 소유자 전용 페이지이므로 딱히 취약점 가드를 할 필요가 있을까.
-	
 	var settings = [
-		'site_name', 'max_users', 'frontpage', 'edit_warning', 'footer_text', '!enable_apiv1', '!enable_apiv2',
-		'!enable_apipost', 'default_skin', 'default_skin_legacy', '!default_skin_only', '!enable_theseed_skins',
-		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled', '!disable_star',
-		'!disable_random', '!disable_search', '!disable_discuss', '!disable_history', '!disable_recentchanges',
-		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
-		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
-		'file_extensions', 'email_whitelist', 'site_notice', 'edit_notice', 'discussion_notice', '!allow_telnet',
-		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history', 'registeration_notice'
+		'skin'
 	];
 	
 	for(settingi of settings) {
 		if(settingi.startsWith('!')) {
 			const setting = settingi.replace(/^[!]/, '');
-			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
-			wikiconfig[setting] = req.body[setting] ? '1' : '0';
+			conn.run("delete from user_settings where username = ? and key = ?", [ip_check(req), setting], e => 
+				curs.execute("insert into user_settings (username, key, value) values (?, ?, ?)", [ip_check(req), setting, req.body[setting] ? '1' : '0']));
+			userset[ip_check(req)][setting] = req.body[setting] ? '1' : '0';
 		} else {
 			const setting = settingi;
-			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
-			wikiconfig[setting] = req.body[setting];
+			if(!req.body[setting]) continue;
+			conn.run("delete from user_settings where username = ? and key = ?", [ip_check(req), setting], e => 
+				curs.execute("insert into user_settings (username, key, value) values (?, ?, ?)", [ip_check(req), setting, req.body[setting]]));
+			userset[ip_check(req)][setting] = req.body[setting];
 		}
 	}
 	
-	conn.run("delete from email_config", (err, res) => {
-		curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]);
-	});
-	
-	if(req.body['clear_login_history']) {
-		curs.execute("delete from login_history");
-		curs.execute("delete from useragents");
-	}
-	
-	timeout(3000);
-	
-	res.redirect('/admin/config');
+	res.redirect('/member/mypage');
 });

@@ -1,0 +1,354 @@
+<head>
+    <title>{{ imp[0] }}{% if imp[3][0] != 0 %}{{ imp[3][0] }}{% endif %} - {{ imp[1][0] }}</title>
+    {{imp[1][5]|safe}}
+    {{imp[2][3]|safe}}
+    <link defer="" rel="stylesheet" href="https://thewiki.kr/namuwiki/css/ionicons.min.css">
+    <script src="/skins/candy/js/settings.js"></script>
+    <script src="/skins/candy/js/script.js"></script>
+    <link rel="stylesheet" id="{{ imp[2][19] }}StyleSheet" href="/skins/candy/css/{{ imp[2][19] }}.css">
+    <link defer="" rel="stylesheet" href="/skins/candy/css/ionicons.min.css">
+</head>
+
+<body class="{{ imp[2][19] }}">
+    <div class=navbar>
+        <a href="/">{{ imp[1][0] }}</a>
+        <a href="/RecentChanges">최근 변경</a>
+        <a href="/RecentDiscuss">최근 토론</a>
+        <div class=pull-right id=searchSection>
+			<form style="display: inline-block;" method="post" action="/go" id="searchform" role="search">
+                <input style="padding:0; width:140px" class="input is-primary ui-autocomplete-input" name="search" placeholder="검색" id="searchInput" autocomplete="off" type="text">
+            </form>
+			<div style="display: inline-block; margin-left: 20px">　</div>
+		</div>
+		<div class="pull-right menu">
+			<a class="menu-button profile-img"><img class=profile-img src="//secure.gravatar.com/avatar/{{ imp[2][4] | md5_replace }}?d=retro"></a>
+			<!-- 25 125 -->
+			<div class=menu-list style="display: none; margin-top: 125px; margin-left: -140px;" id=memberMenu>
+			    <b>{{ imp[2][6] }}</b>
+			    <div class=line></div>
+			    {% if imp[2][2] == 1 %}
+    			    <li><a href=/member/mypage>내 정보</a></li>
+    			    <li><a href="/w/사용자:{{ imp[2][5] }}">내 사용자 문서</a></li>
+    			    <li><a href=/member/starred_documents>내 문서함</a></li>
+    			    <div class=line></div>
+			    {% endif %}
+			    <li><a href="/contribution/{% if imp[2][2] == 1 %}author{% else %}ip{% endif %}/{{ imp[2][6] }}/document">내 문서 기여 목록</a></li>
+			    <li><a href="/contribution/{% if imp[2][2] == 1 %}author{% else %}ip{% endif %}/{{ imp[2][6] }}/discuss">내 토론 기여 목록</a></li>
+			    {% if imp[2][2] == 1 %}
+			        <li><a href="/member/logout?redirect={{ request.base_url|url_pas }}">로그아웃</a></li>
+			    {% else %}
+			        <li><a href="/member/login?redirect={{ request.base_url|url_pas }}">로그인</a></li>
+			    {% endif %}
+			</div>
+		</div>
+    </div>
+    <div class=ribbon-menu>
+        <div class="menu">
+            <div class=menu-button>
+                <span class="icon ion-ios-gear">&nbsp;<span style="font-size: 8pt;">▼</span></span>
+            </div>
+            <div class=menu-list style="display: none;">
+                <li>
+                <a href="/NeededPages">작성이 필요한 문서</a>
+                </li>
+                <li>
+                <a href="/OrphanedPages">고립된 문서</a>
+                </li>
+                <li>
+                <a href="/UncategorizedPages">분류가 없는 문서</a>
+                </li>
+                <li>
+                <a href="/LongestPages">내용이 긴 문서</a>
+                </li>
+                <li>
+                <a href="/ShortestPages">내용이 짧은 문서</a>
+                </li>
+                <li>
+                <a href="/OldPages">오래된 문서</a>
+                </li>
+                <li>
+                <a href="/UserList">사용자 목록</a>
+                </li>
+                <li>
+                <a href="/TitleIndex">모든 문서 목록</a>
+                </li>
+                <li>
+                <a href="/BlockHistory">차단 내역</a>
+                </li>
+                <li>
+                <a href="/random">임의문서</a>
+                </li>
+                <li>
+                <a href="/RandomPage">RandomPage</a>
+                </li>
+                <li>
+                <a href="/License">라이선스</a>
+                </li>
+                <li>
+                <a href="/Upload">파일 올리기</a>
+                </li>
+                {% if imp[2][7] == 1 or imp[2][12] == 1 or imp[2][13] == 1 or imp[2][15] == 1 or imp[2][18] == 1 %}
+                    <div class=line></div>
+                {% endif %}
+                {% if imp[2][15] == 1 %}
+                    <li>
+                        <a href="/admin/ipacl">IPACL</a>
+                    </li>
+                {% endif %}
+                {% if imp[2][7] == 1 %}
+                    <li>
+                        <a href="/admin/suspend_account">사용자 차단</a>
+                    </li>
+                {% endif %}
+                {% if imp[2][12] == 1 %}
+                    <li>
+                        <a href="/admin/grant">권한 부여</a>
+                    </li>
+                {% endif %}
+                {% if imp[2][18] == 1 %}
+                    <li>
+                        <a href="/admin/create_vote">새 투표 추가</a>
+                    </li>
+                {% endif %}
+                {% if imp[2][13] == 1 %}
+                 <li>
+                     <a href="/admin/config">위키 설정</a>
+                 </li>
+                {% endif %}
+            </div>
+        </div>
+        <div class=ribbon-tabs>
+            {% if st == 1 %}
+                <a class=tab data-link=#tab-dochome>홈</a>
+            {% elif st == 2 or imp[3][0] == ' (편집 요청)' %}
+                <a class=tab data-link=#tab-edittools>편집</a>
+            {% elif st == 3 %}
+                <a class=tab data-link=#tab-discussiontools>토론</a>
+            {% elif st %}
+                <a class=tab data-link=#tab-menu>문서 작업</a>
+            {% endif %}
+            {% if menu != 0 and not st and imp[3][0] != ' (편집 요청)' %}
+                <a class=tab data-link=#tab-menu>관련 항목</a>
+            {% endif %}
+            <a class=tab data-link=#tab-view>보기</a>
+            <a class=tab data-link=#tab-tools>도구</a>
+        </div>
+        {% if st == 1 %}
+            <div class=ribbon-tab-pane id=tab-dochome>
+                <span class=group>
+                    <a class="button" href="/edit/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>편집</span>
+                    </a>
+                    <a class="button" href="/history/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>역사</span>
+                    </a>
+                    <a class="button" href="/xref/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>역링크</span>
+                    </a>
+                    <a class="button" href="/discuss/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>토론</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="/raw/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-document"></span>
+                        <span class=label>RAW</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="/acl/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-document"></span>
+                        <span class=label>ACL</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="#toc">
+                        <span class="icon ion-document"></span>
+                        <span class=label>목차</span>
+                    </a>
+                    <a class="button" href="#top">
+                        <span class="icon ion-document"></span>
+                        <span class=label>위</span>
+                    </a>
+                    <a class="button" href="#bottom">
+                        <span class="icon ion-document"></span>
+                        <span class=label>아래</span>
+                    </a>
+                </span>
+            </div>
+        {% endif %}
+        {% if st == 2 or imp[3][0] == ' (편집 요청)' %}
+            <div class=ribbon-tab-pane id=tab-edittools>
+                <span class=group>
+                    <a class="button" href="/admin/edit_filters">
+                        <span class="icon ion-speedometer"></span>
+                        <span class=label>필터</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="javascript:insert_data('content', '\'\'\'굵은 글씨\'\'\'')">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>굵게</span>
+                    </a>
+                    <a class="button" href="javascript:insert_data('content', '\'\'기움글꼴\'\'')">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>기울임</span>
+                    </a>
+                    <a class="button" href="javascript:insert_data('content', '--취소선--')">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>취소선</span>
+                    </a>
+                    <a class="button" href="javascript:insert_data('content', '[[문서명]]')">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>링크</span>
+                    </a>
+                    <a class="button" href="javascript:insert_data('content', '[[파일:이미지 이름]]')">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>이미지</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="/w/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-document"></span>
+                        <span class=label>문서로</span>
+                    </a>
+                    <a class="button" href="javascript:$('#editForm').submit();">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>저장</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="/history/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-document"></span>
+                        <span class=label>역사</span>
+                    </a>
+                    <a class="button" href="/discuss/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>토론</span>
+                    </a>
+                    <a class="button" href="/RecentChanges">
+                        <span class="icon ion-document"></span>
+                        <span class=label>최근변경</span>
+                    </a>
+                </span>
+            </div>
+        {% endif %}
+        {% if st == 3 %}
+            <div class=ribbon-tab-pane id=tab-discussiontools>
+                <span class=group>
+                    <a class="button" onclick="$('form#thread-status-form select[name=\'status\']').val('close'); $('form#thread-status-form').submit();">
+                        <span class="icon ion-settings"></span>
+                        <span class=label>종결</span>
+                    </a>
+                    <a class="button" onclick="$('form#thread-status-form select[name=\'status\']').val('pause'); $('form#thread-status-form').submit();">
+                        <span class="icon ion-settings"></span>
+                        <span class=label>동결</span>
+                    </a>
+                    <a class="button" onclick="$('form#thread-status-form select[name=\'status\']').val('agree'); $('form#thread-status-form').submit();">
+                        <span class="icon ion-settings"></span>
+                        <span class=label>합의됨</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="?">
+                        <span class="icon ion-planet"></span>
+                        <span class=label>새로고침</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="/discuss/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>토론목록</span>
+                    </a>
+                    <a class="button" href="/discuss/{{ imp[0] | url_pas }}#newt">
+                        <span class="icon ion-wand"></span>
+                        <span class=label>새 주제</span>
+                    </a>
+                    <a class="button" href="/discuss/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-chatbubbles"></span>
+                        <span class=label>최근토론</span>
+                    </a>
+                </span>
+                <span class=group>
+                    <a class="button" href="/w/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-planet"></span>
+                        <span class=label>문서</span>
+                    </a>
+                    <a class="button" href="/edit/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-planet"></span>
+                        <span class=label>편집</span>
+                    </a>
+                    <a class="button" href="/history/{{ imp[0] | url_pas }}">
+                        <span class="icon ion-planet"></span>
+                        <span class=label>역사</span>
+                    </a>
+                    <a class="button" href="/discuss/{{ imp[0] | url_pas }}/close">
+                        <span class="icon ion-planet"></span>
+                        <span class=label>닫힌토론</span>
+                    </a>
+                </span>
+            </div>
+        {% endif %}
+        {% if menu != 0 %}
+            <div class=ribbon-tab-pane id=tab-menu>
+                <span class=group>
+                    {% for sub_d in menu %}
+                        <a class="button" href="/{{sub_d[0]}}">
+                            <span class="icon ion-wand"></span>
+                            <span class=label>{{sub_d[1]}}</span>
+                        </a>
+                    {% endfor %}
+                </span>
+            </div>
+        {% endif %}
+        <div class=ribbon-tab-pane id=tab-view>
+            <span class=group>
+                <a id=toggleStrike class="button pressed">
+                    <span class=icon><strike>[abc]</strike></span>
+                    <span class=label>취소선</span>
+                </a>
+                <a id=toggleImages class="button pressed">
+                    <span class="icon ion-images"></span>
+                    <span class=label>이미지</span>
+                </a>
+            </span>
+            <span class=group>
+                <a class="button" href=/settings>
+                    <span class="icon ion-ios-gear"></span>
+                    <span class=label>기타</span>
+                </a>
+            </span>
+        </div>
+        <div class=ribbon-tab-pane id=tab-tools>
+            <span class=group>
+                <a class="button" href=/random>
+                    <span class="icon ion-ios-gear"></span>
+                    <span class=label>임의문서</span>
+                </a>
+            </span>
+            <span class=group>
+                <a class="button" href=?>
+                    <span class="icon ion-ios-gear"></span>
+                    <span class=label>새로고침</span>
+                </a>
+                <a class="button" href=/>
+                    <span class="icon ion-ios-gear"></span>
+                    <span class=label>홈</span>
+                </a>
+            </span>
+        </div>
+    </div>
+    <div class="content wiki-article" id=articleContent>
+        <div id=top></div>
+        <p></p>
+        {{ data | safe }}
+        <br>
+        {{imp[1][6] | safe}}
+        {{imp[1][1] | safe}}
+        <div id=bottom></div>
+    </div>
+</body>

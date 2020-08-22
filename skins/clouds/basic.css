@@ -1,0 +1,355 @@
+
+        .menu-box {
+            display: none;
+        }
+        .liteBar {
+            display: none;
+        }
+
+        /*
+        @media screen and (max-width: 801px) {
+            .menu-box {
+                display: inline-block;
+            }
+            #commonTasks {
+                display: none;
+            }
+            .liteBar {
+                display: inline-block;
+            }
+            .fullBar {
+                display: none;
+            }
+        }*/
+
+        .tab-pane {
+            display: none;
+        }
+        .tab-pane.active {
+            display: block;
+            border: 1px solid #000;
+            height: 400px;
+            overflow-y: scroll;
+            background: rgba(255,255,255,0.6);
+            border-radius: 0 0 5px 5px;
+        }
+        .res-wrapper {
+            behavior: url("/skins/clouds/pie100/PIE.htc");
+            /* https://stackoverflow.com/questions/9442521/how-to-make-css-max-width-in-ie6-and-7 */
+            /* https://perishablepress.com/css-hackz-series-minimum-width-maximum-width-for-internet-explorer-6/ */
+            width: expression((document.body.clientWidth < 402)? "400px" : "auto");
+        }
+        .toc-item {
+            display: block;
+        }
+        .breadcrumb {
+            background: #eceeef;
+            background-color: #eceeef;
+            padding: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+            display: inline-block;
+        }
+        ul.inline-list li, .breadcrumb li {
+            align-items: center;
+            display: inline-block;
+        }
+        ul.inline-list li+li::before, .breadcrumb li+li::before {
+            color: #aaa;
+            content: " | ";
+        }
+
+        .pull-right, .btns * {
+            float: right;
+        }
+
+        ul.nav-tabs li.nav-item, ul.nav-pills li.nav-item {
+            display: inline-block;
+        }
+
+
+
+        .modal {
+            border: 5px solid #888;
+            margin: 30px auto 30px auto;
+            padding: 11px 11px 11px 11px;
+        }
+
+        .modal .modal-title {
+            display: inline;
+        }
+        .modal .modal-header button.close {
+            float: right;
+        }
+
+
+        .form-control {
+            width: 100%;
+        }
+
+        .form-control[disabled], .form-control[readonly] {
+            background-color: #eee;
+            cursor: not-allowed;
+        }
+
+        .alert span.sr-only {
+            display: none;
+        }
+
+        div#topNavbar {
+            border: 1px solid #068;
+            border-width: 1px 1px 1px 1px;
+            border-style: solid;
+            border-color: #068 #068 #068 #068;
+            border-radius: 4px;
+            border-top-right-radius: 4px;
+            border-top-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            border-bottom-left-radius: 4px;
+            background: aliceblue;
+            background-color: aliceblue;
+            padding: 10px;
+            padding-left: 10px;
+            padding-right: 10px;
+            padding-bottom: 10px;
+            padding-top: 10px;
+        }
+
+        * {
+            font-size: 12pt;
+            font-family: "굴림";
+        }
+        button, input[type="button"], input[type="submit"], input[type="reset"], a.btn {
+            height: 20px;
+        }
+        select, input, textarea, button, input[type="button"], input[type="submit"], input[type="reset"], a.btn {
+            font-size: 9pt;
+        }
+        .checkbox * {
+            display: inline-block;
+            width: auto;
+        }
+        .form-group label {
+            width: 100% !important;
+        }
+        /* A 센카와 스킨에서 가져옴 */
+        .settings-section .form-group input[type="text"] {
+            margin-left: 1rem;
+            width: 22rem;
+        }
+
+        .settings-section .form-group select {
+            margin-left: 1rem;
+            width: 16rem;
+        }
+
+        .checkbox label, .checkbox-inline, .radio label, .radio-inline {
+            padding-left: 1.25rem;
+            margin-bottom: 0;
+            cursor: pointer;
+            font-weight: 400;
+        }
+        /* A 끝 */
+
+        input[type="text"].form-control, select.form-control {
+            height: 30px;
+        }
+
+        select[size] {
+            height: auto;
+        }
+
+        #commonTasks {
+            width: 190px;
+            overflow-y: auto;
+            vertical-align: top;
+        }
+
+        .wiki-article {
+            background: rgba(255,255,255,0.225);
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .wiki-category h2 {
+            font-size: 12pt;
+        }
+
+        .wiki-macro-toc {
+            display: inline-block !important;
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        .table {
+            background: transparent;
+            width: 100% !Important;
+        }
+
+        #pageContent {
+            width: 100% !Important;
+            margin: 10px 0 0 0;
+        }
+
+        .table thead tr, .table tr.nohov {
+            border-bottom: 2px solid #058;
+        }
+
+        .table tr th, .table tr td {
+            padding: 10px;
+            border-top: 1px solid #058;
+        }
+
+        .table.table-hover tbody tr:hover {
+            background: #eefaff;
+        }
+
+        .res-wrapper {
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        .res-wrapper .r-head {
+            background: #eee;
+            border: 1px solid #068;
+            border-width: 1px 1px 1px 1px;
+            border-style: solid;
+            border-color: #068 #068 #068 #068;
+            border-radius: 4px 4px 0 0;
+            padding: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+        }
+        .res-wrapper .r-head.first-author {
+            background: #efe;
+        }
+        .res-wrapper .r-body {
+            background: #fafafa;
+            border: 1px solid #068;
+            border-width: 1px 1px 1px 1px;
+            border-style: solid;
+            border-color: #068 #068 #068 #068;
+            border-radius: 0;
+            padding: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+        }
+        .res-wrapper .r-body.r-hidden-body {
+            background: #333;
+            color: #fff
+        }
+        .more-box {
+            border: 1px solid #068;
+            border-width: 1px 1px 1px 1px;
+            border-style: solid;
+            border-color: #068 #068 #068 #068;
+            border-radius: 4px;
+            padding: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+        }
+        .menu-box {
+            float: right;
+            border: 1px solid #068;
+            border-width: 1px 1px 1px 1px;
+            border-style: solid;
+            border-color: #068 #068 #068 #068;
+            border-radius: 4px;
+            padding: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+        }
+
+        a, a:visited {
+            color: blue;
+        }
+
+        a:active {
+            color: red;
+        }
+
+        h1,h2,h3,h4,h5,h6 {
+            font-weight: 700;
+            font-family: "돋움";
+        }
+        h1 {
+            font-size: 20pt;
+        }
+        h2 {
+            font-size: 18pt;
+        }
+        h3 {
+            font-size: 16pt;
+        }
+        h4, .h4 {
+            font-size: 14pt;
+        }
+        input[type="checkbox"], input[type="radio"] {
+            width: 20px !important;
+        }
+
+        .res-wrapper .res-type-status .r-body {
+            background: #fd7;
+        }
+
+        .alert {
+            behavior: url("/skins/clouds/pie100/PIE.htc");
+            border: 1px solid #068;
+            border-radius: 4px 4px 4px 4px;
+            padding: 5px;
+            padding-left: 5px;
+            padding-right: 5px;
+            padding-bottom: 5px;
+            padding-top: 5px;
+            background-color: #fd7;
+            color: #000;
+        }
+        .alert a {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        .alert button.close {
+            float: right;
+        }
+        .wiki-article {
+            vertical-align: top;
+        }
+
+
+
+        .xp-taskgroup .p-taskgroup-tasks {
+            display: block;
+        }
+        .xp-taskgroup.folded .p-taskgroup-tasks {
+            display: none;
+        }
+
+        .xp-taskgroup .xp-taskgroup-title {
+            border-radius: 6px 6px 0 0;
+            padding: 5px;
+            background: #66ddff;
+            font-weight: bold;
+        }
+        .xp-taskgroup .xp-taskgroup-tasks {
+            border-radius: 0 0;
+            padding: 5px;
+            background: aliceblue;
+            margin: 0;
+        }
+        .xp-taskgroup.main-task .xp-taskgroup-title {
+            font-weight: bold;
+            color: #fff;
+            background-color: #003355;
+        }

@@ -38,9 +38,9 @@ wiki.get('/member/login', async function loginScreen(req, res) {
 				</label>
 			</div>
 			
-			<a href="/member/recover_password" style="float: right;">[아이디/비밀번호 찾기]</a> <br>
+			<a href="/member/recover_password" style="float: right;">[비밀번호 찾기]</a> <br>
 			
-			<a href="/member/signup" class="btn btn-secondary">계정 만들기</a><button type="submit" class="btn btn-primary">로그인</button>
+			<a href="/member/signup" class="btn btn-secondary">가입</a><button type="submit" class="btn btn-primary">로그인</button>
 		</form>
 	`, {}));
 });
@@ -67,110 +67,18 @@ wiki.post('/member/login', async function authUser(req, res) {
 	}
 	
 	if(!id.length) {
-		res.send(await render(req, '로그인', `
-			${warningText}
-			<form class=login-form method=post${warningScript}>
-				<div class=form-group>
-					<label>사용자 이름:</label><br>
-					<input class=form-control name="username" type="text">
-					<p class=error-desc>사용자 이름의 값은 필수입니다.</p>
-				</div>
-
-				<div class=form-group>
-					<label>비밀번호:</label><br>
-					<input class=form-control name="password" type="password">
-				</div>
-			
-				<div class=form-group>
-					${captcha}
-				</div>
-				
-				<div class="checkbox" style="display: inline-block;">
-					<label>
-						<input type="checkbox" name="autologin">
-						<span>자동 로그인</span>
-					</label>
-				</div>
-				
-				<a href="/member/recover_password" style="float: right;">[아이디/비밀번호 찾기]</a> <br>
-				
-				<a href="/member/signup" class="btn btn-secondary">계정 만들기</a><button type="submit" class="btn btn-primary">로그인</button>
-			</form>
-		`, {}));
-		
+		res.send(await showError(req, 'username_not_specified'));
 		return;
 	}
 	
 	if(!pw.length) {
-		res.send(await render(req, '로그인', `
-			${warningText}
-			<form class=login-form method=post${warningScript}>
-				<div class=form-group>
-					<label>사용자 이름:</label><br>
-					<input class=form-control name="username" type="text" value="${html.escape(id)}">
-				</div>
-
-				<div class=form-group>
-					<label>비밀번호:</label><br>
-					<input class=form-control name="password" type="password">
-					<p class=error-desc>암호의 값은 필수입니다.</p>
-				</div>
-			
-				<div class=form-group>
-					${captcha}
-				</div>
-
-				
-				<div class="checkbox" style="display: inline-block;">
-					<label>
-						<input type="checkbox" name="autologin">
-						<span>자동 로그인</span>
-					</label>
-				</div>
-				
-				<a href="/member/recover_password" style="float: right;">[아이디/비밀번호 찾기]</a> <br>
-				
-				<a href="/member/signup" class="btn btn-secondary">계정 만들기</a><button type="submit" class="btn btn-primary">로그인</button>
-			</form>
-		`, {}));
-		
+		res.send(await showError(req, 'password_not_specified'));
 		return;
 	}
 	
 	await curs.execute("select username from users where username = ? COLLATE NOCASE", [id]);
 	if(!curs.fetchall().length) {
-		res.send(await render(req, '로그인', `
-			${warningText}
-			<form class=login-form method=post${warningScript}>
-				<div class=form-group>
-					<label>사용자 이름:</label><br>
-					<input class=form-control name="username" type="text" value="${html.escape(id)}">
-					<p class=error-desc>사용자 이름이 올바르지 않습니다.</p>
-				</div>
-
-				<div class=form-group>
-					<label>비밀번호:</label><br>
-					<input class=form-control name="password" type="password">
-				</div>
-			
-				<div class=form-group>
-					${captcha}
-				</div>
-
-				
-				<div class="checkbox" style="display: inline-block;">
-					<label>
-						<input type="checkbox" name="autologin">
-						<span>자동 로그인</span>
-					</label>
-				</div>
-				
-				<a href="/member/recover_password" style="float: right;">[아이디/비밀번호 찾기]</a> <br>
-				
-				<a href="/member/signup" class="btn btn-secondary">계정 만들기</a><button type="submit" class="btn btn-primary">로그인</button>
-			</form>
-		`, {}));
-		
+		res.send(await showError(req, 'username_not_found'));
 		return;
 	}
 	
@@ -207,37 +115,7 @@ IP 주소의 MD5가 ${md5(ip_check(req))}인 사용자가 이 계정으로 연�
 		
 		curs.execute("insert into login_attempts (ip, username) values (?, ?)", [md5(ip_check(req)), id]);
 		
-		res.send(await render(req, '로그인', `
-			${warningText}
-			<form class=login-form method=post${warningScript}>
-				<div class=form-group>
-					<label>사용자 이름:</label><br>
-					<input class=form-control name="username" type="text" value="${html.escape(id)}">
-				</div>
-
-				<div class=form-group>
-					<label>비밀번호:</label><br>
-					<input class=form-control name="password" type="password">
-					<p class=error-desc>암호가 올바르지 않습니다.</p>
-				</div>
-			
-				<div class=form-group>
-					${captcha}
-				</div>
-
-				
-				<div class="checkbox" style="display: inline-block;">
-					<label>
-						<input type="checkbox" name="autologin">
-						<span>자동 로그인</span>
-					</label>
-				</div>
-				
-				<a href="/member/recover_password" style="float: right;">[아이디/비밀번호 찾기]</a> <br>
-				
-				<a href="/member/signup" class="btn btn-secondary">계정 만들기</a><button type="submit" class="btn btn-primary">로그인</button>
-			</form>
-		`, {}));
+		res.send(await showError(req, 'invalid_password'));
 		
 		return;
 	}

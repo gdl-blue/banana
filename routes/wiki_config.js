@@ -444,25 +444,23 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 		if(settingi.startsWith('!')) {
 			const setting = settingi.replace(/^[!]/, '');
 			
-			// 이런 비동기... 매크로 있으면 [#define curs await _curs]로 안 쓸 수 있는데...
-			
 			// update 쓰려면 복잡해져서(값이 이미 있는지 확인해야함) 안 씀
-			await curs.execute("delete from config where key = ?", [setting]);
-			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']);
+			conn.run("delete from config where key = ?", [setting], e => 
+				curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting] ? '1' : '0']));
 			
 			wikiconfig[setting] = req.body[setting] ? '1' : '0';
 		} else {
 			const setting = settingi;
 			
-			await curs.execute("delete from config where key = ?", [setting]);
-			curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]);
+			conn.run("delete from config where key = ?", [setting], e => 
+				curs.execute("insert into config (key, value) values (?, ?)", [setting, req.body[setting]]));
 			
 			wikiconfig[setting] = req.body[setting];
 		}
 	}
 	
-	await curs.execute("delete from email_config");
-	curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]);
+	conn.run("delete from email_config", [], e => 
+		curs.execute("insert into email_config (service, email, password) values (?, ?, ?)", [req.body['email_service'], req.body['email_addr'], req.body['email_pass']]));
 	
 	if(req.body['clear_login_history']) {
 		curs.execute("delete from login_history");

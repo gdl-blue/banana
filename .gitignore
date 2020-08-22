@@ -1,6 +1,10 @@
 node_modules/
 /wikidata.db
 /config.json
-skins/
+skins/before_namu/
+skins/buma/
+skins/Material/
+skins/modern-black/
+skins/yousoro/
 plugins/theseed-acl/
 /test.txt

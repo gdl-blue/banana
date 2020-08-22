@@ -88,3 +88,6 @@ Windows 7(Node.js 6 이상)
 
 ### nodemailer
 [[NPM]](https://www.npmjs.com/package/nodemailer) [[라이선스]](https://github.com/nodemailer/nodemailer/blob/master/LICENSE)
+
+### jQuery, jQuery UI
+(C)저작권자 JS 파운데이션 및 기타 기여자들 [[라이선스]](https://jquery.org/license/)
