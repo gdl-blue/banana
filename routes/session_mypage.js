@@ -254,10 +254,13 @@ wiki.post('/member/mypage', async function saveMemberSettings(req, res) {
 		}
 	}
 	
-	if(req.body['skin'] != currentSkin && require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
+	try{if(req.body['skin'] != currentSkin && require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
 		const dc = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
 		curs.execute("update user_settings set value = ? where key = 'color' and username = ?", [dc, ip_check(req)]);
 		userset[ip_check(req)]['color'] = dc;
+	}}catch(e) {
+		curs.execute("update user_settings set value = ? where key = 'color' and username = ?", ['default', ip_check(req)]);
+		userset[ip_check(req)]['color'] = 'default';
 	}
 	
 	res.redirect('/member/mypage');
