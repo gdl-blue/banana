@@ -1510,8 +1510,8 @@ async function getacl(req, title, action) {
 function navbtn(p, f, u) {
 	return `
 		<div class=btn-group>
-			<a href="${p}?until=${u}">&lt;</a>
-			<a href="${p}?from=${f}" >&gt;</a>
+			<a class="btn btn-secondary btn-sm" href="${p}?until=${u}">&lt;</a>
+			<a class="btn btn-secondary btn-sm" href="${p}?from=${f}" >&gt;</a>
 		</div>
 	`;
 }
