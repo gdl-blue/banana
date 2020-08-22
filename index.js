@@ -1007,6 +1007,24 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		}
 	}
 	
+	var mycolor = 'default';
+	
+	try {
+		if(require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && fs.existsSync('./skins/' + getSkin(req) + '/colors.scl')) {
+			if(islogin(req)) {
+				mycolor = getUserset(ip_check(req), 'color', fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString());
+			} else {
+				mycolor = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
+			}
+		}
+	} catch(e) {
+		try {
+			if(require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && fs.existsSync('./skins/' + getSkin(req) + '/colors.scl')) {
+				mycolor = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
+			}
+		} catch(e) {}
+	}
+	
 	templateVariables['user_document_discuss'] = user_document_discuss;
 	
 	if(config.getString('enable_opennamu_skins', '1') == '1') {
@@ -1058,7 +1076,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					getperm('admin'),  // 중재자 권한인데 admin으로 통합
 					getperm('admin'),  // 호민관 권한인데 admin으로 통합
 					getperm('create_vote'),  // 투표추가 권한 유무(데프리케잇; imp[1][8] 사용)
-					'default',  // 스킨 색 구성표인데 스킨 선택도 안 만듬
+					mycolor,  // 스킨 색 구성표
 					'12345678'  // 지원 PIN인데 미구현
 				], 
 				[  // 기타 정보 (imp[3][x])
@@ -1524,7 +1542,7 @@ function getSkins() {
 			};
 		}
 		
-		if(skincfg['type'] && skincfg['type'].toLowerCase() == 'opennamu' && config.getString('enable_opennamu_skins', '1') != '1') continue;
+		if(skincfg['type'] && ['opennamu', 'opennamu-seed'].includes(skincfg['type'].toLowerCase()) && config.getString('enable_opennamu_skins', '1') != '1') continue;
 		
 		retval.push(dir);
 	}
@@ -1589,11 +1607,51 @@ for(pi of getPlugins('all')) {
 }
 
 wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropTheseedSkinFile(req, res) {
-	const skinname = req.params[0];
-	const filepath = req.params[1];
+	var skinname = req.params[0];
+	var filepath = req.params[1];
 	
-	const afn = split(filepath, '/');
-	const fn = afn[afn.length - 1];
+	try{if(require('./skins/' + skinname + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
+		var skinname = req.params[0];
+		var filepath = req.params[1];
+		var skincfg;
+		try {
+			skincfg = require('./skins/' + skinname + '/config.json');
+		} catch(e) {
+			skincfg = {
+				type: 'openNAMU'
+			};
+		}
+		
+		if(skincfg['type'] && skincfg['type'].toLowerCase() != 'opennamu-seed') {
+			res.send(await showError(req, 'file_not_found'));
+			return;
+		}
+		
+		var afn = split(filepath, '/');
+		var fn = afn[afn.length - 1];
+		
+		var rootp = './skins/' + skinname;
+		var cnt = 0;
+		for(dir of afn) {
+			rootp += '/' + dir;
+		}
+		
+		try {
+			if(fs.lstatSync(rootp).isDirectory()) {
+				await fileExplorer(rootp, req, res);
+				return;
+			}
+		} catch(e) {
+			res.send(await showError(req, 'file_not_found'));
+			return;
+		}
+		
+		res.sendFile(fn, { root: rootp.replace('/' + fn, '') });
+		return;
+	}}catch(e){}
+	
+	var afn = split(filepath, '/');
+	var fn = afn[afn.length - 1];
 	
 	var rootp = './skins/' + skinname + '/static';
 	var cnt = 0;
@@ -1650,7 +1708,6 @@ wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function dropOpennamuSkinFile(r
 		res.send(await showError(req, 'file_not_found'));
 		return;
 	}
-	
 	
 	res.sendFile(fn, { root: rootp.replace('/' + fn, '') });
 });

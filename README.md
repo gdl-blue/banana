@@ -91,3 +91,6 @@ Windows 7(Node.js 6 이상)
 
 ### jQuery, jQuery UI
 (C)저작권자 JS 파운데이션 및 기타 기여자들 [[라이선스]](https://jquery.org/license/)
+
+### ionicons
+(C) 저작권자 present Ionic (2015) / [[라이선스]](https://github.com/ionic-team/ionicons) (MIT)

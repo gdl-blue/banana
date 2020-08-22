@@ -12,7 +12,25 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 	`;
 	
 	for(skin of getSkins()) {
-		dsop += `<option value="${skin}" >${skin}</option>`;
+		dsop += `<option value="${skin}" ${getSkin(req) == skin ? 'selected' : ''}>${skin}</option>`;
+	}
+	
+	var clrs = '';
+	
+	try{if(require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
+		try {
+			for(scheme of fs.readFileSync('./skins/' + getSkin(req) + '/colors.scl').toString().split(';')) {
+				clrs += `
+					<option value="${scheme.split(',')[0]}" ${getUserset(ip_check(req), 'color', fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString()) == scheme.split(',')[0] ? 'selected' : ''}>${scheme.split(',')[1]}</option>
+				`;
+			}
+		} catch(e) {}
+	}}catch(e){}
+	
+	if(!clrs.length) {
+		clrs = `
+			<option value=default selected>기본값</option>
+		`;
 	}
 	
 	var bgclrcss;
@@ -118,7 +136,7 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 								</div>
 							
 								<div class=form-group>
-									<table>
+									<table style="width: 100%;">
 										<colgroup>
 											<col style="width: 50%;">
 											<col style="width: 50%;">
@@ -136,7 +154,7 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 												<td>
 													<label>색상표: </label><br>
 													<select size=5 style="width: 100%;" name=color id=colorSelect>
-														<option value>(컬랙션)</option>
+														${clrs}
 													</select>
 												</td>
 											</tr>
@@ -216,8 +234,10 @@ wiki.post('/member/mypage', async function saveMemberSettings(req, res) {
 	}
 	
 	var settings = [
-		'skin'
+		'skin', 'color'
 	];
+	
+	const currentSkin = getSkin(req);
 	
 	for(settingi of settings) {
 		if(settingi.startsWith('!')) {
@@ -232,6 +252,12 @@ wiki.post('/member/mypage', async function saveMemberSettings(req, res) {
 				curs.execute("insert into user_settings (username, key, value) values (?, ?, ?)", [ip_check(req), setting, req.body[setting]]));
 			userset[ip_check(req)][setting] = req.body[setting];
 		}
+	}
+	
+	if(req.body['skin'] != currentSkin && require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
+		const dc = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
+		curs.execute("update user_settings set value = ? where key = 'color' and username = ?", [dc, ip_check(req)]);
+		userset[ip_check(req)]['color'] = dc;
 	}
 	
 	res.redirect('/member/mypage');
