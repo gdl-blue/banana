@@ -431,7 +431,7 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 		'!disable_random', '!disable_search', '!disable_discuss', '!disable_history', '!disable_recentchanges',
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
 		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
-		'file_extensions', 'email_whitelist', 'site_notice', 'edit_notice', 'discussion_notice', '!allow_telnet',
+		'file_extensions', 'email_whitelist', 'sitenotice', 'edit_notice', 'discussion_notice', '!allow_telnet',
 		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history', 'registeration_notice', '!no_welcome'
 	];
 	
