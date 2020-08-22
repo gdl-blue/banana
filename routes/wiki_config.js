@@ -328,7 +328,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 							
 								<div class=form-group>
 									<label>일반 공지: </label><br>
-									<input type=text class=form-control value="${config.getString('site_notice', '')}" name=site_notice placeholder="공지 없음">
+									<input type=text class=form-control value="${config.getString('sitenotice', '')}" name=sitenotice placeholder="공지 없음">
 								</div>
 							
 								<div class=form-group>

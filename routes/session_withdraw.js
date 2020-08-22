@@ -10,7 +10,7 @@ wiki.get('/member/withdraw', async (req, res) => {
 				<p><strong>[경고]</strong> 탈퇴 시 당신이 기여한 내용의 저작자 식별이 어려울 수 있습니다.</p>
 			</div>
 			<div class=form-group>
-				<p><strong>사용자 문서는 삭제되지 않습니다. 동일한 이름으로 재가입은 불가능합니다.</p>
+				<p>사용자 문서는 삭제되지 않습니다. 동일한 이름으로 재가입은 불가능합니다.</p>
 			</div>
 			
 			<div class=form-group>
