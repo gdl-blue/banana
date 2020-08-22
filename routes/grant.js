@@ -44,6 +44,11 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 				${chkbxs}
 			</div>
 		
+			<div class=form-group>
+				<label>메모:</label><br>
+				<input type=text name=note class=form-control>
+			</div>
+			
 			<div class=btns>
 				<button type=submit class="btn btn-info" style="width: 100px;">확인</button>
 			</div>
@@ -86,7 +91,7 @@ wiki.post('/admin/grant', async function grantPermissions(req, res) {
 	
 	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
 				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-					'author', 'grant', ip_check(req), username, '', getTime(), '-1', '0', '0', logstring
+					'author', 'grant', ip_check(req), username, '', getTime(), '-1', '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')'
 				]);
 	
 	res.redirect('/admin/grant?username=' + encodeURIComponent(username));
