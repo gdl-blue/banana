@@ -169,7 +169,9 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			viewname = 'thread_list'
 	}
 	
-	res.send(await render(req, title, content, _, subtitle, false, viewname));
+	res.send(await render(req, title, content, {
+		st: 3
+	}, subtitle, false, viewname));
 });
 
 wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {

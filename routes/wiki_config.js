@@ -4,8 +4,8 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 		return;
 	}
 	
-	const defskin = config.getString('default_skin', 'buma');
-	const deflskin = config.getString('default_legacy_skin', 'buma');
+	const defskin = config.getString('default_skin', require('./config.json')['skin']);
+	const deflskin = config.getString('default_skin_legacy', require('./config.json')['skin']);
 	
 	var dsop = '';
 	

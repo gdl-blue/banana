@@ -80,6 +80,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 		user: isUserDoc,
 		category: [],
 		discuss_progress: 0,
-		rev: rev
+		rev: rev,
+		st: 1
 	}, _, error, viewname));
 });

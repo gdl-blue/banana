@@ -416,7 +416,7 @@ function toDate(t) {
     return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
 }
 
-function generateTime(time, fmt) {
+function generateTime(time, fmt = timeFormat) {
 	const d = split(time, ' ')[0];
 	const t = split(time, ' ')[1];
 	
@@ -929,6 +929,8 @@ if(config.getString('enable_opennamu_skins', '1') != '0') {
 		return url_pas(input);
 	});
 
+	nunjucks.addFilter('to_date', generateTime);
+
 	// 이거...
 	nunjucks.addFilter('load_lang', function filter_loadLang(input) {
 		return ({
@@ -1035,6 +1037,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			nunvars['request'] = {
 				base_url: req.path
 			};
+			
+			nunvars['st'] = varlist['st'];
 			
 			nunvars['imp'] = [
 				title,  // 페이지 제목 (imp[0])
@@ -1234,8 +1238,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		print(`[오류!] ${e}`);
 		
 		return `
-			<title>` + title + ` (프론트엔드 오류!)</title>
-			<meta charset=utf-8>` + content;
+			<title>${title} (프론트엔드 오류!)</title>
+			<meta charset=utf-8>${content}`;
 	}
 	
 	output = template(templateVariables);
@@ -1510,8 +1514,8 @@ async function getacl(req, title, action) {
 function navbtn(p, f, u) {
 	return `
 		<div class=btn-group>
-			<a class="btn btn-secondary btn-sm" href="${p}?until=${u}">&lt;</a>
-			<a class="btn btn-secondary btn-sm" href="${p}?from=${f}" >&gt;</a>
+			<a class="btn btn-secondary btn-sm" href="${p}?until=${u}">&lt; 뒤로</a>
+			<a class="btn btn-secondary btn-sm" href="${p}?from=${f}" >다음 &gt;</a>
 		</div>
 	`;
 }

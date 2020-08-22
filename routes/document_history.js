@@ -124,5 +124,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		${navbtn('/history/' + encodeURIComponent(title), lr, fr)}
 	`;
 	
-	res.send(await render(req, title, content, _, '의 역사', error = false, viewname = 'history'));
+	res.send(await render(req, title, content, {
+		st: 7
+	}, '의 역사', error = false, viewname = 'history'));
 });

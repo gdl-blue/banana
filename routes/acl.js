@@ -138,7 +138,9 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 				`;
 			}
 			
-			res.send(await render(req, title, content, {}, ' (ACL)', _, 'acl'));
+			res.send(await render(req, title, content, {
+				st: 8
+			}, ' (ACL)', _, 'acl'));
 		break; default:
 			await require('./plugins/' + acltyp + '/index.js')['codes']['aclControlPanel'](req, res);
 	}

@@ -152,7 +152,8 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 			text: rawContent,
 			section: null,
 			error: error
-		}
+		},
+		st: 2
 	}, ' (편집)', error, 'edit'));
 });
 

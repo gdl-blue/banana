@@ -197,7 +197,9 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		`;
 	}
 	
-	res.send(await render(req, title, content, {}, ' (토론) - ' + topic, error = false, viewname = 'thread'));
+	res.send(await render(req, title, content, {
+		st: 3
+	}, ' (토론) - ' + topic, error = false, viewname = 'thread'));
 });
 
 wiki.post('/thread/:tnum', async function postThreadComment(req, res) {

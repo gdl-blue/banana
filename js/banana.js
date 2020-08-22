@@ -203,6 +203,14 @@ $(function() {
 							res.after(itm);
 							res.remove();
 						});
+	
+						/* dateformatter.js 라이브러리 사용 - (C) 저작권자 Paul Armstrong / swig 라이브러리에 내장됨 */
+						$('time[datetime]').each(function() {
+							$(this).text(
+								/* datetime에서 뒤에 붙는 .000Z는 ISO 문자열에서 generate되고 시간대마다 다른데 예전에 코드 작성할 때에는 그 의미를 몰라서 다 .000Z라고 썼다 --; */
+								formatDate(new Date($(this).attr('datetime')), $(this).attr('data-format'))
+							);
+						});
 					},
 					error: function(e) {
 						history.go(0);
