@@ -43,13 +43,22 @@ wiki.get('/BlockHistory', async function(req, res) {
 	
 	var fd, ld;
 	
+	var trlist = '';
+	
 	for(row of curs.fetchall()) {
-		if(!set) {
-			fd = row.startingdate; set = 1;
+		if(req.query['until']) {
+			if(!set) {
+				ld = row.startingdate; set = 1;
+			}
+			fd = row.startingdate;
+		} else {
+			if(!set) {
+				fd = row.startingdate; set = 1;
+			}
+			ld = row.startingdate;
 		}
-		ld = row.startingdate;
 		
-		content += `
+		var data = `
 			<tr>
 				<td>${generateTime(toDate(row.startingdate), timeFormat)}</td>
 				<td>${ip_pas(row.blocker, 'author')}</td>
@@ -90,9 +99,14 @@ wiki.get('/BlockHistory', async function(req, res) {
 				</td>
 			</tr>
 		`;
+		
+		if(req.query['until']) {
+			trlist = data + trlist;
+		} else trlist += data;
 	}
 	
 	content += `
+				${trlist}
 			</tbody>
 		</table>
 		
@@ -107,7 +121,7 @@ wiki.get('/LegacyBlockHistory', async function(req, res) {
 		await curs.execute("select block, end, today, blocker, why, band, ipacl from rb where today <= ? order by today desc limit 100", [req.query['from']]);
 	}
 	else if(req.query['until']) {
-		await curs.execute("select block, end, today, blocker, why, band, ipacl from rb where today >= ? order by today desc limit 100", [req.query['until']]);
+		await curs.execute("select block, end, today, blocker, why, band, ipacl from rb where today >= ? order by today asc limit 100", [req.query['until']]);
 	}
 	else {
 		await curs.execute("select block, end, today, blocker, why, band, ipacl from rb order by today desc limit 100");
@@ -122,13 +136,22 @@ wiki.get('/LegacyBlockHistory', async function(req, res) {
 	
 	var fd, ld;
 	
+	ullist = '';
+	
 	for(row of cf) {
-		if(!set) {
-			fd = row.today; set = 1;
+		if(req.query['until']) {
+			if(!set) {
+				ld = row.today; set = 1;
+			}
+			fd = row.today;
+		} else {
+			if(!set) {
+				fd = row.today; set = 1;
+			}
+			ld = row.today;
 		}
-		ld = row.today;
 		
-		content += `
+		var ldata = `
 			<li>
 				${generateTime(toDate(row.today), timeFormat)}
 				${ip_pas(row.blocker, 'author')}가
@@ -168,9 +191,13 @@ wiki.get('/LegacyBlockHistory', async function(req, res) {
 				"${row.why}"
 			</li>
 		`;
+		
+		if(req.query['until']) ullist = ldata + ullist;
+		else ullist += ldata;
 	}
 	
 	content += `
+			${ullist}
 		</ul>
 		
 		${navbtn('/LegacyBlockHistory', ld, fd)}

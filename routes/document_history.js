@@ -58,11 +58,18 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 			<tbody id>
 	`;
 	
+	var trlist = '';
+	
 	for(row of curs.fetchall()) {
-		if(!set) { fr = row.rev; set = 1 }
-		lr = row.rev;
+		if(until) {
+			if(!set) { lr = row.rev; set = 1 }
+			fr = row.rev;
+		} else {
+			if(!set) { fr = row.rev; set = 1 }
+			lr = row.rev;
+		}
 		
-		content += `
+		var data = `
 				<tr>
 					<td>
 						${generateTime(toDate(row['time']), timeFormat)} 
@@ -98,15 +105,19 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		`;
 		
 		if(row['log'].length > 0 || row['advance'].length > 0) {
-			content += `
+			data += `
 				<td colspan="3" style="padding-left: 1.5rem;">
 					${row['log']} <i>${row['advance']}</i>
 				</td>
 			`;
 		}
+		
+		if(until) trlist = data + trlist;
+		else trlist += data;
 	}
 	
 	content += `
+				${trlist}
 			</tbody>
 		</table>
 		

@@ -108,11 +108,18 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 	
 	var set = 0, lu, fu;
 	
+	var trlist = '';
+	
 	for(var row of curs.fetchall()) {
-		if(!set) { set = 1; fu = row.username; }
-		lu = row.username;
+		if(until) {
+			if(!set) { set = 1; lu = row.username; }
+			fu = row.username;
+		} else {
+			if(!set) { set = 1; fu = row.username; }
+			lu = row.username;
+		}
 		
-		content += `
+		var data = `
 			<tr>
 				<td>${html.escape(row['username'])}</td>
 				<td>${html.escape(row['note'])}</td>
@@ -130,9 +137,13 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 				</td>
 			</tr>
 		`;
+		
+		if(until) trlist = data + trlist;
+		else trlist += data;
 	}
 	
 	content += `
+				${trlist}
 			</tbody>
 		</table>
 		
