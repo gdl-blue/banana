@@ -1,5 +1,6 @@
 wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
-	const from = req.query['from'];
+	const from  = req.query['from'];
+	const until = req.query['until'];
 	
 	if(!getperm('ban_users', ip_check(req))) {
 		res.send(await showError(req, 'insufficient_privileges'));
@@ -96,12 +97,21 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview, note from banned_users \
 								where username >= ? order by username limit 100", [from]);
 
+	} else if(until) {
+		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview, note from banned_users \
+								where username <= ? order by username limit 100", [until]);
+
 	} else {
 		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview, note from banned_users \
 								order by username asc limit 100");
 	}
 	
+	var set = 0, lu, fu;
+	
 	for(var row of curs.fetchall()) {
+		if(!set) { set = 1; fu = row.username; }
+		lu = row.username;
+		
 		content += `
 			<tr>
 				<td>${html.escape(row['username'])}</td>
@@ -126,7 +136,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			</tbody>
 		</table>
 		
-		${navbtn(0, 0, 0, 0)}
+		${navbtn('/admin/ban_users', lu, fu)}
 	`;
 	
 	res.send(await render(req, '차단', content, _, _, _, 'ban_users'));

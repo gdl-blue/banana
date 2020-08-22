@@ -35,7 +35,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		return;
 	}
 	
-	const navbtns = navbtn(0, 0, 0, 0);
+	var set = 0, lr, fr;
 	
 	var content = `
 		<table class="table table-hover">
@@ -59,6 +59,9 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	`;
 	
 	for(row of curs.fetchall()) {
+		if(!set) { fr = row.rev; set = 1 }
+		lr = row.rev;
+		
 		content += `
 				<tr>
 					<td>
@@ -107,7 +110,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 			</tbody>
 		</table>
 		
-		${navbtns}
+		${navbtn('/history/' + encodeURIComponent(title), lr, fr)}
 	`;
 	
 	res.send(await render(req, title, content, _, '의 역사', error = false, viewname = 'history'));
