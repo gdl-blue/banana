@@ -198,13 +198,8 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								</div>
 								
 								<div class=form-group>
-									<label><input type=checkbox name=default_skin_only ${config.getString('default_skin_only', '0') == '1' ? 'checked' : ''}> 기본 스킨을 제외한 스킨을 사용할 수 없음 (소유자는 사용 가능)</label><br>
-								</div>
-								
-								<div class=form-group>
-									<label><input type=checkbox name=enable_theseed_skins checked disabled> the seed용으로 만들어진 스킨 지원<sup><a title="swig 기반 스킨만 지원하며 현재 사용 중인 Nuxt.js 기반 스킨은 지원하지 않습니다.">[!]</a></sup></label><br>
+									<label><input type=checkbox name=enable_theseed_skins checked disabled> 구 the seed용으로 만들어진 스킨 지원</label><br>
 									<label><input type=checkbox name=enable_opennamu_skins ${config.getString('enable_opennamu_skins', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
-									<label><input type=checkbox name=enable_custom_skins ${config.getString('enable_custom_skins', '0') == '1' ? 'checked' : ''}> 사용자가 직접 레이아웃을 만들어 스킨으로 사용할 수 있도록 허용</label><br>
 								</div>
 							</div>
 							
@@ -431,7 +426,7 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 	
 	var settings = [
 		'site_name', 'max_users', 'frontpage', 'edit_warning', 'footer_text', '!enable_apiv1', '!enable_apiv2',
-		'!enable_apipost', 'default_skin', 'default_skin_legacy', '!default_skin_only', '!enable_theseed_skins',
+		'!enable_apipost', 'default_skin', 'default_skin_legacy',
 		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled', '!disable_star',
 		'!disable_random', '!disable_search', '!disable_discuss', '!disable_history', '!disable_recentchanges',
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',

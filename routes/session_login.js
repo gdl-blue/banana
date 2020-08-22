@@ -84,6 +84,12 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	id = curs.fetchall()[0]['username'];
 	
+	await curs.execute("select username, password from users where username = ? and password = ''", [id]);
+	if(curs.fetchall().length) {
+		res.send(await showError(req, 'invalid'));
+		return;
+	}
+	
 	await curs.execute("select username, password from users where username = ? and password = ?", [id, sha3(pw)]);
 	if(!curs.fetchall().length) {
 		await curs.execute("select ip from login_attempts where ip = ? and username = ?", [md5(ip_check(req)), id]);

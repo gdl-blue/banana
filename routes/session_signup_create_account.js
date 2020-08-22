@@ -59,8 +59,6 @@ wiki.get('/member/signup_key', async function signupScreen(req, res) {
 				${captcha}
 			</div>
 			
-			<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
-			
 			<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
 		</form>
 	`, {}));
@@ -120,8 +118,6 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 				<div class=form-group>
 					${captcha}
 				</div>
-			
-				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
 				<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
 			</form>
@@ -153,8 +149,6 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 				<div class=form-group>
 					${captcha}
 				</div>
-			
-				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
 				<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
 			</form>
@@ -185,9 +179,6 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 				<div class=form-group>
 					${captcha}
 				</div>
-
-			
-				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
 				<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
 			</form>
@@ -218,9 +209,6 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 				<div class=form-group>
 					${captcha}
 				</div>
-
-			
-				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
 				<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
 			</form>
@@ -251,9 +239,6 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 				<div class=form-group>
 					${captcha}
 				</div>
-
-			
-				<p><strong>가입후 탈퇴는 불가능합니다.</strong></p>
 				
 				<button type=reset class="btn btn-secondary">초기화</button><button type="submit" class="btn btn-primary">가입</button>
 			</form>

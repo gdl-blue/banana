@@ -205,6 +205,10 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 									<label>지원 PIN: ${spin}</label><br>
 									<label><input type=checkbox value="" name=reset-spin> 설정 적용 시 다시 생성하기</label>
 								</div>
+								
+								<div class=form-group>
+									<a href=/member/withdraw>[계정 탈퇴]</a>
+								</div>
 							</div>
 							
 							<div class=tab-page id=applying style="display: none;">
