@@ -626,6 +626,7 @@ function markdown(content, discussion = 0) {
 	
 	var fnNames = {};
 	var fnNums  = 0;
+	var fnNum   = 0;
 	
 	var data = content;
 	
@@ -727,19 +728,19 @@ function markdown(content, discussion = 0) {
 	data = data.replace(/\[br\]/gi, '&lt;br&gt;');
 	data = data.replace(/\[(date|datetime)\]/gi, generateTime(toDate(getTime()), timeFormat));
 	
-	/*
 	do {
-		const fn = data.match(/\[[*]\s(((?!\]).)*)\]/i);
+		const fn = data.match(/\[[*]\s(((?!\]).)*)/i);
 		if(fn) {
 			footnotes.push(++fnNums);
-			data.replace(/\[[*]\s/i, '<a class=wiki-fn-content href="#fn-' + fnNums + '" title="');
+			data = data.replace(/\[[*]\s/i, '<a class=wiki-fn-content href="#fn-' + fnNums + '"><span class=footnote-content>');
 		}
 		
-		const fnclose = reverse(data).match(/\]/i);
-		footnotes.pop();
-		data.replace(/\]/i, '"><span>')
-	} while(footnotes.size());
-	*/
+		const fnclose = data.match(/\]/i);
+		if(fnclose) {
+			footnotes.pop();
+			data = data.replace(/\]/i, '</span><span id="rfn-' + ++fnNum + '" class=target></span>(' + fnNum + ')</a>');
+		}
+	} while(data.match(/\[[*]\s(((?!\]).)*)/i) || footnotes.size());
 	
 	// print('----------');
 	// print(data);
@@ -1389,6 +1390,8 @@ async function getacl(req, title, action) {
 				['discussed_document', '이 문서에서 토론한 사용자'],
 				['discussed', '토론한 적이 있는 사용자'],
 				['userdoc_owner', '사용자 문서 소유자'],
+				['document_creator', '문서를 만든 사용자'],              // 추가
+				['document_last_contributor', '문서의 마지막 기여자'],   // 예정
 				['has_starred_document', '이 문서를 주시하는 사용자']
 				
 				switch(acl['value']) {
