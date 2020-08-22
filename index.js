@@ -1032,6 +1032,10 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu-seed') {
 			nunvars['None'] = null;
 			
+			nunvars['request'] = {
+				base_url: req.path
+			};
+			
 			nunvars['imp'] = [
 				title,  // 페이지 제목 (imp[0])
 				[  // 위키 설정 (imp[1][x])

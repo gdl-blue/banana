@@ -556,22 +556,20 @@
 
 {% if imp[2][19] == 'auto' %}
         <script>
-            $(function() {
-                var time = new Date();
-                var hour = Number(time.getHours());
+			var time = new Date();
+			var hour = Number(time.getHours());
 
-                if(hour >= 7 && hour <= 16) {
-                    document.querySelector('body').style.background = 'url("/skins/clouds/glow.png") fixed top';
-                } else if((hour == 6) || (hour == 17)) {
-                    document.querySelector('body').style.background = 'url("/skins/clouds/snst.png") fixed top';
-                } else {
-                    document.querySelector('.wiki-article').style.background = 'rgba(255,255,255,0.825)';
-                    document.querySelector('body').style.background = 'url("/skins/clouds/nigt.png") fixed top';
-                }
+			if(hour >= 7 && hour <= 16) {
+				document.querySelector('body').style.background = 'url("/skins/clouds/glow.png") fixed top';
+			} else if((hour == 6) || (hour == 17)) {
+				document.querySelector('body').style.background = 'url("/skins/clouds/snst.png") fixed top';
+			} else {
+				document.querySelector('.wiki-article').style.background = 'rgba(255,255,255,0.825)';
+				document.querySelector('body').style.background = 'url("/skins/clouds/nigt.png") fixed top';
+			}
 
-                document.querySelector('body').style.backgroundSize = 'cover';
-                document.querySelector('body').style.backgroundRepeat = "no-repeat";
-            });
+			document.querySelector('body').style.backgroundSize = 'cover';
+			document.querySelector('body').style.backgroundRepeat = "no-repeat";
         </script>
 {% endif %}
     <!--<![endif]-->

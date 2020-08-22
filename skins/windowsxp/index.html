@@ -13,142 +13,6 @@
             });
         });
     </script>
-    <script type="text/javascript">
-        $(function() {
-            function regex_data(data) {
-                r_data = new RegExp('(?:^|; )' + data + '=([^;]*)');
-
-                return r_data;
-            }
-
-            cookies = document.cookie;
-
-            var agentChar;
-            if(
-                cookies.match(regex_data('agentChar'))
-            ) {
-                agentChar = cookies.match(regex_data('agentChar'))[1];
-            } else {
-                agentChar = 'Rover';
-            }
-
-            var clippit;
-
-            clippy.load(agentChar, function(agent) {
-                agent.show();
-
-                clippit = agent;
-
-                {% if imp[0] == imp[1][0] + ':대문' and imp[2][5] == '사용자' and st == 1 %}
-                    agent.moveTo(200,150);
-                    agent.speak('처음 오셨다면 여기서 작업을 선택해보십시오. [임의 문서 목록]을 사용하여 아무 문서 20개 목록을 볼 수 있습니다.');
-                    agent.moveTo(200,420);
-                    agent.speak('아니면 최근 수정된 문서를 확인할 수 있습니다.');
-                    agent.moveTo(420,5);
-                    agent.speak('관심있는 문서로 이동하여 옆의 편집 탭을 눌러 문서를 편집할 수 있습니다.');
-                    agent.moveTo(300,20);
-                    agent.speak('계정이 있거나 만들고 싶다면 이곳을 클릭합니다.');
-                    agent.speak('이외 도움말이 필요하다면 해당 기능에서 저를 눌러주십시오.');
-                {% endif %}
-                {% if discuss_ongoing == 1 %}
-                    agent.moveTo(520,5);
-                    agent.speak('이 문서는 토론이 진행중입니다. 옆의 토론 탭을 눌러 확인해보십시오.');
-                {% endif %}
-                {% if st == 3 %}
-                    agent.speak('잠깐! 토론 진행 중인 내용을 함부로 수정하면 차단될 수 있습니다.');
-                {% endif %}
-                {% if st == 5 %}
-                    agent.speak('잠깐! 문서명을 변경하려면 [이동] 기능을 이용하는 것이 매우 중요합니다. 저작권 침해가 될 수 있습니다.');
-                {% endif %}
-                {% if imp[0] == 'IPACL' %}
-                    agent.speak('잠깐! CIDR로 대역차단을 하실 수 있습니다.');
-                {% endif %}
-                {% if imp[0] == 'RandomPage' %}
-                    agent.speak('관심있는 문서가 있다면 읽어보실 수 있습니다. 새로고침하여 다른 문서들을 나열할 수 있습니다.');
-                {% endif %}
-                {% if imp[3][0] == ' 검색 결과' %}
-                    agent.speak('혹시 원하는 결과가 없다면 단어를 줄여 보시기 바랍니다.');
-                {% endif %}
-                {% if imp[2][19] == 'xmas' %}
-                    agent.speak('크리스마스입니까? 어떤 생각이 드십니까?');
-                {% endif %}
-                {% if errdata == '권한이 부족합니다.' %}
-                    agent.speak('아직은 때가 아닙니다..');
-                {% endif %}
-                {% if errdata == '해당 메뉴가 정의되어 있지 않습니다.' %}
-                    agent.speak('준비 중인 기능입니다.');
-                {% endif %}
-                {% if errdata == '편집 요청을 찾을 수 없습니다.' or errdata == '토론이 존재하지 않습니다.' or errdata == '문서를 찾을 수 없습니다.' %}
-                    agent.speak('지금 열람하시려는 항목은 없는 항목입니다. 다시 확인하십시오..');
-                {% endif %}
-                {% if errdata == 'reCAPTCHA 인증에 실패했습니다.' %}
-                    agent.speak('당신이 사람임을 증명하십시오. 봇이라면 이 단계를 거의 통과할 수 없습니다.');
-                {% endif %}
-                {% if not st and imp[0] == '투표 등록' %}
-                    agent.speak('잠깐! 시작일, 종료일, 자격은 1960-07-01 등의 형식으로 입력하셔야 합니다.');
-                    agent.speak('투표 자격은 입력한 날짜 이전에 가입한 사람만이 투표할 때 그 날짜의 값입니다..');
-                {% endif %}
-
-
-                $(document).on('click', '.clippy', function() {
-                    {% if st == 2 %}
-                        agent.speak('편집하는 방법은 간단합니다. 입력 상자에서 내용을 입력하고 따로 남길 말이 있다면 요약 칸에 적으시고 [저장] 단추를 누르면 됩니다.');
-                        agent.speak('또한, 굵은 글씨는 \'\'\'내용\'\'\', 기움글꼴은 \'\'내용\'\', 문단은 == 제목 ==으로 추가하실 수 있습니다.');
-                        agent.speak('편집 시 분쟁이 발쌩한다면 토론으로 해결한는것이 좋습니다.');
-                    {% elif st == 3 %}
-                        agent.speak('편집 시 분쟁이 발쌩한다면 토론으로 해결한는것이 좋습니다.');
-                        agent.speak('진행중일 토론에 참여하거나 하단의 [새 주제 생성]칸에서 새로 발제하실 수 있습니다.');
-                    {% elif imp[0] == '파일 올리기' and not st %}
-                        agent.speak('파일을 올리려면 상단의 [Select] 단추를 먼저 누릅니다.');
-                        agent.speak('파일 선택 대화 상자가 나오면 파일을 선택합니다.');
-                        setTimeout(function() {
-                            $('#fileInput').click();
-                        }, 5000);
-                        $('#fileInput').change(function() {
-                            agent.speak('그리고 파일 이름 칸에 파일 이름을 지정하십시오. 여기서 잠깐! 파일의 확장자(.bmp, .msp, .wmf 등)는 대소문자를 구분합니다. 제대로 입력했는지 확인하십시오. 5초 후에 다음 설명들어갑니다.');
-                            setTimeout(function() {
-                                agent.speak('이후 아래의 큰 입력상자에 파일에 대한 정보를 입력하십시오. 15초 후 다음 설명하겠습니다.');
-                                setTimeout(function() {
-                                    location.href = '#licenseSelect';
-                                    agent.speak('하단 부분의 라이선스에서 파일의 저작권 라이선스를 선택하십시오.');
-                                    setTimeout(function() {
-                                        agent.speak('그리고 분류를 선택하십시오.');
-                                        $('#categorySelect').change(function() {
-                                            agent.speak('이제 끝났습니다. [올리기]를 누르십시오. 파일을 올리신 후 [[파일:파일명]]을 이용하여 문서에 그림을 삽입할 수 있습니다.');
-                                        });
-                                    }, 7000);
-                                }, 15000);
-                            }, 10000);
-                        });
-                    {% elif imp[0] == '계정 만들기' and not st %}
-                        agent.speak('먼저 사용자 ID 칸에 원하는 아이디를 입력하십시오. 아이디는 3자 이상 32자 이하이며, 영문 숫자, 밑줄로 구성되었으며, 영어로 시작해야 합니다.');
-                        setTimeout(function() {
-                            agent.speak('이제 암호와 암호 확인을 입력하십시오. 강력하게 지정하는 것이 권장됩니다. 잠깐! 암호를 입력하기 전에 HTTPS 연결로 접속했는지 확인하십시오.');
-                            setTimeout(function() {
-                                agent.speak('이제 [가입]을 눌러 계정을 만드십시오.');
-                            }, 15000);
-                        }, 12000);
-                    {% elif imp[0] == '문제가 발생했습니다!' and not st %}
-                        agent.speak('오류: {{ errdata }}');\
-                    {% elif is_edit_request %}
-                        agent.speak('편집 요청 관리 방법입니다. -');
-                        agent.speak('요청을 승인하려면 Accept를 누르십시오. 누르시기 전에 하단의 비교를 확인하십시오. -');
-                        agent.speak('이 요청이 악성 요청으로 판단되면 Close로 거절할 수 있습니다. 본인 및 운영자만 가능합니다. -');
-                    {% else %}
-                        agent.animate();
-                    {% endif %}
-                });
-                (function(){
-                    agent.animate();
-                    setTimeout(arguments.callee, 30000);
-                })();
-
-                function alert(p) {
-                    agent.speak(p);
-                }
-            });
-        });
-    </script>
 
     <script type="text/javascript" src="/skins/main_css/js/do_preview.js"></script>
     <script type="text/javascript" src="/skins/main_css/js/insert_data.js"></script>
@@ -273,17 +137,6 @@
             $.get('/htmldata/recentchanges?discuss=1', function(response) {
                 document.querySelector('#recentDiscussTable').innerHTML = response + '<a class=moreRecentLink href=/RecentDiscuss>[더보기...]</a>';
             });
-
-            jQuery(function() {
-                $('time').each(function () {
-                    var format = $(this).attr('data-format');
-                    var time = $(this).attr('datetime');
-                    if (!format || !time) {
-                        return;
-                    }
-                    $(this).text(formatDate(new Date(time), format));
-                });
-            });
         });
     </script>
 </head>
@@ -324,19 +177,19 @@
           ●
           </div>
           <div class="snowflake">
-            ●
+           ●
           </div>
           <div class="snowflake">
-            ●
+           ●
           </div>
           <div class="snowflake">
-            ●
+           ●
           </div>
           <div class="snowflake">
-            ●
+           ●
           </div>
           <div class="snowflake">
-            ●
+           ●
           </div>
         </div>
     {% endif %}

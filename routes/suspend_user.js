@@ -64,8 +64,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 		<table class="table table-hover">
 			<colgroup>
 				<col>
-				<col style="width: 140px;">
-				<col style="width: 170px;">
+				<col style="width: 210px;">
 				<col style="width: 170px;">
 				<col style="width: 60px;">
 				<col style="width: 60px;">
@@ -76,8 +75,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			<thead>
 				<tr>
 					<td><strong>이름</strong></td>
-					<td><strong>차단자</strong></td>
-					<td><strong>차단일</strong></td>
+					<td><strong>사유</strong></td>
 					<td><strong>만료일</strong></td>
 					<td><strong>유형</strong></td>
 					<td><strong>접속</strong></td>
@@ -95,11 +93,11 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 	// await curs.execute("delete from banned_users where cast(endingdate as integer) < ? and not endingdate = '0'", [new Date().getTime()]);
 	
 	if(from) {
-		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview from banned_users \
+		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview, note from banned_users \
 								where username >= ? order by username limit 100", [from]);
 
 	} else {
-		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview from banned_users \
+		await curs.execute("select username, blocker, startingdate, endingdate, ismember, al, blockview, note from banned_users \
 								order by username asc limit 100");
 	}
 	
@@ -107,8 +105,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 		content += `
 			<tr>
 				<td>${html.escape(row['username'])}</td>
-				<td>${html.escape(row['blocker'])}</td>
-				<td>${generateTime(toDate(row['startingdate']), timeFormat)}</td>
+				<td>${html.escape(row['note'])}</td>
 				<td>${row['endingdate'] != '0' ? generateTime(toDate(row['endingdate']), timeFormat) : '영구'}</td>
 				<td>${row['ismember'] == 'ip' ? 'IP' : '계정'}</td>
 				<td>${row['blockview'] == '1' ? '불가' : '가능'}</td>

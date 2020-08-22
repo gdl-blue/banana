@@ -863,17 +863,6 @@
                 document.querySelector('#recentDiscussTable').innerHTML = response + '<a class=moreRecentLink href=/RecentDiscuss>[더보기...]</a>';
             });
 
-            jQuery(function() {
-                $('time').each(function () {
-                    var format = $(this).attr('data-format');
-                    var time = $(this).attr('datetime');
-                    if (!format || !time) {
-                        return;
-                    }
-                    $(this).text(formatDate(new Date(time), format));
-                });
-            });
-
             $("table").click(function() {
                 $('.dropdown').hide();
             });
