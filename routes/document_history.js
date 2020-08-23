@@ -61,13 +61,8 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	var trlist = '';
 	
 	for(row of curs.fetchall()) {
-		if(until) {
-			if(!set) { lr = row.rev; set = 1 }
-			fr = row.rev;
-		} else {
-			if(!set) { fr = row.rev; set = 1 }
-			lr = row.rev;
-		}
+		if(!set) { fr = row.rev; set = 1 }
+		lr = row.rev;
 		
 		var data = `
 				<tr>
@@ -112,8 +107,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 			`;
 		}
 		
-		if(until) trlist = data + trlist;
-		else trlist += data;
+		trlist += data;
 	}
 	
 	content += `

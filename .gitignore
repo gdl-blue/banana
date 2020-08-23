@@ -7,5 +7,9 @@ skins/liberty/
 skins/Material/
 skins/modern-black/
 skins/yousoro/
+skins/namuvector/
+skins/vector/
 plugins/theseed-acl/
 /test.txt
+images/
+!images/dummyfile

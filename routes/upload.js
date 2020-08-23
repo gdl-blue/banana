@@ -161,7 +161,7 @@ wiki.post('/Upload', async function saveFile(req, res) {
 	
 	const file = req.files['file'];
 	
-	var content = `[include(틀:이미지 라이선스/${req.body['license']})]\n[[분류:파일/${req.body['category']}]]\n\n` + req.body['text'];
+	// var content = `[include(틀:이미지 라이선스/${req.body['license']})]\n[[분류:파일/${req.body['category']}]]\n\n` + req.body['text'];
 	
 	/*
 		'files': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category']
@@ -178,7 +178,7 @@ wiki.post('/Upload', async function saveFile(req, res) {
 		return;
 	}
 	
-	file.mv('./images/' + sha3(req.body['document']) + path.extname(file.name), async function moveToServer(err) {
+	file.mv('./images/' + sha224(req.body['document']) + path.extname(file.name), async function moveToServer(err) {
 		await curs.execute("select license from filelicenses where license = ?", [req.body['license']]);
 		if(!curs.fetchall().length) {
 			await curs.execute("insert into filelicenses (license, creator) values (?, ?)", [req.body['license'], ip_check(req)]);
@@ -190,8 +190,8 @@ wiki.post('/Upload', async function saveFile(req, res) {
 		}
 		
 		await curs.execute("insert into files (filename, prop1, prop2, prop3, prop4, prop5, license, category) values (?, ?, ?, ?, ?, ?, ?, ?)", [fn, req.body['prop1'], req.body['prop2'], req.body['prop3'], req.body['prop4'], req.body['prop5'], req.body['license'], req.body['category']]);
-		await curs.execute("insert into filehistory (filename, prop1, prop2, prop3, prop4, prop5, license, category, username, rev) values (?, ?, ?, ?, ?, ?, ?, ?, ?, '1')", [fn, req.body['prop1'], req.body['prop2'], req.body['prop3'], req.body['prop4'], req.body['prop5'], req.body['license'], req.body['category'], ip_check(req)]);
+		// await curs.execute("insert into filehistory (filename, prop1, prop2, prop3, prop4, prop5, license, category, username, rev) values (?, ?, ?, ?, ?, ?, ?, ?, ?, '1')", [fn, req.body['prop1'], req.body['prop2'], req.body['prop3'], req.body['prop4'], req.body['prop5'], req.body['license'], req.body['category'], ip_check(req)]);
 		
-		res.redirect('/file/' + encodeURIComponent(req.body['document']));
+		res.redirect('/files/' + encodeURIComponent(req.body['document']) + path.extname(file.name));
 	});
 });

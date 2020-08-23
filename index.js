@@ -323,7 +323,7 @@ function sha3(p) {
 const ipRangeCheck = require("ip-range-check");
 
 // VB6 함수 모방
-function Split(str, del) { return str.split(del); }; const split = Split;
+function Split(str, del) { try { return str.split(del); } catch(e) { return [str]; } }; const split = Split;
 function Replace(str, rgx, rpl) { return str.replace(rgx, rpl); }; const replace = Replace;
 function UCase(s) { return s.toUpperCase(); }; const ucase = UCase;
 function LCase(s) { return s.toLowerCase(); }; const lcase = LCase;
@@ -426,6 +426,10 @@ function generateTime(time, fmt = timeFormat) {
 const url_pas = u => encodeURIComponent(u);
 
 const md5 = require('md5');
+
+function sha224(s) {
+	return (((require('sha224'))(s, 'utf8')).toString('hex'));
+}
 
 swig.setFilter('encode_userdoc', function filter_encodeUserdocURL(input) {
 	return encodeURIComponent('사용자:' + input);
@@ -618,7 +622,7 @@ class stack {
 	}
 };
 
-function markdown(content, discussion = 0) {
+function markdown(content, discussion = 0, title = '') {
 	// markdown 아니고 namumark
 	
 	var footnotes = new stack();
@@ -728,6 +732,7 @@ function markdown(content, discussion = 0) {
 	data = data.replace(/\[br\]/gi, '&lt;br&gt;');
 	data = data.replace(/\[(date|datetime)\]/gi, generateTime(toDate(getTime()), timeFormat));
 	
+	/*
 	do {
 		const fn = data.match(/\[[*]\s(((?!\]).)*)/i);
 		if(fn) {
@@ -742,6 +747,7 @@ function markdown(content, discussion = 0) {
 		}
 	} while(data.match(/\[[*]\s(((?!\]).)*)/i) || footnotes.size());
 	
+	*/
 	// print('----------');
 	// print(data);
 	// print('----------');
@@ -1384,6 +1390,10 @@ async function getacl(req, title, action) {
 			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
 			fullacllst = fullacllst.concat(curs.fetchall());
 			
+			// print(action)
+			// print(fullacllst)
+			// print(fullacllst.length)
+			
 			if(!fullacllst.length) {
 				var ns = '';
 				
@@ -1407,8 +1417,14 @@ async function getacl(req, title, action) {
 				// 왜 goto가 없어
 			}
 			
+			// print(action)
+			// print(fullacllst)
+			// print(fullacllst.length)
+			
+			var a = action;
+			
 			for(var acl of fullacllst) {
-				var   condition = true;
+				var   condition = false;
 				const action    = acl['action'];
 				const high      = acl['hipri'] == '1' ? true : false;
 				const not       = acl['notval'] == '1' ? true : false;
@@ -1441,7 +1457,7 @@ async function getacl(req, title, action) {
 					break;case 'blocked_member':
 						condition = islogin(req) && await isBanned(req, 'author', ip_check(req));
 					break;case 'admin':
-						condition = getperm('admin', ip_check(req)) || getperm('developer', ip_check(req));
+						condition = getperm('admin', ip_check(req));
 					break;case 'developer':
 						condition = getperm('developer', ip_check(req));
 					break;case 'document_creator':
@@ -1481,6 +1497,9 @@ async function getacl(req, title, action) {
 						}
 				}
 				
+				// print(a)
+				// print(condition)
+				
 				if(action == 'allow') {
 					if(!not && condition) {
 						return true;
@@ -1488,19 +1507,15 @@ async function getacl(req, title, action) {
 					else if(not && !condition) {
 						return true;
 					}
-					else {
-						return false;
-					}
+					else {}
 				} else {
-					if(!not && !condition) {
-						return true;
-					}
-					else if(not && condition) {
-						return true;
-					}
-					else {
+					if(!not && condition) {
 						return false;
 					}
+					else if(not && !condition) {
+						return false;
+					}
+					else {}
 				}
 			}
 			
@@ -2032,6 +2047,31 @@ async function getThreadData(req, tnum, tid = '-1') {
 
 wiki.get('/settings', async function skinSettings(req, res) {
 	res.send(await render(req, '스킨 설정', '.', { __isSkinSettingsPage: 1 }));
+});
+
+wiki.get(/\/images\/(.*)/, async function sendImage(req, res) {
+	try {
+		res.sendFile(req.params[0], { root: './images' });
+	} catch(e) {
+		res.send(await showError(req, 'file_not_found'));
+	}
+});
+
+// js-namumark 호환
+wiki.get(/\/wiki\/(.*)/, async function redirectL(req, res) {
+	res.redirect('/w/' + encodeURIComponent(req.params[0]));
+});
+
+wiki.get(/\/file\/(.*)/, async function redirectM(req, res) {
+	try {
+		const fullname  = req.params[0];
+		const filename  = path.parse(fullname)['name'];
+		const extension = path.extname(fullname);
+		
+		res.redirect('/images/' + sha224(filename) + extension);
+	} catch(e) {
+		res.send(await showError(req, 'invalid'));
+	}
 });
 
 for(src of fs.readdirSync('./routes', { withFileTypes: true }).filter(dirent => !dirent.isDirectory()).map(dirent => dirent.name)) {

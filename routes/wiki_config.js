@@ -8,14 +8,10 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 	const deflskin = config.getString('default_skin_legacy', require('./config.json')['skin']);
 	
 	var dsop = '';
-	
-	for(skin of getSkins()) {
-		dsop += `<option value="${skin}" ${skin == defskin ? 'selected' : ''}>${skin}</option>`;
-	}
-	
 	var dslop = '';
 	
 	for(skin of getSkins()) {
+		dsop += `<option value="${skin}" ${skin == defskin ? 'selected' : ''}>${skin}</option>`;
 		dslop += `<option value="${skin}" ${skin == deflskin ? 'selected' : ''}>${skin}</option>`;
 	}
 	
@@ -198,7 +194,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								</div>
 								
 								<div class=form-group>
-									<label><input type=checkbox name=enable_theseed_skins checked disabled> 구 the seed용으로 만들어진 스킨 지원</label><br>
+									<label><input type=checkbox name=enable_theseed_skins checked disabled> 舊 the seed용으로 만들어진 스킨 지원</label><br>
 									<label><input type=checkbox name=enable_opennamu_skins ${config.getString('enable_opennamu_skins', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
 								</div>
 							</div>
@@ -220,7 +216,6 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 									<label><input type=checkbox name=disable_recentchanges ${config.getString('disable_recentchanges', '0') == '1' ? 'checked' : ''}> 최근 변경 열람 금지</label><br>
 									<label><input type=checkbox name=disable_recentdiscuss ${config.getString('disable_recentdiscuss', '0') == '1' ? 'checked' : ''}> 최근 토론 열람 금지</label><br>
 									<label><input type=checkbox name=disable_contribution_list ${config.getString('disable_contribution_list', '0') == '1' ? 'checked' : ''}> 기여 목록 열람 금지</label><br>
-									<label><input type=checkbox name=enhanced_security ${config.getString('enhanced_security', '0') == '1' ? 'checked' : ''}> 보안 강화 구성 사용<sup><a title="로그인 시 복사-붙이기, 브라우저 저장 비밀번호 방식으로 로그인할 수 없으며, 마우스로만 로그인할 수 있습니다. ActiveX를 사용하므로 Internet Explorer에서만 로그인할 수 있습니다.">[?]</a></sup></label><br>
 								</div>
 								
 								<div class=form-group>
