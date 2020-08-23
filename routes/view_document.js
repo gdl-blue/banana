@@ -66,12 +66,12 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 				);
 				
 				// https://stackoverflow.com/questions/1801160/can-i-use-jquery-with-node-js
-				var jsdom = require("jsdom");
+				const jsdom = require("jsdom");
 				const { JSDOM } = jsdom;
 				const { window } = new JSDOM();
 				const { document } = (new JSDOM(htmlc)).window;
 				global.document = document;
-				var $ = jQuery = require('jquery')(window);
+				const $ = jQuery = require('jquery')(window);
 				
 				const qa = (q, f) => {
 					for(el of document.querySelectorAll(q)) {
