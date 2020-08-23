@@ -1948,7 +1948,7 @@ wiki.get('/register', function redirectK(req, res) {
 });
 
 function redirectToFrontPage(req, res) {
-	res.redirect('/w/' + config.getString('frontpage', '대문'));
+	res.redirect('/w/' + config.getString('front_page', '대문'));
 }
 
 wiki.get('/w', redirectToFrontPage);

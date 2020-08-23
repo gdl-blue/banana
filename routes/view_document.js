@@ -1,7 +1,7 @@
 wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	const title = req.params[0];
 	
-	if(title.replace(/\s/g, '') == '') res.redirect('/w/' + config.getString('frontpage'));
+	if(title.replace(/\s/g, '') == '') res.redirect('/w/' + config.getString('front_page'));
 	
 	await curs.execute("select content from documents where title = ?", [title]);
 	var rawContent = curs.fetchall();
