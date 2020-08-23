@@ -1923,6 +1923,7 @@ wiki.get('/admin/suspend_account', function redirectI(req, res) {
 wiki.get(/^\/record\/(.*)$/, async function redirectJ(req, res) {
 	const username = req.params[0];
 	
+	// 사실 이렇게 하는 거 아니고 res.send를 여러번 해야하는데 표준이 없고 그렇게 해도 에러
 	res.status(300).send(`
 		<script>
 			if(confirm('계정이면 <예>, IP이면 <아니오>')) {
