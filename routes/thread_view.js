@@ -49,12 +49,14 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			<div id=res-container>
 	`;
 	
+	const hiddendata = await curs.execute("select hidden from res where tnum = ? order by cast(id as integer) asc", [tnum]);
+	
 	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
 		content += await getThreadData(req, tnum);
 	} else {
 		for(var i=1; i<=rescount; i++) {
 			content += `
-				<div class="res-wrapper res-loading" data-id="${i}" data-locked="false" data-visible=false>
+				<div class="res-wrapper res-loading" data-hidden="${hiddendata[i-1]['hidden'] == '1' || hiddendata[i-1]['hidden'] == 'O' ? 'true' : 'false'}" data-id="${i}" data-locked="false" data-visible=false>
 					<div class="res res-type-normal">
 						<div class="r-head">
 							<span class="num">${i}.&nbsp;</span>
