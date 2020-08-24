@@ -7,10 +7,14 @@ $(function() {
 	$('head').append('<style id=hide-blind-res></style>');
 	
 	$('button#hideBlindRes').click(function() {
+		$('button#hideBlindRes').attr('disabled', '');
+		$('button#showBlindRes').removeAttr('disabled');
 		$('style#hide-blind-res').text('div.res-wrapper[data-hidden="true"] { display: none; }');
 	});
 	
 	$('button#showBlindRes').click(function() {
+		$('button#showBlindRes').attr('disabled', '');
+		$('button#hideBlindRes').removeAttr('disabled');
 		$('style#hide-blind-res').text('');
 	});
 	

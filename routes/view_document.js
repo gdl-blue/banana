@@ -224,14 +224,16 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	
 	if(title.startsWith('사용자:')) isUserDoc = true;
 	
-	if(end)res.status(httpstat).send(await render(req, title, content, {
-		star_count: 0,
-		starred: false,
-		date: lstedt,
-		user: isUserDoc,
-		category: [],
-		discuss_progress: 0,
-		rev: rev,
-		st: 1
-	}, _, error, viewname));
+	if(end) {
+		res.status(httpstat).send(await render(req, title, content, {
+			star_count: 0,
+			starred: false,
+			date: lstedt,
+			user: isUserDoc,
+			category: [],
+			discuss_progress: 0,
+			rev: rev,
+			st: 1
+		}, _, error, viewname));
+	}
 });

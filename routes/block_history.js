@@ -4,6 +4,32 @@
 */
 
 wiki.get('/BlockHistory', async function(req, res) {
+	// 나무픽스
+	if(req.query['target'] && req.query['text']) {
+		if(!req.xhr) return res.send('Bad Request');
+		
+		var content = '<div class=wiki-article style="display: none;"><ul class=wiki-list>';
+		
+		// 일단 기여내역 차단기록 검색만
+		if(req.query['from']) {
+			await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where username = ? startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['query'], req.query['from']]);
+		}
+		else if(req.query['until']) {
+			await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where username = ? startingdate >= ? order by cast(startingdate as integer) desc limit 100", [req.query['query'], req.query['until']]);
+		}
+		else {
+			await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order username = ? by cast(startingdate as integer) desc limit 100", [req.query['query']]);
+		}
+		
+		for(item of curs.fetchall()) {
+			// 곧 할 예정
+		}
+		
+		content += '</ul>' + navbtn('/BlockHistory?target=text&query=' + encodeURIComponent(req.query['query']), ) + '</div>';
+	
+		return res.send(content);
+	}
+	
 	if(req.query['from']) {
 		await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['from']]);
 	}

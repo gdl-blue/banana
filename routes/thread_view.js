@@ -59,6 +59,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 				<div class="res-wrapper res-loading" data-hidden="${hiddendata[i-1]['hidden'] == '1' || hiddendata[i-1]['hidden'] == 'O' ? 'true' : 'false'}" data-id="${i}" data-locked="false" data-visible=false>
 					<div class="res res-type-normal">
 						<div class="r-head">
+							<a id="${i}" data-description="나무픽스 호환" style="display: none;">#${i}</a>
 							<span class="num">${i}.&nbsp;</span>
 						</div>
 						
@@ -79,11 +80,11 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	content += `
 		<form id=new-thread-form method=post>
-			<div class=res-wrapper data-id="-1" data-locked=true data-visible=false>
+			<div class="res-wrapper res-loading" data-id="-1" data-locked=true data-visible=false>
 				<div class="res res-type-normal">
 					<div class="r-head">
 						<strong>내 의견</strong>
-						<button type=submit style="width: 120px; float: right;">전송하기!</button>
+						<button type=submit style="width: 120px; float: right;">전송!</button>
 					</div>
 					
 					<div class="r-body">
@@ -98,7 +99,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 			</div>
 		</form>
 		
-		<div class=res-wrapper data-id="-2" data-locked=true data-visible=false>
+		<div class="res-wrapper res-loading" data-id="-2" data-locked=true data-visible=false>
 			<div class="res res-type-normal">
 				<div class="r-head">
 					<strong>토론 설정</strong>&nbsp;</span>
@@ -112,7 +113,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 					
 					<div class=form-group>
 						<button id=hideBlindRes>숨겨진 댓글 숨기기</button>
-						<button id=showBlindRes>숨겨진 댓글 표시</button>
+						<button id=showBlindRes disabled>숨겨진 댓글 표시</button>
 					</div>
 	`;
 	

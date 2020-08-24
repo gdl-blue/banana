@@ -21,10 +21,12 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 //			<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
 	
 	var content = `
-		<ol class="breadcrumb link-nav">
-			<li><strong>[문서]</strong></li>
-			<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
-		</ol>
+		<div>
+			<ol class="breadcrumb link-nav">
+				<li><strong>[문서]</strong></li>
+				<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
+			</ol>
+		</div>
 		
 		<table class="table table-hover">
 			<colgroup>

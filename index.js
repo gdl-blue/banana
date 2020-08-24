@@ -981,7 +981,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		strc: varlist['star_count'],
 		us: varlist['user'],
 		un: title.replace(/^사용자[:]/, ''),
-		cont: viewname == 'contribution' || viewname == 'contribution_discuss' ? '1' : undefined
+		cont: viewname == 'contribution' || viewname == 'contribution_discuss' ? 1 : undefined
 	};
 	
 	function getpermForSkin(permname) {
@@ -1337,7 +1337,7 @@ async function showError(req, code) {
 function ip_pas(ip = '', ismember = '', isadmin = null) {
 	// https://www.w3schools.com/howto/howto_css_glowing_text.asp
 	var color = ' style="color: x;"';
-	const glowstyle = ' text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff, 0 0 20px #fff;';
+	const glowstyle = ' text-shadow: 0 0 40px #fff, 0 0 40px #fff, 0 0 40px #fff, 0 0 40px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff;';
 	
 	if(ismember == 'author') {
 		if(getperm('developer', ip)) {
@@ -1360,6 +1360,9 @@ function ip_pas(ip = '', ismember = '', isadmin = null) {
 		}
 		else if(getperm('highspeed', ip)) {
 			color = ' style="color: rgb(57, 136, 179);' + glowstyle + '"';
+		}
+		else {
+			color = ' style="' + glowstyle + '"';
 		}
 	}
 	
@@ -1542,8 +1545,8 @@ async function getacl(req, title, action) {
 function navbtn(p, f, u) {
 	return `
 		<div class=btn-group>
-			<a class="btn btn-secondary btn-sm" href="${p}?until=${u}">&lt; 뒤로</a>
-			<a class="btn btn-secondary btn-sm" href="${p}?from=${f}" >다음 &gt;</a>
+			<a class="btn btn-secondary btn-sm" href="${p}${p.match(/[?]/) ? '&' : '?'}until=${u}">&lt; 뒤로</a>
+			<a class="btn btn-secondary btn-sm" href="${p}${p.match(/[?]/) ? '&' : '?'}from=${f}" >다음 &gt;</a>
 		</div>
 	`;
 }
@@ -2029,6 +2032,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
 						<span class=num>
+							<a id="${rs['id']}" data-description="나무픽스 호환" style="display: none;">#${rs['id']}</a>
 							${rs['id']}.&nbsp;
 						</span> ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn}
 						<span style="float: right;">${generateTime(toDate(rs['time']), "Y년 m월 d일 H시 i분")}</span>
@@ -2057,6 +2061,13 @@ async function getThreadData(req, tnum, tid = '-1') {
 							)
 						}
 					</div>
+					
+					${
+						getperm('blind_thread_comment', ip_check(req))
+						? (
+							'<div class="combo admin-menu"><a data-description="나무픽스 호환용 숨기기 단추" href="/admin/thread/' + tnum + '/' + rs['id'] + '/hide"></a></div>'
+						) : ''
+					}
 				</div>`;
 		content += `
 			</div>
@@ -2071,6 +2082,8 @@ wiki.get('/settings', async function skinSettings(req, res) {
 });
 
 wiki.get(/\/images\/(.*)/, async function sendImage(req, res) {
+	// if(req.params[0].match(/[.]/g).length > 1 || encodeURIComponent(req.params[0]).toUpperCase().includes('%2f'))
+	
 	try {
 		res.sendFile(req.params[0], { root: './images' });
 	} catch(e) {
