@@ -422,9 +422,16 @@ $(function() {
 				dataType: 'html',
 				success: function(d) {
 					$('table.table.table-hover')[0].outerHTML = d;
+					
+					$('time[datetime]').each(function() {
+						$(this).text(
+							/* datetime에서 뒤에 붙는 .000Z는 ISO 문자열에서 generate되고 시간대마다 다른데 예전에 코드 작성할 때에는 그 의미를 몰라서 다 .000Z라고 썼다 --; */
+							formatDate(new Date($(this).attr('datetime')), $(this).attr('data-format'))
+						);
+					});
 				}
 			});
-		}, 3000);
+		}, 2500);
 	}
 	
 	window.discussPollStart = discussPollStart;

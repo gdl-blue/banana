@@ -71,7 +71,7 @@ wiki.get('/member/starred_documents', async (req, res) => {
 		for(doc of (await curs.execute("select title, lastedit from stars where username = ? and category = ? order by cast(lastedit as integer) desc", [ip_check(req), cate['name']]))) {
 			content += `
 				<li>
-					${generateTime(toDate(doc.lastedit), 'm월 d일 h시 i분')}에 수정됨 - <a href="${encodeURIComponent(doc.title)}">${html.escape(doc.title)}</a>
+					${generateTime(toDate(doc.lastedit), 'm월 d일 h시 i분')}에 수정됨 - <a href="/w/${encodeURIComponent(doc.title)}">${html.escape(doc.title)}</a>
 					<a href="/member/starred_documents/categorize?document=${encodeURIComponent(doc.title)}"> [분류 변경]</a>
 					<a href="/member/unstar/${encodeURIComponent(doc.title)}"> [주시 해제]</a>
 					<a href="/history/${encodeURIComponent(doc.title)}"> [역사]</a>
