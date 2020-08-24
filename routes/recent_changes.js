@@ -80,7 +80,7 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 								)
 							)
 							
-						};">${row['changes']}</span>)
+						}; ${Math.abs(Number(row['changes'])) >= 1000 ? 'font-weight: bold;' : ''}">${row['changes']}</span>)
 					</td>
 					
 					<td>

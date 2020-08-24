@@ -46,7 +46,7 @@ $(function() {
 	}
 	
 	function nevermind() {
-		return null;
+		return;
 	}
 	
 	function isVisible(elmt) {
@@ -178,8 +178,8 @@ $(function() {
 		});
 	});
 	
-	const allLoadingRes = 'div.res-wrapper.res-loading[data-locked="false"]';
-	const loadingRes = 'div.res-wrapper.res-loading[data-visible="true"][data-locked="false"]';
+	const allLoadingRes = 'div#res-container div.res-wrapper.res-loading[data-locked="false"]';
+	const loadingRes = allLoadingRes + '[data-locked="false"]';
 	
 	function setVisibleState() {
 		$(allLoadingRes).each(function() {
