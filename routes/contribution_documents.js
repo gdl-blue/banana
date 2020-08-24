@@ -30,16 +30,16 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		
 		<table class="table table-hover">
 			<colgroup>
+				<col style="width: 100px;">
 				<col>
 				<col style="width: 25%;">
-				<col style="width: 22%;">
 			</colgroup>
 			
 			<thead id>
 				<tr>
-					<th>문서</th>
-					<th>수정자</th>
 					<th>시간</th>
+					<th>문서명</th>
+					<th>수정자</th>
 				</tr>
 			</thead>
 			
@@ -50,16 +50,20 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		content += `
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
+						${generateTime(toDate(row['time']), 'H시 i분')}
+					</td>
+					
+					<td>
 						<a href="/w/${encodeURIComponent(row['title'])}">${html.escape(row['title'])}</a> 
-						<a href="/history/${encodeURIComponent(row['title'])}">[역사]</a> 
+						( <a href="/history/${encodeURIComponent(row['title'])}">역사 | </a> 
 						${
 								Number(row['rev']) > 1
-								? '<a \href="/diff/' + encodeURIComponent(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">[비교]</a>'
+								? '<a \href="/diff/' + encodeURIComponent(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교 | </a>'
 								: ''
 						} 
-						<a href="/discuss/${encodeURIComponent(row['title'])}">[토론]</a> 
+						<a href="/discuss/${encodeURIComponent(row['title'])}">[토론]</a> )
 						
-						(<span style="color: ${
+						[<span style="color: ${
 							(
 								Number(row['changes']) > 0
 								? 'green'
@@ -70,15 +74,11 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 								)
 							)
 							
-						};">${row['changes']}</span>)
+						};">${row['changes']}</span>]
 					</td>
 					
 					<td>
 						${ip_pas(row['username'], row['ismember'])}
-					</td>
-					
-					<td>
-						${generateTime(toDate(row['time']), timeFormat)}
 					</td>
 				</tr>
 		`;

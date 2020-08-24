@@ -68,7 +68,7 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		content += `
 			<tr>
 				<td>
-					${generateTime(toDate(trd['time']), 'h시 i분')}
+					${generateTime(toDate(trd['time']), 'H시 i분')}
 				</td>
 				
 				<td>
