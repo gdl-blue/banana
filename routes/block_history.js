@@ -5,7 +5,7 @@
 
 wiki.get('/BlockHistory', async function(req, res) {
 	// 나무픽스
-	if(req.query['target'] && req.query['text']) {
+	if(req.query['target'] && req.query['query']) {
 		if(!req.xhr) return res.send('Bad Request');
 		
 		var content = '<div class=wiki-article style="display: none;"><ul class=wiki-list>';
