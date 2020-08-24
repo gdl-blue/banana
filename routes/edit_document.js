@@ -227,5 +227,5 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 		title, content, String(Number(baserev) + 1), ip_check(req), getTime(), changes, log, '0', '-1', ismember, advance
 	]);
 	
-	res.redirect('/w/' + title);
+	res.redirect('/w/' + title + (req.query['section'] ? '#s-' + req.query['section'] : ''));
 });

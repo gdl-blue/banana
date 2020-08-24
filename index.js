@@ -194,10 +194,17 @@ function TCVreader(filename, timerName) {
 }
 
 // https://stackoverflow.com/questions/1183872/put-a-delay-in-javascript
-function timeout(ms) {
-	var s = new Date().getTime();
-	for (var i=0; i<1e7; i++) {
-		if(new Date().getTime() - s > ms) break;
+async function timeout(ms, synchronous = true) {
+	if(!synchronous) {
+		return new Promise((r, j) => {
+			setTimeout(() => r(1), s);
+		});
+	} else {
+		// 클라이언트 요청 처리중에 이거 쓰면 안됨.
+		var s = new Date().getTime();
+		while(1) {
+			if(new Date().getTime() - s > ms) break;
+		}
 	}
 }
 
@@ -1001,9 +1008,25 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	}
 	
 	var mycolor = 'default';
+	/*
+	async function timeout(s) {
+		return new Promise((r, j) => {
+			setTimeout(() => r(1), s);
+		});
+	}
+	(async function() { await timeout(5000); console.log(2); })();
+	(async function() { await timeout(2000); console.log(1); })();
 	
-	// 동기가 코딩하기는 편하지만 여러 사람이 쓴다면 동기는 별로 안 좋아서 나중에 리팩토링예정
-	// 다중쓰레딩 혹은 비동기 아니면 캐싱
+	==>
+		0초 - .
+		1초 - .
+		2초 - "1" 출력
+		3초 - .
+		4초 - .
+		5초 - "2" 출력
+		
+	위에서 보듯이 async await는 멀티쓰레딩 비슷하게 작동.
+	*/
 	try {
 		if(require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && fs.existsSync('./skins/' + getSkin(req) + '/colors.scl')) {
 			const _dc = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
