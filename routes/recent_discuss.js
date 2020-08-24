@@ -16,13 +16,15 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		
 		<table class="table table-hover">
 			<colgroup>
+				<col style="width: 100px;">
 				<col>
-				<col style="width: 22%; min-width: 100px;">
+				<col style="width: 22%;">
 			</colgroup>
 			<thead>
 				<tr>
-					<th>토론</th>
 					<th>시간</th>
+					<th>토론</th>
+					<th>작성자</th>
 				</tr>
 			</thead>
 			
@@ -48,16 +50,17 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 			continue;
 		}
 		
-		await curs.execute("select username, content, hidden from res where tnum = ? order by cast(id as integer) desc limit 1", [trd['tnum']]);
+		await curs.execute("select username, content, hidden, ismember from res where tnum = ? order by cast(id as integer) desc limit 1", [trd['tnum']]);
 		const _0x123456 = curs.fetchall();
 		
-		var prv = '', un = '';
+		var prv = '', un = '', im = 'author';
 		
 		if(_0x123456.length) {
 			if(_0x123456[0]['content'].length > 80) prv = _0x123456[0]['content'].slice(0, 80) + '...';
 			else prv = _0x123456[0]['content'];
 			
 			un = _0x123456[0]['username'];
+			im = _0x123456[0]['ismember'];
 			
 			if(_0x123456[0]['hidden'] == '1') prv = '[숨겨진 글]';
 		}
@@ -65,17 +68,21 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		content += `
 			<tr>
 				<td>
+					${generateTime(toDate(trd['time']), 'h시 i분')}
+				</td>
+				
+				<td>
 					<a href="/thread/${trd['tnum']}">${html.escape(trd['topic'])}</a> (<a href="/discuss/${encodeURIComponent(trd['title'])}">${html.escape(trd['title'])}</a>)
 				</td>
 				
 				<td>
-					${generateTime(toDate(trd['time']), timeFormat)}
+					${ip_pas(un, im)}
 				</td>
 			</tr>
 			
 			<tr>
-				<td colspan=2>
-					${html.escape(un)} - ${html.escape(prv)}
+				<td colspan=3>
+					${html.escape(prv)}
 				</td>
 			</tr>
 		`;
@@ -86,5 +93,5 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		</table>
 	`;
 	
-	res.send(await render(req, "최근 발언된 토론", content, {}));
+	res.send(await render(req, "최근 토론", content, {}));
 });
