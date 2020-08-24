@@ -897,9 +897,14 @@ function getSkin(req) {
 				)
 			)
 		) : (
-			compatMode(req)
-				? config.getString('default_skin_legacy', hostconfig['skin'])
-				: config.getString('default_skin', hostconfig['skin'])
+			req.cookies['ddochi'] && getSkins().includes(req.cookies['ddochi'])
+			? (
+				req.cookies['ddochi']
+			) : (
+				compatMode(req)
+					? config.getString('default_skin_legacy', hostconfig['skin'])
+					: config.getString('default_skin', hostconfig['skin'])
+			)
 		)
 	);
 }
@@ -1486,6 +1491,7 @@ async function getacl(req, title, action) {
 				['userdoc_owner', '사용자 문서 소유자'],
 				['document_creator', '문서를 만든 사용자'],              // 추가
 				['document_last_contributor', '문서의 마지막 기여자'],   // 예정
+				['edited_50_times_signup_15days_ago', '50회 이상 편집한 기입한 지 15일 지난 사용자'],   // "
 				['has_starred_document', '이 문서를 주시하는 사용자']
 				
 				switch(acl['value']) {
@@ -1994,6 +2000,8 @@ wiki.get('/logout', function redirectK(req, res) {
 wiki.get('/register', function redirectK(req, res) {
 	res.redirect('/member/signup');
 });
+
+// wiki.get('/c', (r, s) => console.log(r.cookies));
 
 function redirectToFrontPage(req, res) {
 	res.redirect('/w/' + config.getString('front_page', '대문'));
