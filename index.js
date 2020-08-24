@@ -1,3 +1,11 @@
+const versionInfo = {
+	major:    1,
+	minor:    99,
+	revision: 4,
+	state:    'alpha',
+	patch:    'A'
+};
+
 const isArray = obj => Object.prototype.toString.call(obj) == '[object Array]';
 const ifelse = (e, y, n) => e ? y : n;
 const pow = (밑, 지수) => 밑 ** 지수;
@@ -6,15 +14,15 @@ const floorof = Math.floor;
 const rand = (s, e) => Math.random() * (e + 1 - s) + s;
 const randint = (s, e) => floorof(Math.random() * (e + 1 - s) + s);
 const len = obj => obj.length;
-const itoa = String;
-const atoi = Number;
+const itoa = e => String(e);
+const atoi = e => Number(e);
 const reverse = elmt => {
 	if(typeof elmt == 'string') {
 		return elmt.split('').reverse().join('');
 	} else {
 		return elmt.reverse();
 	}
-}
+};
 const range = (sv, ev, pv) => {
 	var retval = [];
 	
@@ -42,7 +50,7 @@ const range = (sv, ev, pv) => {
 	}
 	
 	return retval;
-}
+};
 const _range = (sv, ev, pv) => {
 	var retval = [];
 	
@@ -80,7 +88,7 @@ const _range = (sv, ev, pv) => {
 	}
 	
 	return retval;
-}
+};
 const find = (obj, fnc) => {
 	if(typeof(obj) != 'object') {
 		throw TypeError(`Cannot find from ${typeof(obj)}`);
@@ -90,28 +98,15 @@ const find = (obj, fnc) => {
 		throw TypeError(`${fnc} is not a function`);
 	}
 	
-	var i;
-	
-	if(isArray(obj)) {
-		var cnt = 0;
-		
-		for(i of obj) {
-			if(fnc(i)) return cnt;
-			cnt++;
-		}
-		return -1;
-	} else {
-		for(i in obj) {
-			if(fnc(obj[i])) return i;
-		}
-		return -1;
+	for(i in obj) {
+		if(fnc(obj[i])) return i;
 	}
 	
 	return -1;
-}
+};
 
 module.exports = {
-	update_flags: ''
+	update_sql_flags: ''
 };
 
 function shell(c, l = '') {
@@ -210,7 +205,7 @@ function timeout(ms) {
 var perms = [
 	'admin', "suspend_account", 'developer', 'update_thread_document', "ipacl",
 	'update_thread_status', 'update_thread_topic', "hide_thread_comment", 'grant',
-	"login_history", 'delete_thread', 'acl', 'create_vote', 'delete_vote', 'edit_vote',
+	"login_history", 'delete_thread', 'acl',
 	'ban_users', 'tribune', 'arbiter', 'highspeed', "nsacl", 'head_admin', 'edit_board_post',
 	'delete_board_post', 'edit_board_comment', 'delete_board_comment', 'bot', 
 	'edit_namespace_acl', 'view_login_history', 'blind_thread_comment', 'fake_admin'
@@ -229,9 +224,6 @@ var permnames = {
 	"login_history": '로그인 내역', 
 	'delete_thread': '토론 삭제', 
 	'acl': 'ACL 조정', 
-	'create_vote': '투표 추가', 
-	'delete_vote': '투표 삭제', 
-	'edit_vote': '투표 수정',
 	'ban_users': '이용자 차단', 
 	'tribune': '호민관', 
 	'arbiter': '중재자', 
@@ -280,7 +272,8 @@ const random = {
 			case 'object':
 				return x[ Math.floor(Math.random() * x.length) ];
 		}
-	}
+	},
+	randint: randint
 };
 
 const timeFormat = 'Y-m-d H:i:s';
@@ -793,8 +786,7 @@ function getUsername(req, forceIP = 0) {
 
 const nodemailer = require('nodemailer');
 
-// module.exports에 들어가야 해서 var
-var ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
+const ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
 
 async function isBanned(req, ismember = '', username = '') {
 	return false;
@@ -991,20 +983,13 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		un: title.replace(/^사용자[:]/, ''),
 		cont: viewname == 'contribution' || viewname == 'contribution_discuss' ? '1' : undefined
 	};
-
-	var output;
-	var templateVariables = varlist;
-	templateVariables['skinInfo'] = skinInfo;
-	templateVariables['config'] = config;
-	templateVariables['content'] = content;
-	templateVariables['perms'] = perms;
-	templateVariables['url'] = req.path;
-	templateVariables['error'] = error;
-	templateVariables['req_ip'] = ip_check(req, 1);
 	
 	function getpermForSkin(permname) {
 		return getperm(permname, ip_check(req));
 	}
+
+	var output;
+	var templateVariables = varlist;
 	
 	var user_document_discuss = false;
 	
@@ -1017,12 +1002,14 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	
 	var mycolor = 'default';
 	
+	// 동기가 코딩하기는 편하지만 여러 사람이 쓴다면 동기는 별로 안 좋아서 나중에 리팩토링예정
+	// 다중쓰레딩 혹은 비동기 아니면 캐싱
 	try {
 		if(require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && fs.existsSync('./skins/' + getSkin(req) + '/colors.scl')) {
+			const _dc = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
+			mycolor = _dc;
 			if(islogin(req)) {
-				mycolor = getUserset(ip_check(req), 'color', fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString());
-			} else {
-				mycolor = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
+				mycolor = getUserset(ip_check(req), 'color', _dc);
 			}
 		}
 	} catch(e) {
@@ -1031,6 +1018,27 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 				mycolor = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
 			}
 		} catch(e) {}
+	}
+	
+	switch(skintype.toLowerCase()) {
+		case 'the seed':
+			templateVariables['skinInfo'] = skinInfo;
+			templateVariables['config'] = config;
+			templateVariables['content'] = content;
+			templateVariables['perms'] = perms;
+			templateVariables['url'] = req.path;
+			templateVariables['error'] = error;
+			templateVariables['req_ip'] = ip_check(req, 1);
+		break; case 'banana':
+			templateVariables['title'] = title + subtitle;
+			templateVariables['viewName'] = viewname;
+			templateVariables['config'] = config;
+			templateVariables['content'] = content;
+			templateVariables['getperm'] = getpermForSkin;
+			templateVariables['path'] = req.path;
+			templateVariables['error'] = error;
+			templateVariables['ip'] = ip_check(req, 1);
+			templateVariables['scheme'] = mycolor;
 	}
 	
 	templateVariables['user_document_discuss'] = user_document_discuss;
@@ -1245,44 +1253,49 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		
 		return `
 			<title>${title} (프론트엔드 오류!)</title>
-			<meta charset=utf-8>${content}`;
+			<meta charset=utf-8>
+			${content}`;
 	}
 	
 	output = template(templateVariables);
 	
-	var header = '<html><head>';
-	header += `
-		<title>${title}${subtitle} - ${config.getString('site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너']))}</title>
-		<meta charset=utf-8>
-		<meta name=generator content=banana>
-		<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-		<link rel="stylesheet" href="/css/banana.css">
-	`;
-	for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
-		header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
+	if(skintype == 'the seed') {
+		var header = '<html><head>';
+		header += `
+			<title>${title}${subtitle} - ${config.getString('site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너']))}</title>
+			<meta charset=utf-8>
+			<meta name=generator content=banana>
+			<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+			<link rel="stylesheet" href="/css/banana.css">
+		`;
+		for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
+			header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
+		}
+		header += `
+			<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
+			<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
+			<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
+			<script type="text/javascript" src="/js/banana.js"></script>
+		`;
+		for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
+			header += '<script type="text/javascript" src="/skins/' + getSkin(req) + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
+		}
+		
+		header += skinconfig['additional_heads'];
+		header += '</head><body class="';
+		
+		const bcll = skinconfig['body_classes'].length;
+		
+		for(var i=0; i<bcll; i++) {
+			header += skinconfig['body_classes'][i] + (i == bcll - 1 ? '' : ' ');
+		}
+		header += '">';
+		var footer = '</body></html>';
+		
+		return header + output + footer;
+	} else {
+		return output;
 	}
-	header += `
-		<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
-		<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
-		<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
-		<script type="text/javascript" src="/js/banana.js"></script>
-	`;
-	for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
-		header += '<script type="text/javascript" src="/skins/' + getSkin(req) + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
-	}
-	
-	header += skinconfig['additional_heads'];
-	header += '</head><body class="';
-	
-	const bcll = skinconfig['body_classes'].length;
-	
-	for(var i=0; i<bcll; i++) {
-		header += skinconfig['body_classes'][i] + (i == bcll - 1 ? '' : ' ');
-	}
-	header += '">';
-	var footer = '</body></html>';
-	
-	return header + output + footer;
 }
 
 function fetchErrorString(code) {
@@ -1560,8 +1573,10 @@ const html = {
 // global에 함수가 안 들어가있다
 module.exports = { fetchNamespaces: fetchNamespaces, generateCaptcha: generateCaptcha, validateCaptcha: validateCaptcha, timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
 
-function getSkins() {
-	var retval = [];
+var skinList = [];
+
+function cacheSkinList() {
+	skinList = [];
 	
 	// 밑의 fileExplorer 함수에 출처 적음.
 	for(dir of fs.readdirSync('./skins', { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
@@ -1575,11 +1590,16 @@ function getSkins() {
 		}
 		
 		if(skincfg['type'] && ['opennamu', 'opennamu-seed'].includes(skincfg['type'].toLowerCase()) && config.getString('enable_opennamu_skins', '1') != '1') continue;
+		if(fs.existsSync('./skins/' + dir + '/config.json') && (!skincfg['type'] || skincfg['type'] == 'the seed') && config.getString('enable_theseed_skins', '1') != '1') continue;
 		
-		retval.push(dir);
+		skinList.push(dir);
 	}
-	
-	return retval;
+}
+
+cacheSkinList();
+
+function getSkins() {
+	return skinList;
 }
 
 function getPlugins(type = 'feature', excludeDisabled = false) {
@@ -2135,7 +2155,7 @@ if(firstrun) {
 			const net = require('net');
 			const telnet = net.createServer();
 
-			telnet.on('connection', async function telnetHome(client) {
+			telnet.on('connection', function telnetHome(client) {
 				client.setEncoding('utf8');
 				
 				const readline = require('readline');
@@ -2144,11 +2164,12 @@ if(firstrun) {
 					output: client
 				});
 				
-				rl.question('문서 이름: ', async answer => {
+				rl.question('문서 이름: ', answer => {
 					client.write('\n');
 					
-					await curs.execute("select content from documents where title = ?", [answer]);
-					client.write(curs.fetchall()[0]['content']);
+					conn.all("select content from documents where title = ?", [answer], (e, r) => {
+						if(!e) client.write(r[0]['content']);
+					});
 				});
 			});
 

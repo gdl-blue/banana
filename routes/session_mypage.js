@@ -4,8 +4,8 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 		return;
 	}
 	
-	const defskin = config.getString('default_skin', 'buma');
-	var myskin = config.getString('default_skin', 'buma');
+	const defskin = config.getString('default_skin', hostconfig['skin']);
+	var myskin = getUserset(ip_check(req), 'skin', 'default');
 	
 	var dsop = `
 		<option value="${defskin}" ${'x' == defskin ? 'selected' : ''}>기본값 (${defskin})</option>

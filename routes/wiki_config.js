@@ -136,7 +136,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 							
 								<div class=form-group>
 									<label>대문 문서: </label><br>
-									<input type=text class=form-control name=frontpage value="${config.getString('frontpage', '대문')}">
+									<input type=text class=form-control name=front_page value="${config.getString('front_page', '대문')}">
 								</div>
 							
 								<div class=form-group>
@@ -194,7 +194,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								</div>
 								
 								<div class=form-group>
-									<label><input type=checkbox name=enable_theseed_skins checked disabled> 舊 the seed용으로 만들어진 스킨 지원</label><br>
+									<label><input type=checkbox name=enable_theseed_skins ${config.getString('enable_theseed_skins', '1') == '1' ? 'checked' : ''}> 舊 the seed용으로 만들어진 스킨 지원</label><br>
 									<label><input type=checkbox name=enable_opennamu_skins ${config.getString('enable_opennamu_skins', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
 								</div>
 							</div>
@@ -420,9 +420,9 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 	// 소유자 전용 페이지이므로 딱히 취약점 가드를 할 필요가 있을까.
 	
 	var settings = [
-		'site_name', 'max_users', 'frontpage', 'edit_warning', 'footer_text', '!enable_apiv1', '!enable_apiv2',
+		'site_name', 'max_users', 'front_page', 'edit_warning', 'footer_text', '!enable_apiv1', '!enable_apiv2',
 		'!enable_apipost', 'default_skin', 'default_skin_legacy',
-		'!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled', '!disable_star',
+		'!enable_theseed_skins', '!enable_opennamu_skins', '!enable_custom_skins', '!sql_execution_enabled', '!disable_star',
 		'!disable_random', '!disable_search', '!disable_discuss', '!disable_history', '!disable_recentchanges',
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
 		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
@@ -458,6 +458,8 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 	}
 	
 	fs.writeFileSync('./welcome.html', req.body['welcome_page']);
+	
+	cacheSkinList();
 	
 	res.redirect('/admin/config');
 });

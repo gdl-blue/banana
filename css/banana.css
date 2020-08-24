@@ -117,6 +117,7 @@ div.captcha-input label {
 
 .vertical-tablist {
 	height: 421px;
+	width: 100%;
 }
 
 .vertical-tablist .tablist {
