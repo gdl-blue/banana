@@ -199,12 +199,103 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 		return;
 	}
 	
-	var tnum = rndval('abcdef0123456789', 32);
+	const adjectives = [
+		'beautiful',
+		'blue',
+		'red',
+		'giantic',
+		'small',
+		'soft',
+		'hard',
+		'difficult',
+		'fluffy',
+		'cloudy',
+		'clear',
+		'green',
+		'pale',
+		'closed',
+		'opened',
+		'working',
+		'broken',
+		'written',
+		'found',
+		'founded',
+		'sad',
+		'happy',
+		'angry',
+		'orange',
+		'unclassifiable',
+		'invalid',
+		'valid',
+		'yellow',
+		'glossy',
+		'flat',
+		'white',
+		'checked',
+		'unchecked',
+		'marked',
+		'known',
+		'unknown',
+		'rabid',
+		'rapid'
+	];
+	
+	const nouns = [
+		'computer',
+		'diskette',
+		'disk',
+		'cd',
+		'dvd',
+		'mouse',
+		'rat',
+		'cat',
+		'puppy',
+		'key',
+		'theme',
+		'syntax',
+		'command',
+		'speaker',
+		'media',
+		'video',
+		'music',
+		'song',
+		'window',
+		'hub',
+		'balloon',
+		'air',
+		'network',
+		'navigator',
+		'field',
+		'box',
+		'sound',
+		'smash',
+		'railway',
+		'train',
+		'bus',
+		'car',
+		'airplane',
+		'plane',
+		'keyboard',
+		'board',
+		'cable',
+		'streak',
+		'ship',
+		'boat',
+		'ufo',
+		'object',
+		'obstacle',
+		'cage',
+		'rabbit'
+	];
+	
+	var tnum = random.choice(adjectives) + '-' + random.choice(nouns) + '-' + rndval('abcdef0123456789', 8);
+	
+	// 경우의 수: 38 * 45 * 16^8 = 7,344,394,076,160가지
 	
 	while(1) {
 		await curs.execute("select tnum from threads where tnum = ?", [tnum]);
 		if(!curs.fetchall().length) break;
-		tnum = rndval('abcdef0123456789', 32);
+		tnum = random.choice(adjectives) + '-' + random.choice(nouns) + '-' + rndval('abcdef0123456789', 8);
 	}
 	
 	curs.execute("insert into threads (title, topic, status, time, tnum) values (?, ?, ?, ?, ?)",
