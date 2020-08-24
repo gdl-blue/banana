@@ -144,7 +144,7 @@ wiki.get('/member/starred_documents/categories', async (req, res) => {
 wiki.post('/member/starred_documents/categories', async (req, res) => {
 	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/starred_documents'));
 	
-	if(req.body['category'] == '분류되지 않은 문서') {
+	if(req.body['category'].replace(/^\s{0,}/, '').replace(/\s{0,}$/, '') == '분류되지 않은 문서') {
 		return res.send(await showError(req, 'invalid_category_name'));
 	}
 	
@@ -162,4 +162,53 @@ wiki.post('/member/starred_documents/categories', async (req, res) => {
 	}
 	
 	res.redirect('/member/starred_documents/categories');
+});
+
+wiki.get('/member/starred_documents/categorize', async (req, res) => {
+	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/starred_documents'));
+	
+	const title = req.query['document'];
+	if(!title) return res.send(await showError(req, 'invalid_body'));  // body는 아님
+	
+	var options = '';
+	
+	var dbdata = await curs.execute("select name from star_categories where username = ?", [ip_check(req)]);
+	dbdata.push({ name: '분류되지 않은 문서' });
+	
+	for(cate of dbdata) {
+		options += '<option>' + cate.name + '</option>';
+	}
+	
+	res.send(await render(req, '문서 분류 변경', `
+		<form method=post class=settings-section>
+			<div class=form-group>
+				<label>분류 이름:</label><br>
+				<select size=10 class=form-control id=categorySelect name=category>
+					${options}
+				</select>
+			</div>
+			
+			<div class=btns>
+				<button type=submit class="btn btn-info" style="width: 100px;">확인</button>
+			</div>
+		</form>
+	`));
+});
+
+wiki.post('/member/starred_documents/categorize', async (req, res) => {
+	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/starred_documents'));
+	
+	const title    = req.query['document'];
+	const category = req.body['category'];
+	if(!title || !category) return res.send(await showError(req, 'invalid_body'));  // body는 아님
+	
+	if(!(await curs.execute("select name from star_categories where username = ? and name = ?", [ip_check(req), category])).length) {
+		if(!(await curs.execute("select name from star_categories where username = ?", [ip_check(req)])).length > 120) {
+			await curs.execute("insert into star_categories (name, username) values (?, ?)", [category, ip_check(req)]);
+		}
+	}
+	
+	await curs.execute("update stars set category = ? where username = ? and title = ?", [category, ip_check(req), title]);
+	
+	res.redirect('/member/starred_documents');
 });
