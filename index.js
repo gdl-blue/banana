@@ -1336,56 +1336,58 @@ async function showError(req, code) {
 
 function ip_pas(ip = '', ismember = '', isadmin = null) {
 	// https://www.w3schools.com/howto/howto_css_glowing_text.asp
-	var color = ' style="color: x;"';
+	var color = 'color: x;';
 	const glowstyle = ' text-shadow: 0 0 40px #fff, 0 0 40px #fff, 0 0 40px #fff, 0 0 40px #fff, 0 0 10px #fff, 0 0 10px #fff, 0 0 10px #fff;';
 	
 	if(ismember == 'author') {
 		if(getperm('developer', ip)) {
-			color = ' style="color: red;' + glowstyle + '"';
+			color = 'color: red;' + glowstyle;
 		}
 		else if(getperm('head_admin', ip) || getperm('grant', ip)) {
-			color = ' style="color: rgb(251, 196, 4);' + glowstyle + '"';
+			color = 'color: rgb(251, 196, 4);' + glowstyle;
 		}
 		else if(getperm('tribune', ip)) {
-			color = ' style="color: #00C8C8;' + glowstyle + '"';
+			color = 'color: #00C8C8;' + glowstyle;
 		}
 		else if(getperm('admin', ip)) {
-			color = ' style="color: rgb(72, 164, 114);' + glowstyle + '"';
+			color = 'color: rgb(72, 164, 114);' + glowstyle;
 		}
 		else if(getperm('arbiter', ip)) {
-			color = ' style="color: rgb(215, 21, 167);' + glowstyle + '"';
+			color = 'color: rgb(215, 21, 167);' + glowstyle;
 		}
 		else if(getperm('login_history', ip)) {
-			color = ' style="color: rgb(115, 54, 182);' + glowstyle + '"';
+			color = 'color: rgb(115, 54, 182);' + glowstyle;
 		}
 		else if(getperm('highspeed', ip)) {
-			color = ' style="color: rgb(57, 136, 179);' + glowstyle + '"';
+			color = 'color: rgb(57, 136, 179);' + glowstyle;
 		}
 		else {
-			color = ' style="' + glowstyle + '"';
+			color = glowstyle;
 		}
+	} else {
+		color = glowstyle;
 	}
 	
 	if(isadmin != null) {
 		if(ismember == 'author') {
 			if(isadmin == '1') {
-				return `<strong><a${color} href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
+				return `<a style="font-weight: bold; ${color}" href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a>`;
 			}
-			return `<a${color} href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a>`;
+			return `<a style="${color}" href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a>`;
 		} else {
 			if(isadmin == '1') {
 				if(config.getString('ip2md5', '0') == '1') return '<strong>' + md5(ip).slice(0, 6) + '</strong>';
-				return `<strong><a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a></strong>`;
+				return `<a style="font-weight: bold;" href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
 			}
 			if(config.getString('ip2md5', '0') == '1') return md5(ip).slice(0, 6);
-			return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
+			return `<a style="${color}" href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
 		}
 	} else {
 		if(ismember == 'author') {
-			return `<strong><a${color} href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a></strong>`;
+			return `<a style="font-weight: bold; ${color}" href="/w/사용자:${encodeURIComponent(ip)}">${html.escape(ip)}</a>`;
 		} else {
 			if(config.getString('ip2md5', '0') == '1') return md5(ip).slice(0, 6);
-			return `<a href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
+			return `<a style="${color}" href="/contribution/ip/${encodeURIComponent(ip)}/document">${html.escape(ip)}</a>`;
 		}
 	}
 }
