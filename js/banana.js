@@ -102,7 +102,8 @@ $(function() {
 				'type': addbtn.parent().parent().parent().attr('data-acltype'),
 				'value': addbtn.parent().prev().prev().prev().val(),
 				'mode': 'add',
-				'not': addbtn.parent().prev().is(":checked")
+				'not': (addbtn.parent().parent().parent().attr('data-action') == 'allow') ? (addbtn.parent().prev().prev().find('> input').is(":checked") ? 'on' : undefined) : (addbtn.parent().prev().find('> input').is(":checked") ? 'on' : undefined),
+				'high': (addbtn.parent().parent().parent().attr('data-action') == 'allow') ? (addbtn.parent().prev().find('> input').is(":checked") ? 'on' : undefined) : undefined
 			},
 			dataType: 'text',
 			success: function aclAddSuccess(res) {
