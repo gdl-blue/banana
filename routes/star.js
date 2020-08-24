@@ -61,16 +61,19 @@ wiki.get('/member/starred_documents', async (req, res) => {
 	dbdata.push({ name: '분류되지 않은 문서' });
 	
 	for(cate of dbdata) {
-		content += '<h2 class=wiki-heading>' + cate['name'] + '</h2> <div class=wiki-heading-content><ul class=wiki-list>';
-		
 		navbar += '<li><a href="/member/starred_documents?category=' + encodeURIComponent(cate.name) + '">[' + html.escape(cate.name) + ']</a></li>';
+		
+		if(req.query['category'] && cate.name != req.query['category']) continue;
+		
+		content += '<h2 class=wiki-heading>' + cate['name'] + '</h2> <div class=wiki-heading-content><ul class=wiki-list>';
 		
 		for(doc of (await curs.execute("select title, lastedit from stars where username = ? and category = ? order by cast(lastedit as integer) desc", [ip_check(req), cate['name']]))) {
 			content += `
 				<li>
 					${generateTime(toDate(doc.lastedit), 'm월 d일 h시 i분')}에 수정됨 - <a href="${encodeURIComponent(doc.title)}">${html.escape(doc.title)}</a>
-					<a href="/member/starred_documents/categorize?document=${encodeURIComponent(doc.title)}"> [분류 이동]</a>
-					<a href="/member/unstar/${encodeURIComponent(doc.title)}"> [제거]</a>
+					<a href="/member/starred_documents/categorize?document=${encodeURIComponent(doc.title)}"> [분류 변경]</a>
+					<a href="/member/unstar/${encodeURIComponent(doc.title)}"> [주시 해제]</a>
+					<a href="/history/${encodeURIComponent(doc.title)}"> [역사]</a>
 				</li>
 			`;
 		}
@@ -134,7 +137,7 @@ wiki.get('/member/starred_documents/categories', async (req, res) => {
 	
 	content += '</tbody></table>';
 	
-	res.send(await render(req, '분류 추가', content));
+	res.send(await render(req, '분류 관리', content));
 });
 
 wiki.post('/member/starred_documents/categories', async (req, res) => {
