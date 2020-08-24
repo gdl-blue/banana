@@ -55,6 +55,7 @@ wiki.get('/member/starred_documents', async (req, res) => {
 	var navbar = `
 		<ol class="breadcrumb link-nav">
 			<li><a href="/member/starred_documents/categories">[분류 관리]</a></li>
+			<li><a href="/member/starred_documents">[전체]</a></li>
 	`;
 	
 	var dbdata = await curs.execute("select name from star_categories where username = ?", [ip_check(req)]);
