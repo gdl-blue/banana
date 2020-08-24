@@ -12,7 +12,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 		return;
 	}
 	
-	await curs.execute("select id, tnum, time, username, ismember from res \
+	var dbdata = await curs.execute("select id, tnum, time, username, ismember from res \
 				where cast(time as integer) >= ? and ismember = ? and username = ? order by cast(time as integer) desc", [
 					Number(getTime()) - 5184000000, ismember, username
 				]);
@@ -43,7 +43,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 			<tbody id>
 	`;
 	
-	const dd = curs.fetchall();
+	const dd = dbdata;
 	
 	for(row of dd) {
 		await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [row['tnum']]);
@@ -51,8 +51,8 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 			continue;
 		}
 		
-		await curs.execute("select title, topic from threads where tnum = ?", [row['tnum']]);
-		const td = curs.fetchall()[0];
+		var dbdata2 = await curs.execute("select title, topic from threads where tnum = ?", [row['tnum']]);
+		const td = dbdata2[0];
 		
 		content += `
 				<tr>

@@ -67,19 +67,19 @@ wiki.get(/^\/acl\/(.*)/, async function aclControlPanel(req, res) {
 			for(var acl=0; acl<dispname.length; acl++) {
 				var ret1 = '', ret2 = '';
 			
-				await curs.execute("select value, notval, hipri from acl where action = ? and title = ? and type = ? order by value", [
+				var dbdata = await curs.execute("select value, notval, hipri from acl where action = ? and title = ? and type = ? order by value", [
 					'allow', title, aclname[acl]
 				]);
 				
-				for(var aclitm of curs.fetchall()) {
+				for(var aclitm of dbdata) {
 					ret1 += `<option>${aclitm['not'] == '1' ? 'not ' : ''}${aclitm['value']}${aclitm['hipri'] == '1' ? '_h' : ''}</option>`;
 				}
 				
-				await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+				var dbdata = await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
 					'deny', title, aclname[acl]
 				]);
 				
-				for(var aclitm of curs.fetchall()) {
+				for(var aclitm of dbdata) {
 					ret2 += `<option>${aclitm['notval'] == '1' ? 'not ' : ''}${aclitm['value']}</option>`;
 				}
 				
@@ -201,17 +201,16 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 			
 			var rev = 1;
 			
-			await curs.execute("select rev from history where title = ? order by CAST(rev AS INTEGER) desc limit 1", [title]);
+			var dbdata = await curs.execute("select rev from history where title = ? order by CAST(rev AS INTEGER) desc limit 1", [title]);
 			try {
-				rev = Number(curs.fetchall()[0]['rev']) + 1;
+				rev = Number(dbdata[0]['rev']) + 1;
 			} catch(e) {
 				rev = 0 + 1;
 			}
 			
 			var dc = '';
 			
-			await curs.execute("select content from documents where title = ?", [title]);
-			const asdf = curs.fetchall();
+			const asdf = await curs.execute("select content from documents where title = ?", [title]);
 			
 			if(asdf.length) dc = asdf[0]['content'];
 			
@@ -222,11 +221,11 @@ wiki.post(/^\/acl\/(.*)/, async function setACL(req, res) {
 			
 			var retval = '';
 			
-			await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
+			var dbdata = await curs.execute("select value, notval from acl where action = ? and title = ? and type = ? order by value", [
 				action, title, type
 			]);
 			
-			for(var acl of curs.fetchall()) {
+			for(var acl of dbdata) {
 				retval += `<option>${acl['not'] == '1' ? 'not ' : ''}${acl['value']}</option>`;
 			}
 			

@@ -806,13 +806,13 @@ async function isBanned(req, ismember = '', username = '') {
 	
 	await curs.execute("delete from banned_users where cast(startingdate as integer) > ?", new Date().getTime());
 	
-	await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req, 1), ismember]);
-	if(curs.fetchall().length) return true;
+	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req, 1), ismember]);
+	if(dbdata.length) return true;
 	
-	await curs.execute("select username from banned_users where username = ? and ismember = ? and al = '0'", [ip_check(req, 1), ismember]);
-	if(curs.fetchall().length) return true;
+	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = ? and al = '0'", [ip_check(req, 1), ismember]);
+	if(dbdata.length) return true;
 	
-	await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req), ismember]);
+	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req), ismember]);
 }
 
 const ban_check = isBanned;
@@ -1007,8 +1007,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	var user_document_discuss = false;
 	
 	if(islogin(req)) {
-		await curs.execute("select topic from threads where title = ? and (status = 'normal' or status = 'pause')", ['사용자:' + ip_check(req)]);
-		if(curs.fetchall().length) {
+		var dbdata = await curs.execute("select topic from threads where title = ? and (status = 'normal' or status = 'pause')", ['사용자:' + ip_check(req)]);
+		if(dbdata.length) {
 			user_document_discuss = true;
 		}
 	}
@@ -1428,14 +1428,14 @@ async function getacl(req, title, action) {
 		case 'action-based':
 			var fullacllst = [];
 			
-			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
-			fullacllst = fullacllst.concat(curs.fetchall());
+			var dbdata = await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
+			fullacllst = fullacllst.concat(dbdata);
 			
-			await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
-			fullacllst = fullacllst.concat(curs.fetchall());
+			var dbdata = await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
+			fullacllst = fullacllst.concat(dbdata);
 			
-			await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
-			fullacllst = fullacllst.concat(curs.fetchall());
+			var dbdata = await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and title = ? and type = ?", [title, action]);
+			fullacllst = fullacllst.concat(dbdata);
 			
 			// print(action)
 			// print(fullacllst)
@@ -1452,14 +1452,14 @@ async function getacl(req, title, action) {
 				
 				title = ns + ':';
 			
-				await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
-				fullacllst = fullacllst.concat(curs.fetchall());
+				var dbdata = await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);
+				fullacllst = fullacllst.concat(dbdata);
 				
-				await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
-				fullacllst = fullacllst.concat(curs.fetchall());
+				var dbdata = await curs.execute("select action, value, notval, hipri from acl where action = 'deny' and title = ? and type = ?", [title, action]);
+				fullacllst = fullacllst.concat(dbdata);
 				
-				await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and not hipri = '1' and title = ? and type = ?", [title, action]);
-				fullacllst = fullacllst.concat(curs.fetchall());
+				var dbdata = await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and not hipri = '1' and title = ? and type = ?", [title, action]);
+				fullacllst = fullacllst.concat(dbdata);
 				
 				// 왜 goto가 없어
 			}
@@ -1509,14 +1509,14 @@ async function getacl(req, title, action) {
 					break;case 'developer':
 						condition = getperm('developer', ip_check(req));
 					break;case 'document_creator':
-						await curs.execute("select username from history where title = ? and username = ? and ismember = ? and rev = '1' and advance = '(새 문서)'", [title, ip_check(req), islogin(req) ? 'author' : 'ip']);
-						condition = curs.fetchall().length;
+						var dbdata = await curs.execute("select username from history where title = ? and username = ? and ismember = ? and rev = '1' and advance = '(새 문서)'", [title, ip_check(req), islogin(req) ? 'author' : 'ip']);
+						condition = dbdata.length;
 					break;case 'document_last_edited':
-						await curs.execute("select username from history where title = ? and ismember = ? order by cast(rev as integer) desc limit 1", [title, islogin(req) ? 'author' : 'ip']);
-						condition = curs.fetchall()[0]['username'] == ip_check(req);
+						var dbdata = await curs.execute("select username from history where title = ? and ismember = ? order by cast(rev as integer) desc limit 1", [title, islogin(req) ? 'author' : 'ip']);
+						condition = dbdata[0]['username'] == ip_check(req);
 					break;case 'document_contributor':
-						await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
-						condition = curs.fetchall().length > 0;
+						var dbdata = await curs.execute("select username from history where title = ? and ismember = ? and username = ? limit 1", [title, islogin(req) ? 'author' : 'ip', ip_check(req)]);
+						condition = dbdata.length > 0;
 					break;case 'userdoc_owner':
 						var ns = '';
 				
@@ -2033,27 +2033,28 @@ wiki.get(/\/skins(.*)/, async function skinRootExplorer(req, res) {
 function mmmmmmmmmmmmmm() { return 0; }
 
 async function getThreadData(req, tnum, tid = '-1') {
-	await curs.execute("select id from res where tnum = ?", [tnum]);
+	var dbdata = await curs.execute("select id from res where tnum = ?", [tnum]);
 	
-	const rescount = curs.fetchall().length;
+	const rescount = dbdata.length;
 	
 	if(!rescount) { return ''; }
 	
-	await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
-	const fstusr = curs.fetchall()[0]['username'];
+	var dbdata = await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
+	const fstusr = dbdata[0]['username'];
 	
-	await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
-	const title = curs.fetchall()[0]['title'];
-	const topic = curs.fetchall()[0]['topic'];
-	const status = curs.fetchall()[0]['status'];
+	var dbdata = await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
+	const title = dbdata[0]['title'];
+	const topic = dbdata[0]['topic'];
+	const status = dbdata[0]['status'];
 	
+	var dbdata;
 	if(tid == '-1') {
-		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype, isadmin from res where tnum = ? order by cast(id as integer) asc", [tnum]);
+		dbdata = await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype, isadmin from res where tnum = ? order by cast(id as integer) asc", [tnum]);
 	} else {
-		await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype, isadmin from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
+		dbdata = await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype, isadmin from res where tnum = ? and (cast(id as integer) = 1 or (cast(id as integer) >= ? and cast(id as integer) < ?)) order by cast(id as integer) asc", [tnum, Number(tid), Number(tid) + 30]);
 	}
 	content = '';
-	for(rs of curs.fetchall()) {
+	for(rs of dbdata) {
 		var hbtn = ''
 		if((getperm('blind_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000)) {
 			hbtn += `

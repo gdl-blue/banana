@@ -10,8 +10,7 @@ wiki.get(/\/api\/v1\/w\/(.*)/, async function API_viewDocument_v1(req, res) {
 		return;
 	}
 	
-	await curs.execute("select content from documents where title = ?", [title]);
-	const rawContent = curs.fetchall();
+	const rawContent = await curs.execute("select content from documents where title = ?", [title]);
 
 	var content = '';
 	
@@ -72,8 +71,7 @@ wiki.get(/\/api\/v1\/raw\/(.*)/, async function API_viewRaw_v1(req, res) {
 		return;
 	}
 	
-	await curs.execute("select content from documents where title = ?", [title]);
-	const rawContent = curs.fetchall();
+	const rawContent = await curs.execute("select content from documents where title = ?", [title]);
 
 	var content = '';
 	
@@ -158,7 +156,7 @@ wiki.get(/\/api\/v1\/history\/(.*)/, async function API_viewHistory_v1(req, res)
 		return;
 	}
 	
-	await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+	var dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and cast(rev as integer) >= ? and cast(rev as integer) <= ? order by cast(rev as integer) desc limit 30",
 						[title, atoi(start), atoi(end)]);
 	var ret = {
@@ -170,7 +168,7 @@ wiki.get(/\/api\/v1\/history\/(.*)/, async function API_viewHistory_v1(req, res)
 	
 	var cnt = 0;
 	
-	for(var row of curs.fetchall()) {
+	for(var row of dbdata) {
 		ret[row['rev']] = {
 			rev: row['rev'],
 			timestamp: row['time'],
@@ -226,9 +224,9 @@ wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
 		return;
 	}
 	
-	await curs.execute("select id from res where tnum = ?", [tnum]);
+	var dbdata = await curs.execute("select id from res where tnum = ?", [tnum]);
 	
-	const rescount = curs.fetchall().length;
+	const rescount = dbdata.length;
 	
 	if(!rescount) { 
 		res.status(400).json({
@@ -238,15 +236,15 @@ wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
 		});
 	}
 	
-	await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
-	const fstusr = curs.fetchall()[0]['username'];
+	var dbdata = await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
+	const fstusr = dbdata[0]['username'];
 	
-	await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
-	const title = curs.fetchall()[0]['title'];
-	const topic = curs.fetchall()[0]['topic'];
-	const status = curs.fetchall()[0]['status'];
+	var dbdata = await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
+	const title = dbdata[0]['title'];
+	const topic = dbdata[0]['topic'];
+	const status = dbdata[0]['status'];
 	
-	await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype from res where tnum = ? and (cast(id as integer) >= ? and cast(id as integer) <= ?) order by cast(id as integer) asc", [tnum, Number(start), Number(end)]);
+	var dbdata = await curs.execute("select id, content, username, time, hidden, hider, status, ismember, stype from res where tnum = ? and (cast(id as integer) >= ? and cast(id as integer) <= ?) order by cast(id as integer) asc", [tnum, Number(start), Number(end)]);
 
 	content = '';
 	var ret = {
@@ -256,7 +254,7 @@ wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
 		thread_id: tnum
 	};
 	
-	for(rs of curs.fetchall()) {
+	for(rs of dbdata) {
 		ret[rs['id']] = {
 			id: rs['id'],
 			hidden: rs['hidden'] == '1' || rs['hidden'] == 'O' ? true : false,

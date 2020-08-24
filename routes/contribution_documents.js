@@ -21,7 +21,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 			flag = " and advance = '(%되돌림)'";
 	}
 	
-	await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+	var dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 				where ismember = ? and username = ? " + flag + " order by cast(time as integer) desc limit 1500", [
 					ismember, username
 				]);
@@ -58,7 +58,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 			<tbody id>
 	`;
 	
-	for(row of curs.fetchall()) {
+	for(row of dbdata) {
 		content += `
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>

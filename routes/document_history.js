@@ -13,24 +13,24 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		
 		return;
 	}
-	
+	var dbdata;
 	if(from) {
-		await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+		dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and (cast(rev as integer) <= ? AND cast(rev as integer) > ?) \
 						order by cast(rev as integer) desc",
 						[title, Number(from), Number(from) - 30]);
 	} else if(until) {
-		await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+		dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and (cast(rev as integer) >= ? AND cast(rev as integer) < ?) \
 						order by cast(rev as integer) desc",
 						[title, Number(until), Number(until) + 30]);
 	} else {
-		await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+		dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? order by cast(rev as integer) desc limit 30",
 						[title]);
 	}
 	
-	if(!curs.fetchall().length) {
+	if(!dbdata.length) {
 		res.send(await showError(req, 'document_not_found'));
 		return;
 	}
@@ -60,7 +60,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	
 	var trlist = '';
 	
-	for(row of curs.fetchall()) {
+	for(row of dbdata) {
 		if(!set) { fr = row.rev; set = 1 }
 		lr = row.rev;
 		

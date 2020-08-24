@@ -9,19 +9,20 @@ wiki.get('/BlockHistory', async function(req, res) {
 		if(!req.xhr) return res.send('Bad Request');
 		
 		var content = '<div class=wiki-article style="display: none;"><ul class=wiki-list>';
+		var dbdata;
 		
 		// 일단 기여내역 차단기록 검색만
 		if(req.query['from']) {
-			await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where username = ? startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['query'], req.query['from']]);
+			dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where username = ? startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['query'], req.query['from']]);
 		}
 		else if(req.query['until']) {
-			await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where username = ? startingdate >= ? order by cast(startingdate as integer) desc limit 100", [req.query['query'], req.query['until']]);
+			dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where username = ? startingdate >= ? order by cast(startingdate as integer) desc limit 100", [req.query['query'], req.query['until']]);
 		}
 		else {
-			await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order username = ? by cast(startingdate as integer) desc limit 100", [req.query['query']]);
+			dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order username = ? by cast(startingdate as integer) desc limit 100", [req.query['query']]);
 		}
 		
-		for(item of curs.fetchall()) {
+		for(item of dbdata) {
 			// 곧 할 예정
 		}
 		
@@ -30,14 +31,16 @@ wiki.get('/BlockHistory', async function(req, res) {
 		return res.send(content);
 	}
 	
+	var dbdata;
+	
 	if(req.query['from']) {
-		await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['from']]);
+		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['from']]);
 	}
 	else if(req.query['until']) {
-		await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where startingdate >= ? order by cast(startingdate as integer) desc limit 100", [req.query['until']]);
+		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where startingdate >= ? order by cast(startingdate as integer) desc limit 100", [req.query['until']]);
 	}
 	else {
-		await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order by cast(startingdate as integer) desc limit 100");
+		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order by cast(startingdate as integer) desc limit 100");
 	}
 	
 	var content = `
@@ -71,7 +74,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 	
 	var trlist = '';
 	
-	for(row of curs.fetchall()) {
+	for(row of dbdata) {
 		if(req.query['until']) {
 			if(!set) {
 				ld = row.startingdate; set = 1;
@@ -143,20 +146,22 @@ wiki.get('/BlockHistory', async function(req, res) {
 });
 
 wiki.get('/LegacyBlockHistory', async function(req, res) {
+	var dbdata;
+	
 	if(req.query['from']) {
-		await curs.execute("select block, end, today, blocker, why, band, ipacl from rb where today <= ? order by today desc limit 100", [req.query['from']]);
+		dbdata = await curs.execute("select block, end, today, blocker, why, band, ipacl from rb where today <= ? order by today desc limit 100", [req.query['from']]);
 	}
 	else if(req.query['until']) {
-		await curs.execute("select block, end, today, blocker, why, band, ipacl from rb where today >= ? order by today asc limit 100", [req.query['until']]);
+		dbdata = await curs.execute("select block, end, today, blocker, why, band, ipacl from rb where today >= ? order by today asc limit 100", [req.query['until']]);
 	}
 	else {
-		await curs.execute("select block, end, today, blocker, why, band, ipacl from rb order by today desc limit 100");
+		dbdata = await curs.execute("select block, end, today, blocker, why, band, ipacl from rb order by today desc limit 100");
 	}
 	
 	var content = `
 		<ul class=wiki-list>
 	`;
-	const cf = curs.fetchall();
+	const cf = dbdata;
 	
 	var set = 0;
 	
