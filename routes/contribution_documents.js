@@ -12,8 +12,17 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		return;
 	}
 	
+	var flag = '';
+	
+	switch(req.query['logtype']) {
+		case 'create':
+			flag = " and (advance = '(새 문서)' or advance = '(문서 생성)')";
+		break; case 'revert':
+			flag = " and advance = '(%되돌림)'";
+	}
+	
 	await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-				where ismember = ? and username = ? order by cast(time as integer) desc limit 1500", [
+				where ismember = ? and username = ? " + flag + " order by cast(time as integer) desc limit 1500", [
 					ismember, username
 				]);
 	
@@ -25,6 +34,9 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 			<ol class="breadcrumb link-nav">
 				<li><strong>[문서]</strong></li>
 				<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
+				<li>&nbsp;</li>
+				<li><a href="?logtype=create">[새 문서]</a></li>
+				<li><a href="?logtype=revert">[되돌림]</a></li>
 			</ol>
 		</div>
 		
