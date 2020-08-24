@@ -107,6 +107,11 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 						<a href="/member/star_thread/${slug}">[이 토론 주시(미구현)] </a>
 						<a href="/member/unstar_thread/${slug}">[이 토론 주시 해제(미구현)] </a>
 					</div>
+					
+					<div class=form-group>
+						<button id=hideBlindRes>숨겨진 댓글 숨기기</button>
+						<button id=showBlindRes>숨겨진 댓글 표시</button>
+					</div>
 	`;
 	
 	if(getperm('update_thread_status', ip_check(req))) {

@@ -2025,7 +2025,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 		}
 		
 		content += `
-			<div class=res-wrapper data-id="${rs['id']}">
+			<div class=res-wrapper data-id="${rs['id']}" data-hidden="${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'true' : 'false'}">
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
 						<span class=num>

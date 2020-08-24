@@ -4,6 +4,16 @@
 */
 
 $(function() {
+	$('head').append('<style id=hide-blind-res></style>');
+	
+	$('button#hideBlindRes').click(function() {
+		$('style#hide-blind-res').text('div.res-wrapper[data-hidden="true"] { display: none; }');
+	});
+	
+	$('button#showBlindRes').click(function() {
+		$('style#hide-blind-res').text('');
+	});
+	
 	$('.noscript-alert').remove();
 	$('.for-script').show();
 	
