@@ -44,26 +44,39 @@ wiki.get(/\/member\/unstar\/(.*)/, async (req, res) => {
 
 
 wiki.get('/member/starred_documents', async (req, res) => {
-	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/star/' + title));
+	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/starred_documents'));
 	
 	// 'stars': ['title', 'username', 'lastedit', 'category']
 	// 'star_categories': ['name', 'username']
 	
 	var content = '';
+	var navbar = `
+		<ol class="breadcrumb link-nav">
+			<li><a href="/member/starred_documents/categories">[분류 관리]</a></li>
+	`;
 	
 	var dbdata = await curs.execute("select name from star_categories where username = ?", [ip_check(req)]);
-	dbdata.concat([{ name: '분류되지 않은 문서' }]);
+	dbdata.push({ name: '분류되지 않은 문서' });
+	
 	for(cate of dbdata) {
 		content += '<h2 class=wiki-heading>' + cate['name'] + '</h2> <div class=wiki-heading-content><ul class=wiki-list>';
 		
+		navbar += '<li><a href="/member/starred_documents?category=' + encodeURIComponent(cate.name) + '">[' + html.escape(cate.name) + ']</a></li>';
+		
 		for(doc of (await curs.execute("select title, lastedit from stars where username = ? and category = ?", [ip_check(req), cate['name']]))) {
 			content += `
-				<li>${generateTime(toDate(doc.lastedit), timeFormat)}에 수정 - <a href="${encodeURIComponent(doc.title)}">${html.escape(doc.title)}</a></li>
+				<li>
+					${generateTime(toDate(doc.lastedit), 'm월 d일 h시 i분')}에 수정됨 - <a href="${encodeURIComponent(doc.title)}">${html.escape(doc.title)}</a>
+					<a href="/member/starred_documents/categorize?document=${encodeURIComponent(doc.title)}"> [분류 이동]</a>
+					<a href="/member/starred_documents/remove?document=${encodeURIComponent(doc.title)}"> [제거]</a>
+				</li>
 			`;
 		}
 		
 		content += '</ul></div>';
 	}
+	
+	navbar += '</ol>';
 
-	res.send(await render(req, '주시문서 목록', content));
+	res.send(await render(req, '주시문서 목록', navbar + content));
 });
