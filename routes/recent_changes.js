@@ -37,7 +37,9 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 			<li><a href="?logtype=move">[제목변경]</a></li>
 			<li><a href="?logtype=revert">[되돌림]</a></li>
 		</ol>
-		
+	`;
+	
+	var tabledata = `
 		<table class="table table-hover">
 			<colgroup>
 				<col style="width: 100px;">
@@ -57,7 +59,7 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 	`;
 	
 	for(row of curs.fetchall()) {
-		content += `
+		tabledata += `
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
 						${generateTime(toDate(row['time']), 'H시 i분')}
@@ -94,7 +96,7 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 		`;
 		
 		if(row['log'].length > 0 || row['advance'].length > 0) {
-			content += `
+			tabledata += `
 				<td colspan="3" style="padding-left: 1.5rem;">
 					${row['log']} <i>${row['advance']}</i>
 				</td>
@@ -102,10 +104,12 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 		}
 	}
 	
-	content += `
+	tabledata += `
 			</tbody>
 		</table>
 	`;
 	
-	res.send(await render(req, '최근 변경', content, {}, _, _, 'recent'));
+	if(req.query['tableonly'] == '1') return res.send(tabledata);
+	
+	res.send(await render(req, '최근 변경', content + tabledata, {}, _, _, 'recent'));
 });

@@ -407,5 +407,25 @@ $(function() {
 		);
 	});
 	
+	$('.wiki-heading').click(function() {
+		if($(this).next().attr('class') == 'wiki-heading-content') {
+			$(this).next().toggle();
+		}
+	});
+	
+	if(location.pathname == '/RecentChanges') {
+		var timer = setInterval(() => {
+			$.ajax({
+				type: 'GET',
+				url: '/RecentChanges?tableonly=1',
+				data: {},
+				dataType: 'html',
+				success: function(d) {
+					$('table.table.table-hover')[0].outerHTML = d;
+				}
+			});
+		}, 3000);
+	}
+	
 	window.discussPollStart = discussPollStart;
 });

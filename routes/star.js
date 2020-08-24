@@ -126,7 +126,7 @@ wiki.get('/member/starred_documents/categories', async (req, res) => {
 			<tr>
 				<td>${html.escape(cate.name)}</td>
 				<td>
-					<form>
+					<form method=post onsubmit="return confirm('분류 안의 문서들까지 지워집니다.');">
 						<input type=hidden name=category value="${html.escape(cate.name)}">
 						<input type=hidden name=submittype value=delete>
 						<button type=submit class="btn btn-danger btn-sm">삭제</button>
@@ -150,6 +150,7 @@ wiki.post('/member/starred_documents/categories', async (req, res) => {
 	
 	if(req.body['submittype'] == 'delete') {
 		await curs.execute("delete from star_categories where username = ? and name = ?", [ip_check(req), req.body['category']]);
+		await curs.execute("delete from stars where username = ? and category = ?", [ip_check(req), req.body['category']]);
 	} else {
 		if((await curs.execute("select name from star_categories where username = ? and name = ?", [ip_check(req), req.body['category']])).length) {
 			return res.send(await showError(req, 'category_exists'));
