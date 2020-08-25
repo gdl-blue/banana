@@ -66,14 +66,15 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 					</td>
 					
 					<td>
-						<a href="/w/${encodeURIComponent(row['title'])}">${html.escape(row['title'])}</a> 
+						<strong>r${row['rev']}</strong> <a href="/w/${encodeURIComponent(row['title'])}">${html.escape(row['title'])}</a> 
 						( <a href="/history/${encodeURIComponent(row['title'])}">역사</a> 
 						${
 								Number(row['rev']) > 1
 								? ' | <a \href="/diff/' + encodeURIComponent(row['title']) + '?rev=' + row['rev'] + '&oldrev=' + String(Number(row['rev']) - 1) + '">비교</a>'
 								: ''
 						} 
-						| <a href="/discuss/${encodeURIComponent(row['title'])}">토론</a> )
+						| <a href="/revert/${encodeURIComponent(row['title'])}?rev=${atoi(row['rev']) - 1}">롤백</a>
+						| <a href="/edit/${encodeURIComponent(row['title'])}">편집</a> )
 						
 						[<span style="color: ${
 							(
