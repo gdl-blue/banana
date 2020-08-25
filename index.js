@@ -1312,7 +1312,12 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
 				*/
 				
-				return nunjucks.renderString(tmplt, nunvars);
+				return new Promise((resolve, reject) => {
+					nunjucks.renderString(tmplt, nunvars, (e, r) => {
+						if(e) return reject(e);
+						resolve(r);
+					});
+				});
 			break; case 'the seed':
 				if(varlist['__isSkinSettingsPage'] && !fs.existsSync('./skins/' + getSkin(req) + '/views/settings.html')) {
 					templateVariables['content'] = '<h2>이 스킨은 스킨 설정 기능을 지원하지 않거나 동작 방식이 맞지 않습니다.</h2>';
