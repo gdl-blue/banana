@@ -960,50 +960,6 @@ async function fetchNamespaces() {
 }
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
-	swig.invalidateCache();
-	
-	// 비동기 화일읽기(readFileSync는 여러 사람이 쓴다면 부적절함)
-	async function readFile(p) {
-		return new Promise((resolve, reject) => {
-			fs.readFile(p, 'utf8', (e, r) => {
-				if(e) {
-					print(e);
-					reject(e);
-				} else {
-					resolve(r.toString());
-				}
-			});
-		});
-	}
-	
-	// 동일 이유로 작성
-	async function exists(p) {
-		return new Promise((resolve, reject) => {
-			fs.exists(p, 'utf8', (e, r) => {
-				if(e) {
-					print(e);
-					reject(e);
-				} else {
-					resolve(r.toString());
-				}
-			});
-		});
-	}
-	
-	// "
-	async function requireAsync(p) {
-		return new Promise((resolve, reject) => {
-			fs.readFile(p, 'utf8', (e, r) => {
-				if(e) {
-					print(e);
-					reject(e);
-				} else {
-					resolve( JSON.parse(r.toString()) );
-				}
-			});
-		});
-	}
-	
 	const skinInfo = {
 		title: title + subtitle,
 		viewName: viewname
@@ -1022,11 +978,11 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	var skinconfig;
 	
 	try {
-		skinconfig = await requireAsync("./skins/" + getSkin(req) + "/config.json");
+		skinconfig = require("./skins/" + getSkin(req) + "/config.json");
 	} catch(e) {
 		skinconfig = {
 			type: 'openNAMU'
-		};
+		}
 	}
 	
 	var template;
@@ -1078,8 +1034,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	위에서 보듯이 async await는 멀티쓰레딩 비슷하게 작동.
 	*/
 	try {
-		if(await requireAsync('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && exists('./skins/' + getSkin(req) + '/colors.scl')) {
-			const _dc = readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+		if(require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && fs.existsSync('./skins/' + getSkin(req) + '/colors.scl')) {
+			const _dc = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
 			mycolor = _dc;
 			if(islogin(req)) {
 				mycolor = getUserset(ip_check(req), 'color', _dc);
@@ -1087,8 +1043,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		}
 	} catch(e) {
 		try {
-			if(await requireAsync('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && exists('./skins/' + getSkin(req) + '/colors.scl')) {
-				mycolor = readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+			if(require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && fs.existsSync('./skins/' + getSkin(req) + '/colors.scl')) {
+				mycolor = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
 			}
 		} catch(e) {}
 	}
@@ -1280,13 +1236,11 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		};
 	}
 	
-	var templatefn = '';
-	
 	try {
 		switch(skintype.toLowerCase()) {
 			case 'opennamu':
 			case 'opennamu-seed':
-				var tmplt = await readFile('./skins/' + getSkin(req) + '/index.html');
+				var tmplt = fs.readFileSync('./skins/' + getSkin(req) + '/index.html').toString();
 				
 				/*
 				try {
@@ -1316,13 +1270,13 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			break; case 'the seed':
 				if(varlist['__isSkinSettingsPage'] && !fs.existsSync('./skins/' + getSkin(req) + '/views/settings.html')) {
 					templateVariables['content'] = '<h2>이 스킨은 스킨 설정 기능을 지원하지 않거나 동작 방식이 맞지 않습니다.</h2>';
-					templatefn = './skins/' + getSkin(req) + '/views/default.html';
+					output = swig.renderFile('./skins/' + getSkin(req) + '/views/default.html', { locals: templateVariables });
 				}
 				else if(varlist['__isSkinSettingsPage']) {
-					templatefn = './skins/' + getSkin(req) + '/views/settings.html';
+					output = swig.renderFile('./skins/' + getSkin(req) + '/views/settings.html', { locals: templateVariables });
 				}
 				else {
-					templatefn = './skins/' + getSkin(req) + '/views/default.html';
+					output = swig.renderFile('./skins/' + getSkin(req) + '/views/default.html', { locals: templateVariables });
 				}
 		}
 	} catch(e) {
@@ -1334,57 +1288,45 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			${content}`;
 	}
 	
-	if(!docViewnames.includes(viewname)) templateVariables['document'] = null;
+	// output = template(templateVariables);
 	
-	return new Promise((resolve, reject) => {
-		swig.compileFile(templatefn, {}, (e, r) => {
-			try {
-				output = r(templateVariables);
-			} catch(e) {
-				reject(e);
-			}
-			
-			if(e) reject(e);
+	if(skintype == 'the seed') {
+		var header = '<html><head>';
+		header += `
+			<title>${title}${subtitle} - ${config.getString('site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너']))}</title>
+			<meta charset=utf-8>
+			<meta name=generator content=banana>
+			<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+			<link rel="stylesheet" href="/css/banana.css">
+		`;
+		for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
+			header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
+		}
+		header += `
+			<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
+			<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
+			<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
+			<script type="text/javascript" src="/js/banana.js"></script>
+		`;
+		for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
+			header += '<script type="text/javascript" src="/skins/' + getSkin(req) + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
+		}
 		
-			if(skintype == 'the seed') {
-				var header = '<html><head>';
-				header += `
-					<title>${title}${subtitle} - ${config.getString('site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너']))}</title>
-					<meta charset=utf-8>
-					<meta name=generator content=banana>
-					<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-					<link rel="stylesheet" href="/css/banana.css">
-				`;
-				for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
-					header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
-				}
-				header += `
-					<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
-					<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
-					<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
-					<script type="text/javascript" src="/js/banana.js"></script>
-				`;
-				for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
-					header += '<script type="text/javascript" src="/skins/' + getSkin(req) + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
-				}
-				
-				header += skinconfig['additional_heads'];
-				header += '</head><body class="';
-				
-				const bcll = skinconfig['body_classes'].length;
-				
-				for(var i=0; i<bcll; i++) {
-					header += skinconfig['body_classes'][i] + (i == bcll - 1 ? '' : ' ');
-				}
-				header += '">';
-				var footer = '</body></html>';
-				
-				resolve(header + output + footer);
-			} else {
-				resolve(output);
-			}
-		});
-	});
+		header += skinconfig['additional_heads'];
+		header += '</head><body class="';
+		
+		const bcll = skinconfig['body_classes'].length;
+		
+		for(var i=0; i<bcll; i++) {
+			header += skinconfig['body_classes'][i] + (i == bcll - 1 ? '' : ' ');
+		}
+		header += '">';
+		var footer = '</body></html>';
+		
+		return header + output + footer;
+	} else {
+		return output;
+	}
 }
 
 function fetchErrorString(code) {

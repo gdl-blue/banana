@@ -43,15 +43,15 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 		<table class="table table-hover">
 			<colgroup>
 				<col style="width: 100px;">
-				<col>
 				<col style="width: 22%;">
+				<col>
 			</colgroup>
 			
 			<thead id>
 				<tr>
 					<th>시간</th>
-					<th>문서</th>
 					<th>이름</th>
+					<th>문서</th>
 				</tr>
 			</thead>
 			
@@ -63,6 +63,10 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
 						${generateTime(toDate(row['time']), 'H시 i분')}
+					</td>
+					
+					<td>
+						${ip_pas(row['username'], row['ismember'])}
 					</td>
 					
 					<td>
@@ -88,10 +92,6 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 							)
 							
 						}; ${Math.abs(Number(row['changes'])) >= 1000 ? 'font-weight: bold;' : ''}">${row['changes']}</span>]
-					</td>
-					
-					<td>
-						${ip_pas(row['username'], row['ismember'])}
 					</td>
 				</tr>
 		`;
