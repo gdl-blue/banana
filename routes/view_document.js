@@ -28,6 +28,10 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			
 			return;
 		} else {
+			if(!rawContent.length) {
+				throw Error("(*^_^*)");
+			}
+			
 			if(req.query['rev']) {
 				rev = req.query['rev'];
 				
