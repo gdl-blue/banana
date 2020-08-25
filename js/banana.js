@@ -18,6 +18,38 @@ $(function() {
 		$('style#hide-blind-res').text('');
 	});
 	
+	function setCookie(name, val) {
+		var d = new Date(); d.setDate(d.getDate()+365);
+		document.cookie = escape(name) + '=' + escape(val) + ';'; /* + ';expires=' + d.toUTCString() + ';path=/'; */
+	}
+
+	function getCookie(name) {
+		var ret;
+
+		if(!document.cookie) return null;
+
+		const c = document.cookie.split(escape(name) + '=');
+		if(!(c.length >= 2)) return null;
+
+		return unescape(c[1].split(';')[0]);
+	}
+	
+	if(getCookie('time-cosmos') == '1') {
+		$('input#alwaysHideBlindRes')[0].checked = true;
+		
+		$('button#hideBlindRes').attr('disabled', '');
+		$('button#showBlindRes').removeAttr('disabled');
+		$('style#hide-blind-res').text('div.res-wrapper[data-hidden="true"] { display: none; }');
+	}
+	
+	$('input#alwaysHideBlindRes').change(function() {
+		if(this.checked) {
+			setCookie('time-cosmos', '1');
+		} else {
+			setCookie('time-cosmos', '0');
+		}
+	});
+	
 	$('.noscript-alert').remove();
 	$('.for-script').show();
 	

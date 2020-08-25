@@ -114,6 +114,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 					<div class=form-group>
 						<button id=hideBlindRes>숨겨진 댓글 숨기기</button>
 						<button id=showBlindRes disabled>숨겨진 댓글 표시</button>
+						<label><input id=alwaysHideBlindRes type=checkbox> 항상 숨기기</label>
 					</div>
 	`;
 	
