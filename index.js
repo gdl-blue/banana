@@ -959,50 +959,50 @@ async function fetchNamespaces() {
 	return ['문서', '틀', '분류', '파일', '사용자', config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])), '휴지통', '파일휴지통'];
 }
 
+// 비동기 화일읽기(readFileSync는 여러 사람이 쓴다면 부적절함)
+async function readFile(p) {
+	return new Promise((resolve, reject) => {
+		fs.readFile(p, 'utf8', (e, r) => {
+			if(e) {
+				print(e);
+				reject(e);
+			} else {
+				resolve(r.toString());
+			}
+		});
+	});
+}
+
+// 동일 이유로 작성
+async function exists(p) {
+	return new Promise((resolve, reject) => {
+		fs.exists(p, 'utf8', (e, r) => {
+			if(e) {
+				print(e);
+				reject(e);
+			} else {
+				resolve(r.toString());
+			}
+		});
+	});
+}
+
+// "
+async function requireAsync(p) {
+	return new Promise((resolve, reject) => {
+		fs.readFile(p, 'utf8', (e, r) => {
+			if(e) {
+				print(e);
+				reject(e);
+			} else {
+				resolve( JSON.parse(r.toString()) );
+			}
+		});
+	});
+}
+
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
 	swig.invalidateCache();
-	
-	// 비동기 화일읽기(readFileSync는 여러 사람이 쓴다면 부적절함)
-	async function readFile(p) {
-		return new Promise((resolve, reject) => {
-			fs.readFile(p, 'utf8', (e, r) => {
-				if(e) {
-					print(e);
-					reject(e);
-				} else {
-					resolve(r.toString());
-				}
-			});
-		});
-	}
-	
-	// 동일 이유로 작성
-	async function exists(p) {
-		return new Promise((resolve, reject) => {
-			fs.exists(p, 'utf8', (e, r) => {
-				if(e) {
-					print(e);
-					reject(e);
-				} else {
-					resolve(r.toString());
-				}
-			});
-		});
-	}
-	
-	// "
-	async function requireAsync(p) {
-		return new Promise((resolve, reject) => {
-			fs.readFile(p, 'utf8', (e, r) => {
-				if(e) {
-					print(e);
-					reject(e);
-				} else {
-					resolve( JSON.parse(r.toString()) );
-				}
-			});
-		});
-	}
 	
 	const skinInfo = {
 		title: title + subtitle,
@@ -1758,16 +1758,20 @@ for(pi of getPlugins('all')) {
 	}
 }
 
-wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropTheseedSkinFile(req, res) {
+wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function sendTheseedSkinFile(req, res) {
 	var skinname = req.params[0];
 	var filepath = req.params[1];
 	
-	try{if(require('./skins/' + skinname + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
+	if(skinname.includes('../') || filepath.includes('../')) {
+		return res.send(await showError(req, 'malicious_activity_detected'));
+	}
+	
+	try{if(await requireAsync('./skins/' + skinname + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
 		var skinname = req.params[0];
 		var filepath = req.params[1];
 		var skincfg;
 		try {
-			skincfg = require('./skins/' + skinname + '/config.json');
+			skincfg = await requireAsync('./skins/' + skinname + '/config.json');
 		} catch(e) {
 			skincfg = {
 				type: 'openNAMU'
@@ -1788,16 +1792,6 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropTheseedSkinFile(re
 			rootp += '/' + dir;
 		}
 		
-		try {
-			if(fs.lstatSync(rootp).isDirectory()) {
-				await fileExplorer(rootp, req, res);
-				return;
-			}
-		} catch(e) {
-			res.send(await showError(req, 'file_not_found'));
-			return;
-		}
-		
 		res.sendFile(fn, { root: rootp.replace('/' + fn, '') });
 		return;
 	}}catch(e){}
@@ -1811,26 +1805,20 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function dropTheseedSkinFile(re
 		rootp += '/' + dir;
 	}
 	
-	try {
-		if(fs.lstatSync(rootp).isDirectory()) {
-			await fileExplorer(rootp, req, res);
-			return;
-		}
-	} catch(e) {
-		res.send(await showError(req, 'file_not_found'));
-		return;
-	}
-	
-	
 	res.sendFile(fn, { root: rootp.replace('/' + fn, '') });
 });
 
-wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function dropOpennamuSkinFile(req, res) {
+wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function sendOpennamuSkinFile(req, res) {
 	const skinname = req.params[0];
 	const filepath = req.params[1];
+	
+	if(skinname.includes('../') || filepath.includes('../')) {
+		return res.send(await showError(req, 'malicious_activity_detected'));
+	}
+	
 	var skincfg;
 	try {
-		skincfg = require('./skins/' + skinname + '/config.json');
+		skincfg = await requireAsync('./skins/' + skinname + '/config.json');
 	} catch(e) {
 		skincfg = {
 			type: 'openNAMU'
@@ -1849,16 +1837,6 @@ wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function dropOpennamuSkinFile(r
 	var cnt = 0;
 	for(dir of afn) {
 		rootp += '/' + dir;
-	}
-	
-	try {
-		if(fs.lstatSync(rootp).isDirectory()) {
-			await fileExplorer(rootp, req, res);
-			return;
-		}
-	} catch(e) {
-		res.send(await showError(req, 'file_not_found'));
-		return;
 	}
 	
 	res.sendFile(fn, { root: rootp.replace('/' + fn, '') });
@@ -2082,17 +2060,12 @@ wiki.get('/', async function welcome(req, res) {
 	
 	req.session.welcomed = true;
 	
-	res.send(swig.render(fs.readFileSync('./welcome.html').toString(), { locals: {
+	res.send(swig.render(await readFile('./welcome.html').toString(), { locals: {
 		wiki_name: config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),
 		notice: config.getString('wiki.site_notice', ''),
 		range: range,
 		datetime: new Date().getTime()
 	} }));
-});
-
-wiki.get(/\/skins(.*)/, async function skinRootExplorer(req, res) {
-	const path = ('./skins' + req.params[0]).replace(/\/$/, '');
-	await fileExplorer(path, req, res);
 });
 
 function mmmmmmmmmmmmmm() { return 0; }
