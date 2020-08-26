@@ -1268,7 +1268,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	}
 	
 	const docViewnames = ['wiki', 'notfound', 'edit', 'thread', 'thread_list', 'thread_list_close',
-			'move', 'delete', 'xref', 'history', 'acl', 'edit_edit_request'];
+			'move', 'delete', 'xref', 'history', 'acl', 'edit_edit_request', 'revert'];
 	
 	const nslist = await fetchNamespaces();
 	
@@ -1497,6 +1497,8 @@ async function getacl(req, title, action) {
 	
 	switch(acltyp) {
 		case 'action-based':
+			if(action == 'revert') action = 'edit';
+		
 			var fullacllst = [];
 			
 			var dbdata = await curs.execute("select action, value, notval, hipri from acl where action = 'allow' and hipri = '1' and title = ? and type = ?", [title, action]);

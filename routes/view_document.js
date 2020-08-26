@@ -177,6 +177,25 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 					lstedt = Number(curs.fetchall()[0]['time']);
 					
 					if(title.startsWith('사용자:')) isUserDoc = true;
+					
+					if(rev) {
+						content = `
+							<form method=get>
+								<div class=form-group>
+									<label>리비전:</label><br />
+									<input type=number name=rev class=form-control value="${rev}" />
+								</div>
+								
+								<div class=btns>
+									<a class="btn btn-secondary" href="/w/${encodeURIComponent(title)}?rev=1">&lt;&lt;</a>
+									<a class="btn btn-secondary ${rev == '1' ? 'disabled' : ''}" ${rev == '1' ? 'disabled' : ''} href="/w/${encodeURIComponent(title)}?rev=${atoi(rev) - 1}">&lt; ${rev == '1' ? '' : atoi(rev) - 1}</a>
+									<button type=submit class="btn btn-info">이동</button>
+									<a class="btn btn-secondary" href="/w/${encodeURIComponent(title)}?rev=${atoi(rev) + 1}">${atoi(rev) + 1} &gt;</a>
+									<a class="btn btn-secondary" href="/w/${encodeURIComponent(title)}">&gt;&gt;</a>
+								</div>
+							</form>
+						` + content;
+					}
 		
 					res.status(httpstat).send(await render(req, title, content, {
 						star_count: 0,
