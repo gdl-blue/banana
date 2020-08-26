@@ -964,7 +964,7 @@ async function readFile(p) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(p, 'utf8', (e, r) => {
 			if(e) {
-				print(e);
+				console.error(e);
 				reject(e);
 			} else {
 				resolve(r.toString());
@@ -973,15 +973,16 @@ async function readFile(p) {
 	});
 }
 
-// 동일 이유로 작성
 async function exists(p) {
+	// fs.exists는 작동안함(Deprecated여도 쓸 수 있을 줄 알았는데 에러를 무조건 true로 반환하네;;)
+	
 	return new Promise((resolve, reject) => {
-		fs.exists(p, 'utf8', (e, r) => {
+		fs.readFile(p, (e, r) => {
+			// 화일이 없으니 에러
 			if(e) {
-				print(e);
-				reject(e);
+				resolve(false);
 			} else {
-				resolve(r.toString());
+				resolve(true);
 			}
 		});
 	});
@@ -990,9 +991,9 @@ async function exists(p) {
 // "
 async function requireAsync(p) {
 	return new Promise((resolve, reject) => {
-		fs.readFile(p, 'utf8', (e, r) => {
+		fs.readFile(p, (e, r) => {
 			if(e) {
-				print(e);
+				console.error(e);
 				reject(e);
 			} else {
 				resolve( JSON.parse(r.toString()) );
@@ -1002,8 +1003,6 @@ async function requireAsync(p) {
 }
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
-	swig.invalidateCache();
-	
 	const skinInfo = {
 		title: title + subtitle,
 		viewName: viewname
@@ -1077,9 +1076,14 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		
 	위에서 보듯이 async await는 멀티쓰레딩 비슷하게 작동.
 	*/
+	
+	const skcfg = await requireAsync('./skins/' + getSkin(req) + '/config.json');
+	
 	try {
-		if(await requireAsync('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
+		const sktyp = skcfg['type'].toLowerCase();
+		if(sktyp == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
 			const _dc = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+			
 			mycolor = _dc;
 			if(islogin(req)) {
 				mycolor = getUserset(ip_check(req), 'color', _dc);
@@ -1087,7 +1091,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		}
 	} catch(e) {
 		try {
-			if(await requireAsync('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
+			if(skcfg['type'].toLowerCase() == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
 				mycolor = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
 			}
 		} catch(e) {}
@@ -1766,7 +1770,9 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function sendTheseedSkinFile(re
 		return res.send(await showError(req, 'malicious_activity_detected'));
 	}
 	
-	try{if(await requireAsync('./skins/' + skinname + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
+	if(skinname.toLowerCase() == 'main_css') return res.send(await showError(req, 'file_not_found'));
+
+	try{if((await requireAsync('./skins/' + skinname + '/config.json'))['type'].toLowerCase() == 'opennamu-seed') {
 		var skinname = req.params[0];
 		var filepath = req.params[1];
 		var skincfg;
@@ -1815,6 +1821,8 @@ wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function sendOpennamuSkinFile(r
 	if(skinname.includes('../') || filepath.includes('../')) {
 		return res.send(await showError(req, 'malicious_activity_detected'));
 	}
+	
+	if(skinname.toLowerCase() == 'main_css') return res.send(await showError(req, 'file_not_found'));
 	
 	var skincfg;
 	try {
@@ -2060,7 +2068,7 @@ wiki.get('/', async function welcome(req, res) {
 	
 	req.session.welcomed = true;
 	
-	res.send(swig.render(await readFile('./welcome.html').toString(), { locals: {
+	res.send(swig.render((await readFile('./welcome.html')).toString(), { locals: {
 		wiki_name: config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),
 		notice: config.getString('wiki.site_notice', ''),
 		range: range,
