@@ -1077,25 +1077,27 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	위에서 보듯이 async await는 멀티쓰레딩 비슷하게 작동.
 	*/
 	
-	const skcfg = await requireAsync('./skins/' + getSkin(req) + '/config.json');
-	
 	try {
-		const sktyp = skcfg['type'].toLowerCase();
-		if(sktyp == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
-			const _dc = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
-			
-			mycolor = _dc;
-			if(islogin(req)) {
-				mycolor = getUserset(ip_check(req), 'color', _dc);
-			}
-		}
-	} catch(e) {
+		const skcfg = await requireAsync('./skins/' + getSkin(req) + '/config.json');
+		
 		try {
-			if(skcfg['type'].toLowerCase() == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
-				mycolor = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+			const sktyp = skcfg['type'].toLowerCase();
+			if(sktyp == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
+				const _dc = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+				
+				mycolor = _dc;
+				if(islogin(req)) {
+					mycolor = getUserset(ip_check(req), 'color', _dc);
+				}
 			}
-		} catch(e) {}
-	}
+		} catch(e) {
+			try {
+				if(skcfg['type'].toLowerCase() == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
+					mycolor = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+				}
+			} catch(e) {}
+		}
+	} catch(e) {}
 	
 	switch(skintype.toLowerCase()) {
 		case 'the seed':
