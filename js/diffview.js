@@ -175,7 +175,7 @@ diffview = {
 						if (wordlevel) {
 						var baseTextLine = baseTextLines[b];
 						var newTextLine = newTextLines[n];
-						var wordrule = /([^\S]+|[a-zA-Z0-9_-]+|.)(?:(?!<)[^\S])?/;
+						var wordrule = /([^\s]+|[a-zA-Z0-9ㄱ-힣_ -]+|.)(?:(?!<)[^\s])?/;
 						var bw = baseTextLine.split(wordrule);
 						var nw = newTextLine.split(wordrule);
 						var wsm = new difflib.SequenceMatcher(bw, nw);

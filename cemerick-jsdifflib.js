@@ -191,44 +191,44 @@ diffview = {
 					} else if (change == "replace") {
 						botrows.push(node2 = document.createElement("tr"));
 						if (wordlevel) {
-						var baseTextLine = baseTextLines[b];
-						var newTextLine = newTextLines[n];
-						var wordrule = /([^\s]+|[a-zA-Z0-9_-]+|.)(?:(?!<)[^\s])?/;
-						var bw = baseTextLine.split(wordrule);
-						var nw = newTextLine.split(wordrule);
-						var wsm = new difflib.SequenceMatcher(bw, nw);
-						var wopcodes = wsm.get_opcodes();
-						var bnode = document.createElement('span');
-						var nnode = document.createElement('span');
-						for (var k = 0; k < wopcodes.length; k++) {
-							var wcode = wopcodes[k];
-							var wchange = wcode[0];
-							var wb = wcode[1];
-							var wbe = wcode[2];
-							var wn = wcode[3];
-							var wne = wcode[4];
-							var wcnt = Math.max(wbe - wb, wne - wn);
+							var baseTextLine = baseTextLines[b];
+							var newTextLine = newTextLines[n];
+							var wordrule = /([^\s]+|[a-zA-Z0-9ㄱ-힣_ -]+|.)(?:(?!<)[^\s])?/;
+							var bw = baseTextLine.split(wordrule);
+							var nw = newTextLine.split(wordrule);
+							var wsm = new difflib.SequenceMatcher(bw, nw);
+							var wopcodes = wsm.get_opcodes();
+							var bnode = document.createElement('span');
+							var nnode = document.createElement('span');
+							for (var k = 0; k < wopcodes.length; k++) {
+								var wcode = wopcodes[k];
+								var wchange = wcode[0];
+								var wb = wcode[1];
+								var wbe = wcode[2];
+								var wn = wcode[3];
+								var wne = wcode[4];
+								var wcnt = Math.max(wbe - wb, wne - wn);
 
-							for (var m = 0; m < wcnt; m++) {
-								if (wchange == "insert") {
-									nnode.appendChild(ctelt("ins", "diff", nw[wn++]));
-								} else if (wchange == "replace") {
-									if (wb < wbe) bnode.appendChild(ctelt("del", "diff", bw[wb++]));
-									if (wn < wne) nnode.appendChild(ctelt("ins", "diff", nw[wn++]));
-								} else if (wchange == "delete") {
-									bnode.appendChild(ctelt("del", "diff", bw[wb++]));
-								} else {
-									// equal
-									bnode.appendChild(ctelt("span", wchange, bw[wb]));
-									nnode.appendChild(ctelt("span", wchange, bw[wb++]));
+								for (var m = 0; m < wcnt; m++) {
+									if (wchange == "insert") {
+										nnode.appendChild(ctelt("ins", "diff", nw[wn++]));
+									} else if (wchange == "replace") {
+										if (wb < wbe) bnode.appendChild(ctelt("del", "diff", bw[wb++]));
+										if (wn < wne) nnode.appendChild(ctelt("ins", "diff", nw[wn++]));
+									} else if (wchange == "delete") {
+										bnode.appendChild(ctelt("del", "diff", bw[wb++]));
+									} else {
+										// equal
+										bnode.appendChild(ctelt("span", wchange, bw[wb]));
+										nnode.appendChild(ctelt("span", wchange, bw[wb++]));
+									}
 								}
 							}
-						}
-						if (b < be) addCellsNode(node, b++, null, bnode, "delete");
-						if (n < ne) addCellsNode(node2, null, n++, nnode, "insert");
+							if (b < be) addCellsNode(node, b++, null, bnode, "delete");
+							if (n < ne) addCellsNode(node2, null, n++, nnode, "insert");
 						} else {
-						if (b < be) addCellsInline(node, b++, null, baseTextLines, "delete");
-						if (n < ne) addCellsInline(node2, null, n++, newTextLines, "insert");
+							if (b < be) addCellsInline(node, b++, null, baseTextLines, "delete");
+							if (n < ne) addCellsInline(node2, null, n++, newTextLines, "insert");
 						}
 					} else if (change == "delete") {
 						addCellsInline(node, b++, null, baseTextLines, change);

@@ -44,13 +44,13 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 				throw Error("빠라빠라 빠라밤");
 			}
 			
-			content = await JSnamumark(title, rawContent[0]['content']);
+			content = await JSnamumark(title, rawContent[0]['content'], 1);
 			
 			if(title.startsWith("사용자:") && await ban_check(req, 'author', title.replace(/^사용자[:]/, ''))) {
 				content = `
 					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: red gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'blue\';" onmouseout="this.style.borderTopColor=\'red\';">
 						<span style="font-size: 14pt;">이 사용자는 관리자에 의해 차단되었습니다.</span><br>
-						차단 사유:
+						사유:
 					</div>
 				` + content;
 			}

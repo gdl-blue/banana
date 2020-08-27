@@ -66,7 +66,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 			
 			<div class="tab-content bordered">
 				<div class="tab-pane active" id="edit" role="tabpanel">
-					<form method="post" id="editForm" data-title="${title}" data-recaptcha="0">
+					<form method="post" id="editForm" data-title="${html.escape(title)}" data-recaptcha="0">
 						<input type="hidden" name="token" value="">
 						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 						<input type="hidden" name="baserev" value="${baserev}">
@@ -91,7 +91,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 				</div>
 				
 				<div class="tab-pane" id="preview" role="tabpanel">
-					<iframe id=previewFrame></iframe>
+					<iframe id=previewFrame name=previewFrame></iframe>
 				</div>
 				
 				<div class="tab-pane" id=diff role="tabpanel">
@@ -242,4 +242,12 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 	]);
 	
 	res.redirect('/w/' + title + (req.query['section'] ? '#s-' + req.query['section'] : ''));
+});
+
+wiki.post(/\/preview\/(.*)/, async (req, res) => {
+	try {
+		res.send(await JSnamumark(req.params[0], req.body['text']));
+	} catch(e) {
+		res.send(await showError('invalid_request_body'));
+	}
 });

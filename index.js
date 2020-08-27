@@ -401,10 +401,11 @@ function updateTheseedPerm(perm) {
 
 function getTime() { return Math.floor(new Date().getTime()); }; const get_time = getTime;
 
-function toDate(t) {
+function toDate(t, d = 0) {
 	if(isNaN(Number(t))) return t;  // 문자열(1983-04-22 12:45:56 등)로 되어있는 경우 그냥 반환
 	
 	var date = new Date(Number(t));
+	if(!d) return date.toISOString();
 	
 	var hour = date.getHours(); hour = (hour < 10 ? "0" : "") + hour;
     var min  = date.getMinutes(); min = (min < 10 ? "0" : "") + min;
@@ -417,6 +418,10 @@ function toDate(t) {
 }
 
 function generateTime(time, fmt = timeFormat) {
+	if(time.replace(/^(\d+)[-](\d+)[-](\d+)T(\d+)[:](\d+)[:](\d+)[.]([A-Z0-9]+)$/i, '') == '') {
+		return `<time datetime="${time}" data-format="${fmt}">${time}</time>`;
+	}
+	
 	const d = split(time, ' ')[0];
 	const t = split(time, ' ')[1];
 	
@@ -533,7 +538,9 @@ try {
 			'email_config': ['service', 'email', 'password'],
 			'edit_requests': ['baserev', 'author', 'slug', 'original', 'content'],
 			'login_attempts': ['ip', 'username'],
-			'rb': ['block', 'end', 'today', 'blocker', 'why', 'band', 'ipacl']  // 구조적으로 많이 달라서...
+			'rb': ['block', 'end', 'today', 'blocker', 'why', 'band', 'ipacl'],  // 구조적으로 많이 달라서...
+			'backlink_category': ['title', 'category'],
+			// 마지막에 쉼표 들으가도 됨
 		};
 		
 		for(var table in tables) {
@@ -768,7 +775,7 @@ function markdown(content, discussion = 0, title = '') {
 	return data;
 }
 
-function JSnamumark(title, content) {
+async function JSnamumark(title, content, initializeBacklinks = 0) {
 	return new Promise((resolve, reject) => {
 		(new (require('js-namumark'))(title, {
 			wiki: {
@@ -804,6 +811,7 @@ function JSnamumark(title, content) {
 				}
 			};
 			
+			// 이미지에 링크 추가
 			qa('img', img => {
 				const $img = $(img);
 				
@@ -814,6 +822,7 @@ function JSnamumark(title, content) {
 				img.outerHTML = $img[0].outerHTML;
 			});
 			
+			// 문단 클래스명 및 ID 변경
 			qa('h1 a[href="#wiki-toc"], h2 a[href="#wiki-toc"], h3 a[href="#wiki-toc"], h4 a[href="#wiki-toc"], h5 a[href="#wiki-toc"], h6 a[href="#wiki-toc"]', hlink => {
 				hlink.setAttribute('href', '#toc');
 				const $heading = $(hlink).parent();
@@ -825,16 +834,26 @@ function JSnamumark(title, content) {
 				hlink.parentNode.outerHTML = $heading[0].outerHTML;
 			});
 			
+			// 목차 ID 변경
 			qa('div.wiki-toc#wiki-toc', t => t.setAttribute('id', 'toc'));
 			
 			htmlc = document.documentElement.outerHTML;
 			
 			var ctgr = '';
 			
+			if(initializeBacklinks) {
+				await curs.execute("delete from backlink_category where title = ?", [title]);
+			}
+			
 			for(cate of r['categories']) {
 				ctgr += `
-					<li class=wiki-link-internal>${html.escape(cate)}</li>
+					<li class=wiki-link-internal><a class=wiki-internal-link href="/w/${encodeURIComponent('분류:' + cate)}">${html.escape(cate)}</a></li>
 				`;
+				
+				if(initializeBacklinks) {
+					// await X
+					curs.execute("insert into backlink_category (title, category) values (?, ?)", [title, cate]);
+				}
 			}
 			
 			if(ctgr.length) {
@@ -1358,7 +1377,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	}
 	
 	const docViewnames = ['wiki', 'notfound', 'edit', 'thread', 'thread_list', 'thread_list_close',
-			'move', 'delete', 'xref', 'history', 'acl', 'edit_edit_request', 'revert'];
+			'move', 'delete', 'xref', 'history', 'acl', 'edit_edit_request', 'revert', 'diff', 'blame'];
 	
 	const nslist = await fetchNamespaces();
 	
@@ -1491,7 +1510,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	});
 }
 
-function fetchErrorString(code) {
+function fetchErrorString(code, tag = null) {
 	const codes = {
 		'invalid_captcha_number': '보안문자 값이 올바르지 않습니다.',
 		'disabled_feature': '이 기능이 사용하도록 설정되지 않았습니다.',
@@ -1506,10 +1525,11 @@ function fetchErrorString(code) {
 		'user_not_found': '사용자를 찾을 수 없습니다.',
 		'document_not_found': '문서를 찾을 수 없습니다.',
 		'syntax_error': '구문오류',
-		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.'
+		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.',
+		'validator_required': tag + '의 값이 빠져서 처리가 불가능합니다.'
 	};
 	
-	if(typeof(codes[code]) == 'undefined') return `알 수 없는 오류 ${code}이 발생하였습니다.`;
+	if(typeof(codes[code]) == 'undefined') return code;
 	else return codes[code];
 }
 
@@ -1522,9 +1542,13 @@ function alertBalloon(title, content, type = 'danger', dismissible = true, class
 		</div>`;
 }
 
-async function showError(req, code) {
+async function showError(req, code, tag = null, msg = null) {
 	// {% if skinInfo.viewName == 'error' %}문제가 발생했습니다!{% else %}{{ skinInfo.title }}{% endif %}
-	return await render(req, "문제가 있습니다.", `<h2>${fetchErrorString(code)}</h2>`, _, _, _, 'error');
+	return await render(req, "문제가 있습니다.", `<h2>${msg ? msg : fetchErrorString(code, tag)}</h2>`, _, _, {
+		code: code,
+		msg: msg ? msg : fetchErrorString(code),
+		tag: null
+	}, 'error');
 }
 
 function ip_pas(ip = '', ismember = '', isadmin = null) {
@@ -1591,6 +1615,7 @@ async function getacl(req, title, action) {
 	switch(acltyp) {
 		case 'action-based':
 			if(action == 'revert') action = 'edit';
+			if(action == 'diff') action = 'read';
 		
 			var fullacllst = [];
 			

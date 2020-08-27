@@ -467,6 +467,12 @@ $(function() {
 		}, 2500);
 	}
 	
+	$('#previewLink').click(function() {
+		const frm = $('#editForm');
+		frm.attr('action', '/preview/' + frm.attr('data-title')).attr('target', 'previewFrame').submit();
+		frm.removeAttr('action').removeAttr('target');
+	});
+	
 	$('#diffLink').click(function() {
 		const diffdiv = $('div.tab-pane#diff');
 		const base    = difflib.stringAsLines($('textarea#originalContent').text());

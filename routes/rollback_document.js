@@ -65,11 +65,11 @@ wiki.get(/\/revert\/(.*)/, async (req, res) => {
 			<div class=form-group>
 				<ul class="nav nav-tabs" role=tablist style="height: 38px;">
 					<li class=nav-item>
-						<a class="nav-link active" data-toggle=tab href="#preview" role=tab aria-expanded=true>미리 보기</a>
+						<a class="nav-link active" data-toggle=tab href="#preview" role=tab aria-expanded=true>미리보기</a>
 					</li>
 					
 					<li class=nav-item>
-						<a class=nav-link data-toggle=tab href="#raw" role=tab aria-expanded=true>RAW</a>
+						<a class=nav-link data-toggle=tab href="#raw" role=tab aria-expanded=true>날내용</a>
 					</li>
 					
 					<li class=nav-item>
