@@ -104,3 +104,8 @@ Windows 7(Node.js 6 이상)
  
 ### jsdifflib
 (C)저작권자 cemerick 2007~2011 [[깃허브]](https://github.com/cemerick/jsdifflib)
+
+
+## 기타
+- "기존 엔진 소스코드 있나요?"
+- \- 삭제 후 크기가 큰 화일로 이중 덮어쓰기하였읍니다.

@@ -3,9 +3,8 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	
 	if(title.replace(/\s/g, '') == '') res.redirect('/w/' + config.getString('front_page'));
 	
-	await curs.execute("select content from documents where title = ?", [title]);
-	var rawContent = curs.fetchall();
-
+	var rawContent = await curs.execute("select content from documents where title = ?", [title]);
+	
 	var content = '';
 	
 	var httpstat = 200;

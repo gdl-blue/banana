@@ -516,7 +516,7 @@ try {
 			'stars': ['title', 'username', 'lastedit', 'category'],
 			'star_categories': ['name', 'username'],
 			'perms': ['perm', 'username'],
-			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system', 'ncontent', 'ocontent'],
+			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system', 'ncontent', 'ocontent', 'baserev'],
 			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin', 'stype'],
 			'useragents': ['username', 'string'],
 			'login_history': ['username', 'ip'],

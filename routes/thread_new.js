@@ -113,12 +113,14 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			}
 			content += '<a href="?state=close">[닫힌 토론 목록]</a>';
 			
+			var rawContent = await curs.execute("select content from documents where title = ?", [title]);
+			
 			content += `
 				<br><br>
 				
 				<h4 class="wiki-heading">토론 발제하기</h4>
 				
-				<form method=post class=new-thread-form>
+				<form method=post id=new-thread-form>
 					<input type=hidden name=identifier value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 					
 					<table>
@@ -134,7 +136,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 										<label>유형:</label>
 										<select class="form-control" name=type>
 											<option value=normal>토론</option>
-											<option value=edit_request disabled>편집요청</option>
+											${rawContent.length ? '<option value=edit_request>편집요청</option>' : ''}
 										</select>
 									</div>
 								</td>
@@ -148,15 +150,30 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 							</tr>
 						</tbody>
 					</table>
-
-					<div class="form-group">
-						<label>내 의견:</label>
-						<textarea name="text" class="form-control" rows="5"></textarea>
+					
+					<div class=form-group>
+						<label>내 의견:</label><br />
+						<textarea name=text class=form-control rows=5></textarea>
 					</div>
 					
-					<div class=form-group style="display: none;">
-						<label>문서 수정: </label>
-						<textarea name=raw class=form-control rows=20></textarea>
+					<div class=form-group id=editRequestForm style="display: none;">
+						<ul class="nav nav-tabs" role=tablist style="height: 38px;">
+							<li class=nav-item>
+								<a class="nav-link active" data-toggle=tab href="#edit" role=tab aria-expanded=true>편집</a>
+							</li>
+							
+							<li class=nav-item>
+								<a class=nav-link data-editrequest data-toggle=tab href="#preview" role=tab aria-expanded=true>미리보기</a>
+							</li>
+						</ul>
+						
+						<div class="tab-content bordered">
+							<div id=edit class="tab-pane active" role=tabpanel aria-expanded=true>
+								<textarea name=raw class=form-control rows=20>${rawContent.length ? rawContent[0].content : ''}</textarea>
+							</div>
+							
+							<div id=preview class=tab-pane role=tabpanel aria-expanded=true></div>
+						</div>
 					</div>
 
 					<div class="btns">
@@ -189,12 +206,6 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 	
 	if(!await getacl(req, title, 'read')) {
 		res.send(showError('insufficient_privileges_read'));
-		
-		return;
-	}
-	
-	if(!await getacl(req, title, 'create_thread')) {
-		res.send(await showError(req, 'insufficient_privileges'));
 		
 		return;
 	}
@@ -285,12 +296,13 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 		'object',
 		'obstacle',
 		'cage',
-		'rabbit'
+		'rabbit',
+		'client', 
+		'server'
 	];
 	
-	var tnum = random.choice(adjectives) + '-' + random.choice(nouns) + '-' + rndval('abcdef0123456789', 8);
-	
 	// 경우의 수: 38 * 45 * 16^8 = 7,344,394,076,160가지
+	var tnum = random.choice(adjectives) + '-' + random.choice(nouns) + '-' + rndval('abcdef0123456789', 8);
 	
 	while(1) {
 		await curs.execute("select tnum from threads where tnum = ?", [tnum]);
@@ -298,12 +310,38 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 		tnum = random.choice(adjectives) + '-' + random.choice(nouns) + '-' + rndval('abcdef0123456789', 8);
 	}
 	
-	curs.execute("insert into threads (title, topic, status, time, tnum) values (?, ?, ?, ?, ?)",
-					[title, req.body['topic'], 'normal', getTime(), tnum]);
-	
-	curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
-					(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-					['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0']);
+	if(req.body['type'] == 'edit_request') {
+		if(!await getacl(req, title, 'edit_request')) {
+			res.send(await showError(req, 'insufficient_privileges'));
+			
+			return;
+		}
+		
+		var rawContent = await curs.execute("select content from documents where title = ?", [title]);
+		if(!rawContent.length) {
+			return res.send(await showError(req,' document_not_found'));
+		}
+		
+		curs.execute("insert into threads (title, topic, status, time, tnum, type) values (?, ?, ?, ?, ?, 'edit_request')",
+						[title, req.body['topic'], 'normal', getTime(), tnum]);
+		
+		curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
+						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+						['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0']);
+	} else {
+		if(!await getacl(req, title, 'create_thread')) {
+			res.send(await showError(req, 'insufficient_privileges'));
+			
+			return;
+		}
+		
+		curs.execute("insert into threads (title, topic, status, time, tnum) values (?, ?, ?, ?, ?)",
+						[title, req.body['topic'], 'normal', getTime(), tnum]);
+		
+		curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
+						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+						['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0']);
+	}
 					
 	res.redirect('/thread/' + tnum);
 });

@@ -227,7 +227,7 @@ $(function() {
 	
 	document.addEventListener("scroll", setVisibleState);
 	
-	function discussFetch(tnum) {
+	function fetchComments(tnum) {
 		setVisibleState();
 		
 		$(loadingRes).each(function() {
@@ -254,7 +254,6 @@ $(function() {
 						/* dateformatter.js 라이브러리 사용 - (C) 저작권자 Paul Armstrong / swig 라이브러리에 내장됨 */
 						$('time[datetime]').each(function() {
 							$(this).text(
-								/* datetime에서 뒤에 붙는 .000Z는 ISO 문자열에서 generate되고 시간대마다 다른데 예전에 코드 작성할 때에는 그 의미를 몰라서 다 .000Z라고 썼다 --; */
 								formatDate(new Date($(this).attr('datetime')), $(this).attr('data-format'))
 							);
 						});
@@ -426,7 +425,7 @@ $(function() {
 				error: nevermind
 			});
 			
-			discussFetch(tnum);
+			fetchComments(tnum);
 		}, 500);
 		
 		setVisibleState();
@@ -435,7 +434,6 @@ $(function() {
 	/* dateformatter.js 라이브러리 사용 - (C) 저작권자 Paul Armstrong / swig 라이브러리에 내장됨 */
 	$('time[datetime]').each(function() {
 		$(this).text(
-			/* datetime에서 뒤에 붙는 .000Z는 ISO 문자열에서 generate되고 시간대마다 다른데 예전에 코드 작성할 때에는 그 의미를 몰라서 다 .000Z라고 썼다 --; */
 			formatDate(new Date($(this).attr('datetime')), $(this).attr('data-format'))
 		);
 	});
@@ -458,13 +456,12 @@ $(function() {
 					
 					$('time[datetime]').each(function() {
 						$(this).text(
-							/* datetime에서 뒤에 붙는 .000Z는 ISO 문자열에서 generate되고 시간대마다 다른데 예전에 코드 작성할 때에는 그 의미를 몰라서 다 .000Z라고 썼다 --; */
 							formatDate(new Date($(this).attr('datetime')), $(this).attr('data-format'))
 						);
 					});
 				}
 			});
-		}, 2500);
+		}, 3000);
 	}
 	
 	$('#previewLink').click(function() {
@@ -488,6 +485,14 @@ $(function() {
 			contextSize: 7,
 			viewType: 2
 		})));
+	});
+	
+	$('form#new-thread-form select[name="type"]').change(function() {
+		if($(this).val() == 'edit_request') {
+			$("#editRequestForm").show();
+		} else {
+			$("#editRequestForm").hide();
+		}
 	});
 	
 	window.discussPollStart = discussPollStart;
