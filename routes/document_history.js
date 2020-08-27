@@ -99,13 +99,15 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 				</tr>
 		`;
 		
-		if(row['log'].length > 0 || row['advance'].length > 0) {
-			data += `
-				<td colspan="3" style="padding-left: 1.5rem;">
-					${row['log']} <i>${row['advance']}</i>
-				</td>
-			`;
-		}
+		try {
+			if(row['log'].length > 0 || row['advance'].length > 0) {
+				data += `
+					<td colspan="3" style="padding-left: 1.5rem;">
+						${row['log']} <i>${row['advance']}</i>
+					</td>
+				`;
+			}
+		} catch(e) {}
 		
 		trlist += data;
 	}
