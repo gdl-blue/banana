@@ -452,6 +452,9 @@ const cookieParser = require('cookie-parser');
 
 const fs = require('fs');
 
+// https://github.com/cemerick/jsdifflib
+const difflib = require('./cemerick-jsdifflib.js');
+
 var wikiconfig = {};
 var userset = {};
 var permlist = {};
@@ -508,7 +511,7 @@ try {
 			'stars': ['title', 'username', 'lastedit', 'category'],
 			'star_categories': ['name', 'username'],
 			'perms': ['perm', 'username'],
-			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system'],
+			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system', 'ncontent', 'ocontent'],
 			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin', 'stype'],
 			'useragents': ['username', 'string'],
 			'login_history': ['username', 'ip'],
@@ -764,6 +767,87 @@ function markdown(content, discussion = 0, title = '') {
 
 	return data;
 }
+
+function JSnamumark(title, content) {
+	return new Promise((resolve, reject) => {
+		(new (require('js-namumark'))(title, {
+			wiki: {
+				// CR LF 안고치니까 문단 렌더링이 안 됐네..
+				read: title => content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/{{{[#][!]html/gi, '{{{')
+			},
+			allowedExternalImageExts: [ 'jpg', 'jpeg', 'bmp', 'gif', 'png' ]
+		})).parse(async (e, r) => {
+			if(e) {
+				print(e);
+				reject(e);
+				return;
+			}
+			
+			var htmlc = r['html'];
+			
+			// 목차 버그 수정
+			htmlc = htmlc.replace(
+				/\<div class=\"wiki[-]toc\" id=\"wiki[-]toc\"\>\<div class=\"wiki[-]toc[-]heading\"\>목차\<\/div\>((\<div class=\"wiki[-]toc[-]item wiki[-]toc[-]item[-]indent[-](\d+)\"\>\<a href=\"[#]heading[-](\d+)\"\>(\d+)[.]\<\/a\> (((?!\<\/div\>).)*)\<\/div\>)*)\<\/div\>\<\/div\>/g
+				, '<div class=wiki-toc id=toc><div class=wiki-toc-heading>목차</div>$1</div>'
+			);
+			
+			// https://stackoverflow.com/questions/1801160/can-i-use-jquery-with-node-js
+			const jsdom = require("jsdom");
+			const { JSDOM } = jsdom;
+			const { window } = new JSDOM();
+			const { document } = (new JSDOM(htmlc)).window;
+			const $ = jQuery = require('jquery')(window);
+			
+			const qa = (q, f) => {
+				for(el of document.querySelectorAll(q)) {
+					f(el);
+				}
+			};
+			
+			qa('img', img => {
+				const $img = $(img);
+				
+				if(!$img.attr('src')) return;
+				const filename = decodeURIComponent($img.attr('src').replace(/^\/file\//, ''));
+				$img.wrap('<a href="/files/' + encodeURIComponent(filename) + '"></a>');
+				
+				img.outerHTML = $img[0].outerHTML;
+			});
+			
+			qa('h1 a[href="#wiki-toc"], h2 a[href="#wiki-toc"], h3 a[href="#wiki-toc"], h4 a[href="#wiki-toc"], h5 a[href="#wiki-toc"], h6 a[href="#wiki-toc"]', hlink => {
+				hlink.setAttribute('href', '#toc');
+				const $heading = $(hlink).parent();
+				
+				$heading.attr('class', 'wiki-heading');
+				const hnum = $heading.attr('id').replace('heading-', '');
+				$heading.attr('id', 's-' + hnum);
+				
+				hlink.parentNode.outerHTML = $heading[0].outerHTML;
+			});
+			
+			qa('div.wiki-toc#wiki-toc', t => t.setAttribute('id', 'toc'));
+			
+			htmlc = document.documentElement.outerHTML;
+			
+			var ctgr = '';
+			
+			for(cate of r['categories']) {
+				ctgr += `
+					<li class=wiki-link-internal>${html.escape(cate)}</li>
+				`;
+			}
+			
+			if(ctgr.length) {
+				ctgr = '<div class=wiki-category><h2>문서 분류</h2><ul>' + ctgr + '</ul></div>';
+			}
+			
+			resolve(ctgr + htmlc);
+		});
+	});
+}
+
+// 처음 실행해주면 두번째부터는 빠름
+JSnamumark('', '::').then(r => {}).catch(e => {});
 
 function islogin(req) {
 	if(req.cookies.gildong && req.cookies.icestar) {
@@ -1148,6 +1232,9 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 						<script type="text/javascript" src="/js/banana.js"></script>
 						<link rel="stylesheet" href="/css/banana.css">
+						<link rel="stylesheet" href="/css/diffview.css">
+						<script src="/js/diffview.js"></script>
+						<script src="/js/difflib.js"></script>
 					`,  // 전역 <HEAD>
 					config.getString('wiki.sitenotice', ''),  // 공지
 					getpermForSkin,  // 권한 유무 여부 함수
@@ -1253,6 +1340,9 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 						<script type="text/javascript" src="/js/banana.js"></script>
 						<link rel="stylesheet" href="/css/banana.css">
+						<link rel="stylesheet" href="/css/diffview.css">
+						<script src="/js/diffview.js"></script>
+						<script src="/js/difflib.js"></script>
 					`
 				]
 			];
@@ -1365,6 +1455,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					<meta name=generator content=banana>
 					<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
 					<link rel="stylesheet" href="/css/banana.css">
+					<link rel="stylesheet" href="/css/diffview.css">
 				`;
 				for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
 					header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
@@ -1374,6 +1465,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
 					<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 					<script type="text/javascript" src="/js/banana.js"></script>
+					<script src="/js/diffview.js"></script>
+					<script src="/js/difflib.js"></script>
 				`;
 				for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
 					header += '<script type="text/javascript" src="/skins/' + getSkin(req) + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
@@ -2056,6 +2149,9 @@ wiki.get('/logout', function redirectK(req, res) {
 wiki.get('/register', function redirectK(req, res) {
 	res.redirect('/member/signup');
 });
+
+wiki.get('/d', (r, s) => s.send('<link rel="stylesheet" href="/css/diffview.css"><form method=post><button>S</button><textarea name=a></textarea><textarea name=b></textarea></form>'));
+wiki.post('/d', (r, s) => s.send(difflib.diff(r.body.a, r.body.b, '1', '2')));
 
 // wiki.get('/c', (r, s) => console.log(r.cookies));
 

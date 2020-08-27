@@ -467,5 +467,22 @@ $(function() {
 		}, 2500);
 	}
 	
+	$('#diffLink').click(function() {
+		const diffdiv = $('div.tab-pane#diff');
+		const base    = difflib.stringAsLines($('textarea#originalContent').text());
+		const newt    = difflib.stringAsLines($('textarea#textInput').text());
+		const opcodes = (new difflib.SequenceMatcher(base, newt)).get_opcodes();
+
+		diffdiv.html('').append($(diffview.buildView({
+			baseTextLines: base,
+			newTextLines: newt,
+			opcodes: opcodes,
+			baseTextName: "원본",
+			newTextName: "작성중",
+			contextSize: 7,
+			viewType: 2
+		})));
+	});
+	
 	window.discussPollStart = discussPollStart;
 });

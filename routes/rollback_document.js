@@ -22,12 +22,18 @@ wiki.get(/\/revert\/(.*)/, async (req, res) => {
 		return res.send(await showError(req, 'invalid_value'));
 	}
 	
+	const _recentRev = await curs.execute("select content, rev from history where title = ? order by cast(rev as integer) desc limit 1", [title]);
+	if(!_recentRev.length) {
+		return res.send(await showError(req, 'document_not_found'));
+	}
+	
 	const dbdata = await curs.execute("select content, time, username from history where title = ? and rev = ?", [title, rev]);
 	if(!dbdata.length) {
 		return res.send(await showError(req, 'revision_not_found'));
 	}
 	
-	const revdata = dbdata[0];
+	const revdata   = dbdata[0];
+	const recentRev = _recentRev[0];
 	
 	var content = `
 		<form method=get>
@@ -57,8 +63,33 @@ wiki.get(/\/revert\/(.*)/, async (req, res) => {
 			</div>
 			
 			<div class=form-group>
-				<label>미리 보기:</label><br />
-				<textarea class=form-control rows=15 readonly>${revdata.content}</textarea>
+				<ul class="nav nav-tabs" role=tablist style="height: 38px;">
+					<li class=nav-item>
+						<a class="nav-link active" data-toggle=tab href="#preview" role=tab aria-expanded=true>미리 보기</a>
+					</li>
+					
+					<li class=nav-item>
+						<a class=nav-link data-toggle=tab href="#raw" role=tab aria-expanded=true>RAW</a>
+					</li>
+					
+					<li class=nav-item>
+						<a class=nav-link data-toggle=tab href="#diff" role=tab aria-expanded=true>비교</a>
+					</li>
+				</ul>
+				
+				<div class="tab-content bordered">
+					<div id=preview class="tab-pane active" role=tabpanel aria-expanded=true>
+						${await JSnamumark(title, revdata.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n'))}
+					</div>
+					
+					<div id=raw class=tab-pane role=tabpanel aria-expanded=true>
+						<textarea class=form-control rows=15 readonly>${revdata.content}</textarea>
+					</div>
+					
+					<div id=diff class=tab-pane role=tabpanel aria-expanded=true>
+						${difflib.diff(recentRev.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n'), revdata.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n'), recentRev.rev + '판', rev + '판')}
+					</div>
+				</div>
 			</div>
 		</form>
 		

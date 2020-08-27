@@ -42,21 +42,25 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 		`;
 	} else {
 		content = `
-			<ul class="nav nav-pills">
+			<ul class="nav nav-pills" role=tablist>
 				<li class="nav-item">
-					<a class="nav-link active" data-toggle="tab" href="#edit" role="tab">편집기</a>
+					<a class="nav-link active" data-toggle="tab" href="#edit" role="tab" aria-expanded=true>편집기</a>
 				</li>
 				
 				<li class="nav-item">
-					<a id="previewLink" class="nav-link" data-toggle="tab" href="#preview" role="tab">미리보기</a>
+					<a id="previewLink" class="nav-link" data-toggle="tab" href="#preview" role="tab" aria-expanded=true>미리보기</a>
 				</li>
 				
 				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#delete" role="tab">삭제</a>
+					<a id=diffLink class="nav-link" data-toggle="tab" href="#diff" role="tab" aria-expanded=true>비교</a>
 				</li>
 				
 				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#move" role="tab">이동</a>
+					<a class="nav-link" data-toggle="tab" href="#delete" role="tab" aria-expanded=true>삭제</a>
+				</li>
+				
+				<li class="nav-item">
+					<a class="nav-link" data-toggle="tab" href="#move" role="tab" aria-expanded=true>이동</a>
 				</li>
 			</ul>
 			
@@ -66,7 +70,9 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						<input type="hidden" name="token" value="">
 						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 						<input type="hidden" name="baserev" value="${baserev}">
+						<input type=hidden name=submittype value="edit">
 						
+						<textarea id=originalContent style="display: none;">${html.escape(rawContent)}</textarea>
 						<textarea id="textInput" name="text" wrap="soft" class="form-control">${html.escape(rawContent)}</textarea>
 
 						<div class="form-group" style="margin-top: 1rem;">
@@ -85,7 +91,11 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 				</div>
 				
 				<div class="tab-pane" id="preview" role="tabpanel">
-					
+					<iframe id=previewFrame></iframe>
+				</div>
+				
+				<div class="tab-pane" id=diff role="tabpanel">
+				
 				</div>
 				
 				<div class="tab-pane" id="delete" role="tabpanel">
@@ -93,6 +103,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						<input type="hidden" name="token" value="">
 						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 						<input type="hidden" name="baserev" value="${baserev}">
+						<input type=hidden name=submittype value=delete>
 
 						<div class="form-group" style="margin-top: 1rem;">
 							<label>사유: </label>
@@ -106,7 +117,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						</div>
 						
 						<div class="btns">
-							<button id="editBtn" class="btn btn-danger" style="width: 100px;">문서 삭제</button>
+							<button class="btn btn-danger" style="width: 100px;">문서 삭제</button>
 						</div>
 					</form>
 				</div>
@@ -116,6 +127,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						<input type="hidden" name="token" value="">
 						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 						<input type="hidden" name="baserev" value="${baserev}">
+						<input type=hidden name=submittype value=move>
 
 						<div class="form-group" style="margin-top: 1rem;">
 							<label>제목: </label>
@@ -132,14 +144,16 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						</div>
 						
 						<div class="btns">
-							<button id="editBtn" class="btn btn-warning" style="width: 100px;">문서 이동</button>
+							<button class="btn btn-warning" style="width: 100px;">문서 이동</button>
 						</div>
 					</form>
 				</div>
 			</div>
-			
-			<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 역사에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>
 		`;
+	}
+	
+	if(!islogin(req)) {
+		content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 역사에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
 	}
 
 	var httpstat = 200;
