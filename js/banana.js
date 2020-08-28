@@ -13,7 +13,12 @@ $(function() {
 	 * for(... of ...) { ... }
 	 * async, await
 	 * let 변수 선언
+	 * const { ... } = <오브젝트>
 	 */
+	 
+	if(typeof ActiveXObject == 'function') {
+		document.addEventListener = document.attachEvent;
+	}
 	
 	$('head').append('<style id=hide-blind-res></style>');
 	
@@ -93,6 +98,8 @@ $(function() {
 	}
 	
 	function isVisible(elmt) {
+		if(typeof ActiveXObject == 'function') return true;
+		
 		var top = elmt.offsetTop;
 		var left = elmt.offsetLeft;
 		const width = elmt.offsetWidth;
