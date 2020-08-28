@@ -8,16 +8,19 @@ $(function() {
      * <호환성을 위해 다음 문법 사용 금지!>
 	 
 	 * 함수 인자 기본값("param = param || 기본값" 사용)
-	 * 템플릿 문자열(`A의 값은 ${a}이다` 등)
-	 * 화살표 함수
-	 * for(... of ...) { ... }
+	 * 템플릿 문자열(`A의 값은 ${a}이다` 등 => 'A의 값은 ' + a + '이다')
+	 * 화살표 함수("a => b" => "function(a) { return b; }")
+	 * for(a of b) { ... } => for(ai in b) { const a = b[ai]; ... }
 	 * async, await
-	 * let 변수 선언
+	 * let 변수 선언 (var 사용. 차이점이 있는데 거의 비슷)
 	 * const { ... } = <오브젝트>
 	 */
 	 
-	if(typeof ActiveXObject == 'function') {
-		document.addEventListener = document.attachEvent;
+	if(typeof ActiveXObject == 'function' && !document.addEventListener) {
+		document.addEventListener = function(evt, fnc) {
+			if(evt == 'click') evt = 'onclick;'
+			document.attachEvent(evt, fnc);
+		};
 	}
 	
 	$('head').append('<style id=hide-blind-res></style>');
@@ -486,7 +489,7 @@ $(function() {
 	}
 	
 	$('#previewLink').click(function() {
-		const frm = $('#editForm');
+		const frm = location.pathname.startsWith('/edit/') ? $('#editForm') : $('#new-thread-form');
 		frm.attr('action', '/preview/' + frm.attr('data-title')).attr('target', 'previewFrame').submit();
 		frm.removeAttr('action').removeAttr('target');
 	});

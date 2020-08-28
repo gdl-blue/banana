@@ -113,7 +113,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			}
 			content += '<a href="?state=close">[닫힌 토론 목록]</a>';
 			
-			var rawContent = await curs.execute("select content from documents where title = ?", [title]);
+			var rawContent = await curs.execute("select content, rev from history where title = ? order by cast(rev as integer) desc limit 1", [title]);
 			
 			content += `
 				<br><br>
@@ -151,29 +151,33 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 						</tbody>
 					</table>
 					
-					<div class=form-group>
-						<label>내 의견:</label><br />
-						<textarea name=text class=form-control rows=5></textarea>
-					</div>
-					
 					<div class=form-group id=editRequestForm style="display: none;">
+						<input type=hidden name=baserev value="${rawContent.length ? rawContent[0]['rev'] : ''}" />
+						
 						<ul class="nav nav-tabs" role=tablist style="height: 38px;">
 							<li class=nav-item>
 								<a class="nav-link active" data-toggle=tab href="#edit" role=tab aria-expanded=true>편집</a>
 							</li>
 							
 							<li class=nav-item>
-								<a class=nav-link data-editrequest data-toggle=tab href="#preview" role=tab aria-expanded=true>미리보기</a>
+								<a id=previewLink class=nav-link data-editrequest data-toggle=tab href="#preview" role=tab aria-expanded=true>미리보기</a>
 							</li>
 						</ul>
 						
 						<div class="tab-content bordered">
 							<div id=edit class="tab-pane active" role=tabpanel aria-expanded=true>
-								<textarea name=raw class=form-control rows=20>${rawContent.length ? rawContent[0].content : ''}</textarea>
+								<textarea name=raw class=form-control rows=20>${rawContent.length ? html.escape(rawContent[0].content) : ''}</textarea>
 							</div>
 							
-							<div id=preview class=tab-pane role=tabpanel aria-expanded=true></div>
+							<div id=preview class=tab-pane role=tabpanel aria-expanded=true>
+								<iframe id=previewFrame name=previewFrame></iframe>
+							</div>
 						</div>
+					</div>
+					
+					<div class=form-group>
+						<label>내 의견:</label><br />
+						<textarea name=text class=form-control rows=5></textarea>
 					</div>
 
 					<div class="btns">
@@ -317,15 +321,24 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 			return;
 		}
 		
-		var rawContent = await curs.execute("select content from documents where title = ?", [title]);
-		if(!rawContent.length) {
-			return res.send(await showError(req,' document_not_found'));
+		const rev = req.body['baserev'];
+		if(!rev) {
+			return res.send(await showError('revision_not_specified'));
 		}
 		
-		curs.execute("insert into threads (title, topic, status, time, tnum, type) values (?, ?, ?, ?, ?, 'edit_request')",
-						[title, req.body['topic'], 'normal', getTime(), tnum]);
+		if(!req.body['raw']) {
+			return res.send(await showError(req, 'invalid_request_body'));
+		}
 		
-		curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
+		var rawContent = await curs.execute("select content from history where title = ? and rev = ?", [title, rev]);
+		if(!rawContent.length) {
+			return res.send(await showError(req,'revision_not_found'));
+		}
+		
+		await curs.execute("insert into threads (title, topic, status, time, tnum, type, ncontent, ocontent, baserev) values (?, ?, ?, ?, ?, 'edit_request', ?, ?, ?)",
+						[title, req.body['topic'], 'normal', getTime(), tnum, req.body['raw'], rawContent[0]['content'], rev]);
+		
+		await curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
 						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 						['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0']);
 	} else {
@@ -335,10 +348,10 @@ wiki.post(/^\/discuss\/(.*)/, async function createThread(req, res) {
 			return;
 		}
 		
-		curs.execute("insert into threads (title, topic, status, time, tnum) values (?, ?, ?, ?, ?)",
+		await curs.execute("insert into threads (title, topic, status, time, tnum) values (?, ?, ?, ?, ?)",
 						[title, req.body['topic'], 'normal', getTime(), tnum]);
 		
-		curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
+		await curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
 						(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 						['1', req.body['text'], ip_check(req), getTime(), '0', '', '0', tnum, islogin(req) ? 'author' : 'ip', getperm('admin', ip_check(req)) || getperm('fake_admin', ip_check(req)) ? '1' : '0']);
 	}

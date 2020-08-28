@@ -660,7 +660,7 @@ module.exports = {
 			baseTextName: bname,
 			newTextName: nname,
 			contextSize: 7,
-			viewType: 2
+			viewType: 0
 		})).outerHTML;
 	}
 };

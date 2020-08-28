@@ -19,10 +19,14 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	if(!rescount) { res.send(await showError(req, "thread_not_found")); return; }
 	
-	await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
-	const title = curs.fetchall()[0]['title'];
-	const topic = curs.fetchall()[0]['topic'];
-	const status = curs.fetchall()[0]['status'];
+	var dbdata = await curs.execute("select title, topic, status, type, ncontent, ocontent, baserev from threads where tnum = ?", [tnum]);
+	const title = dbdata[0]['title'];
+	const topic = dbdata[0]['topic'];
+	const status = dbdata[0]['status'];
+	const type = dbdata[0]['type'];
+	const ocontent = dbdata[0]['ocontent'];
+	const ncontent = dbdata[0]['ncontent'];
+	const baserev = dbdata[0]['baserev'];
 	
 	if(!await getacl(req, title, 'read')) {
 		res.send(await showError(req, 'insufficient_privileges_read'));
@@ -33,7 +37,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	var trtopic = html.escape(topic);
 	
 	if(getperm('update_thread_topic', ip_check(req))) {
-		trtopic = `<form id=new-thread-topic-form>
+		trtopic = `<form id=new-thread-topic-form action="/admin/thread/${html.escape(tnum)}/topic">
 						<input style="font-size: inherit;" name=topic value="${html.escape(topic)}">
 						<button type=submit style="font-size: inherit;">→</button>
 					</form>`;
@@ -45,9 +49,26 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		</h2>
 		
 		<div class=wiki-heading-content>
-		
-			<div id=res-container>
 	`;
+	
+	if(type == 'edit_request') {
+		content += `
+			<ul class="nav nav-tabs" role=tablist style="height: 38px;">
+				<li class=nav-item>
+					<a class="nav-link active" data-toggle=tab href="#thread" role=tab aria-expanded=true>댓글</a>
+				</li>
+				
+				<li class=nav-item>
+					<a class=nav-link data-toggle=tab href="#contents" role=tab aria-expanded=true>편집 내용</a>
+				</li>
+			</ul>
+			
+			<div class=tab-content>
+				<div id=thread class="tab-pane active" role=tabpanel aria-expanded=true>
+		`;
+	}
+	
+	content += `<div id=res-container>`;
 	
 	const hiddendata = await curs.execute("select hidden from res where tnum = ? order by cast(id as integer) asc", [tnum]);
 	
@@ -71,8 +92,8 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	}
 	
 	content += `
-			</div>
-		</div>`;
+		</div>
+	`;
 	
 	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
 		content += alertBalloon('경고', '지원되지 않는 브라우저를 사용하기 때문에 새로운 댓글을 자동으로 불러올 수 없습니다. <small>지원되며, 사용자 에이전트를 변경한 것이라면 <a href="?nojs=0">여기</a>를 누르십시오.</small>', 'warning');
@@ -98,11 +119,50 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 				</div>
 			</div>
 		</form>
-		
+	`;
+	
+	if(type == 'edit_request') {
+		content += `
+				</div>
+				
+				<div class=tab-pane id=contents role=tabpanel aria-expanded=true>
+					<ul class="nav nav-pills" role=tablist style="height: 38px;">
+						<li class=nav-item>
+							<a class="nav-link active" data-toggle=tab href="#preview" role=tab aria-expanded=true>미리보기</a>
+						</li>
+						
+						<li class=nav-item>
+							<a class=nav-link data-toggle=tab href="#raw" role=tab aria-expanded=true>날내용</a>
+						</li>
+						
+						<li class=nav-item>
+							<a class=nav-link data-toggle=tab href="#diff" role=tab aria-expanded=true>비교</a>
+						</li>
+					</ul>
+					
+					<div class="tab-content bordered">
+						<div id=preview class="tab-pane active" role=tabpanel aria-expanded=true>
+							${await JSnamumark(title, ncontent.replace(/\r\n/g, '\n').replace(/\r/g, '\n'))}
+						</div>
+						
+						<div id=raw class=tab-pane role=tabpanel aria-expanded=true>
+							<textarea class=form-control rows=15 readonly>${html.escape(ncontent)}</textarea>
+						</div>
+						
+						<div id=diff class=tab-pane role=tabpanel aria-expanded=true>
+							${difflib.diff(ocontent.replace(/\r\n/g, '\n').replace(/\r/g, '\n'), ncontent.replace(/\r\n/g, '\n').replace(/\r/g, '\n'), baserev + '판', '편집요청 ' + tnum)}
+						</div>
+					</div>
+				</div>
+			</div>
+		`;
+	}
+	
+	content += `
 		<div class="res-wrapper res-loading" data-id="-2" data-locked=true data-visible=false>
 			<div class="res res-type-normal">
 				<div class="r-head">
-					<strong>토론 설정</strong>&nbsp;</span>
+					<strong>${type == 'edit_request' ? '편집 요청' : '토론'} 설정</strong>&nbsp;</span>
 				</div>
 				
 				<div class="r-body">
@@ -118,7 +178,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 					</div>
 	`;
 	
-	if(getperm('update_thread_status', ip_check(req))) {
+	if(getperm('update_thread_status', ip_check(req)) && type != 'edit_request') {
 		var sts = '';
 		
 		switch(status) {
@@ -146,17 +206,36 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
         		<button>변경</button>
         	</form>
 			
-		    <form method=post id=new-thread-status-form style="display: inline-block;">
+		    <form action="/admin/thread/${html.escape(tnum)}/status" method=post id=new-thread-status-form style="display: inline-block;">
         		<button type=button data-status=close>종결</button>
         		<button type=button data-status=pause>동결</button>
         		<button type=button data-status=normal>계속</button>
         	</form>
 		`;
+	} else if(type == 'edit_request') {
+		content += `
+			<form method=post style="display: inline-block;">
+				<input type=hidden name=slug value="${html.escape(tnum)}" />
+		`;
+		
+		if(await getacl(req, title, 'edit')) {
+			content += `
+				<button type=submit formaction="/admin/thread/${html.escape(tnum)}/accept">승인</button>
+			`;
+		}
+		
+		if(getperm('admin', ip_check(req))) {
+			content += `
+				<button type=submit formaction="/admin/thread/${html.escape(tnum)}/close" >거부</button>
+			`;
+		}
+		
+		content += '</form>';
 	}
 	
-	if(getperm('update_thread_document', ip_check(req))) {
+	if(getperm('update_thread_document', ip_check(req)) && type != 'edit_request') {
 		content += `
-        	<form method="post" id="thread-document-form" style="display: inline-block;">
+        	<form action="/admin/thread/${html.escape(tnum)}/document" method="post" id="thread-document-form" style="display: inline-block;">
         		토론 문서: 
         		<input type="text" name="document" value="${title}">
         		<button>변경</button>
@@ -166,7 +245,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	if(getperm('update_thread_topic', ip_check(req))) {
 		content += `
-        	<form method="post" id="thread-topic-form" style="display: inline-block;">
+        	<form action="/admin/thread/${html.escape(tnum)}/topic" method="post" id="thread-topic-form" style="display: inline-block;">
         		토론 주제: 
         		<input type="text" name="topic" value="${topic}">
         		<button>변경</button>
@@ -208,7 +287,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	res.send(await render(req, title, content, {
 		st: 3
-	}, ' (토론) - ' + topic, error = false, viewname = 'thread'));
+	}, ' (' + (type == 'edit_request' ? '편집요청' : '토론') + ') - ' + topic, error = false, viewname = 'thread'));
 });
 
 wiki.post('/thread/:tnum', async function postThreadComment(req, res) {

@@ -82,7 +82,7 @@ wiki.get(/\/revert\/(.*)/, async (req, res) => {
 				</div>
 				
 				<div id=raw class=tab-pane role=tabpanel aria-expanded=true>
-					<textarea class=form-control rows=15 readonly>${revdata.content}</textarea>
+					<textarea class=form-control rows=15 readonly>${html.escape(revdata.content)}</textarea>
 				</div>
 				
 				<div id=diff class=tab-pane role=tabpanel aria-expanded=true>

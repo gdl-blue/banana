@@ -541,6 +541,7 @@ try {
 			'rb': ['block', 'end', 'today', 'blocker', 'why', 'band', 'ipacl'],  // 구조적으로 많이 달라서...
 			'backlink_category': ['title', 'category'],
 			'old_edit_requests': ['name', 'num', 'send', 'leng', 'data', 'user', 'state', 'time', 'closer', 'pan', 'why', 'ap'],
+			
 			// 마지막에 쉼표 들으가도 됨
 		};
 		
@@ -1111,6 +1112,8 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		title: title + subtitle,
 		viewName: viewname
 	};
+	
+	// 알림 만들고 알림 있으면 제목 앞에 괄호 안에 알림 개수 넣을 예정
 	
 	const perms = {
 		has: function(perm) {
