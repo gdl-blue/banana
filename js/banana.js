@@ -4,6 +4,17 @@
 */
 
 $(function() {
+	/**
+     * <호환성을 위해 다음 문법 사용 금지!>
+	 
+	 * 함수 인자 기본값("param = param || 기본값" 사용)
+	 * 템플릿 문자열(`A의 값은 ${a}이다` 등)
+	 * 화살표 함수
+	 * for(... of ...) { ... }
+	 * async, await
+	 * let 변수 선언
+	 */
+	
 	$('head').append('<style id=hide-blind-res></style>');
 	
 	$('button#hideBlindRes').click(function() {
@@ -115,7 +126,10 @@ $(function() {
 	});
 	
 	$('.dropdown-search').on('propertychange change keyup paste input', function() {
-		for(var item of document.querySelectorAll('#' + $(this).attr('data-datalist') + ' option')) {
+		const items = document.querySelectorAll('#' + $(this).attr('data-datalist') + ' option');
+		
+		for(var itemidx in items) {
+			const item = items[itemidx];
 			if(!item.innerText.toUpperCase().startsWith($(this).val().toUpperCase())) {
 				item.style.display = 'none';
 			} else {
@@ -445,7 +459,7 @@ $(function() {
 	});
 	
 	if(location.pathname == '/RecentChanges') {
-		var timer = setInterval(() => {
+		var timer = setInterval(function() {
 			$.ajax({
 				type: 'GET',
 				url: '/RecentChanges?tableonly=1',
