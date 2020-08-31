@@ -445,7 +445,13 @@ swig.setFilter('encode_doc', function filter_encodeDocURL(input) {
 });
 
 swig.setFilter('avatar_url', function filter_avatarURL(input) {
+	// 나중에...
 	return input;
+});
+
+swig.setFilter('md5', function filter_md5(input, length = null) {
+	if(length) return (md5(input)).slice(0, length);
+	else return md5(input);
 });
 
 swig.setFilter('to_date', toDate);
@@ -496,6 +502,13 @@ try {
 				skin: input("기본 스킨 이름: ")
 			};
 		}
+		
+		print('차단 목록을 캐시하도록 설정하면 처리 속도가 빨라집니다. 캐싱은 차단한 사용자가 약 1,000만명이면 약 10초, 1억명은 약 1~2분, 10억명은 약 10분 소요되며, 캐싱은 엔진 시작 시 한 번만 합니다. 캐시하지 않을 경우 차단한 사용자가 많으면 위키 접속 속도가 전술한 시간만큼 느려집니다.\n');
+		var inp;
+		do {
+			inp = input('차단된 사용자 목록을 캐시하시겠습니까?[Y/N]: ').toUpperCase();
+		} while(!(['Y', 'N'].includes(inp)));
+		hostconfig['cache_ban_list'] = (inp == 'Y' ? true : false);
 		
 		hostconfig['initialized'] = true;
 		
@@ -948,6 +961,15 @@ function getUserset(username, str, def = '') {
 	return userset[username][str];
 }
 
+function getCookie(req, res, key, def = 'default') {
+	if(req.cookies[key]) {
+		return req.cookies[key];
+	} else {
+		res.cookie(key, def);
+		return def;
+	}
+}
+
 const _ = undefined;
 
 function compatMode(req) {
@@ -1107,6 +1129,36 @@ async function requireAsync(p) {
 	});
 }
 
+async function getScheme(req) {
+	var mycolor = 'default';
+	
+	try {
+		const skcfg = await requireAsync('./skins/' + getSkin(req) + '/config.json');
+		
+		try {
+			const sktyp = skcfg['type'].toLowerCase();
+			if(sktyp == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
+				const _dc = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+				
+				mycolor = _dc;
+				if(islogin(req)) {
+					mycolor = getUserset(ip_check(req), 'color', _dc);
+				} else if(cmc = req.cookie['timecosmos']) {
+					mycolor = cmc;
+				}
+			}
+		} catch(e) {
+			try {
+				if(skcfg['type'].toLowerCase() == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
+					mycolor = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
+				}
+			} catch(e) {}
+		}
+	} catch(e) {}
+	
+	return mycolor;
+}
+
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
 	const skinInfo = {
 		title: title + subtitle,
@@ -1163,7 +1215,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		}
 	}
 	
-	var mycolor = 'default';
+	var cmc, mycolor = await getScheme(req);
 	/*
 	async function timeout(s) {
 		return new Promise((r, j) => {
@@ -1183,28 +1235,6 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		
 	위에서 보듯이 async await는 멀티쓰레딩 비슷하게 작동.
 	*/
-	
-	try {
-		const skcfg = await requireAsync('./skins/' + getSkin(req) + '/config.json');
-		
-		try {
-			const sktyp = skcfg['type'].toLowerCase();
-			if(sktyp == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
-				const _dc = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
-				
-				mycolor = _dc;
-				if(islogin(req)) {
-					mycolor = getUserset(ip_check(req), 'color', _dc);
-				}
-			}
-		} catch(e) {
-			try {
-				if(skcfg['type'].toLowerCase() == 'opennamu-seed' && await exists('./skins/' + getSkin(req) + '/colors.scl')) {
-					mycolor = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
-				}
-			} catch(e) {}
-		}
-	} catch(e) {}
 	
 	switch(skintype.toLowerCase()) {
 		case 'the seed':

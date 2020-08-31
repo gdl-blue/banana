@@ -13,3 +13,4 @@ plugins/theseed-acl/
 /test.txt
 images/
 !images/dummyfile
+skins/testskin/

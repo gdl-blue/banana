@@ -9,10 +9,12 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 	
 	var dsop = `
 		<option value="${defskin}" ${'x' == defskin ? 'selected' : ''}>기본값 (${defskin})</option>
-	`;
+	`, skop = '';
 	
 	for(skin of getSkins()) {
-		dsop += `<option value="${skin}" ${getSkin(req) == skin ? 'selected' : ''}>${skin}</option>`;
+		var opt = `<option value="${skin}" ${getSkin(req) == skin ? 'selected' : ''}>${skin}</option>`;
+		dsop += opt;
+		skop += opt;
 	}
 	
 	var clrs = '';
@@ -99,23 +101,6 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 									
                                     <label>색:&nbsp;</label><input type=color style="width: 100px;" id=colorSelect><br>
                                     <label>이미지 주소:&nbsp;</label><input class=form-control type=text style="width: 250px; display: inline-block;" id=txtImageURL>
-                                    
-									<script>
-                                        $(function() {
-                                            $('#colorSelect').change(function() {
-                                                $('#wallpaperCode').val($(this).val());
-                                                $('#previewFrame').css('background', $('#wallpaperCode').val());
-                                            });
-
-                                            $(document).on("propertychange change keyup paste input", '#wallpaperCode', function() {
-                                                $('#previewFrame').css('background', $('#wallpaperCode').val());
-                                            });
-
-                                            $(document).on("propertychange change keyup paste input", '#txtImageURL', function() {
-                                                $('#wallpaperCode').val("url('" + $('#txtImageURL').val() + "');");
-                                            });
-                                        });
-                                    </script>
                                 </div>
 							</div>
 							
@@ -130,12 +115,32 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 							<div class=tab-page id=skins>
 								<h2 class=tab-page-title>테마</h2>
 								
+								<div class=rolling-selector id=skinRoller>
+									<button id=toLeftBtn type=button class="glossy-round-btn xsm" style="float: left;">◀</button>
+									
+									<label>${myskin}</label>
+									
+									<button id=toRightBtn type=button class="glossy-round-btn xsm" style="float: right;">▶</button>
+									
+									<options>
+										${skop}
+									</options>
+									
+									<input type=hidden name=skin class=value-input value="${myskin}" />
+								</div>
+								
 								<div class=form-group>
-									<label>미리 보기: </label><br>
 									<img src=xxx>
 								</div>
-							
+								
 								<div class=form-group>
+									<label>색상표: </label><br>
+									<select class=form-control style="width: 100%;" name=color id=schemeSelect>
+										${clrs}
+									</select>
+								</div>
+							
+								<div class="form-group noscript-only">
 									<table style="width: 100%;">
 										<colgroup>
 											<col style="width: 50%;">

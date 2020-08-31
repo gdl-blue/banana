@@ -12,10 +12,10 @@ $(function() {
 	 * 화살표 함수("a => b" => "function(a) { return b; }")
 	 * for(a of b) { ... } => for(ai in b) { const a = b[ai]; ... }
 	 * async, await
-	 * let 변수 선언 (var 사용. 차이점이 있는데 거의 비슷)
+	 * let 변수 선언 (var 사용. let은 재선언이 불가한 차이가 있는데 거의 비슷)
 	 * const { ... } = <오브젝트>
 	 */
-	 
+	
 	if(typeof ActiveXObject == 'function' && !document.addEventListener) {
 		document.addEventListener = function(evt, fnc) {
 			if(evt == 'click') evt = 'onclick;'
@@ -38,8 +38,8 @@ $(function() {
 	});
 	
 	function setCookie(name, val) {
-		var d = new Date(); d.setDate(d.getDate()+365);
-		document.cookie = escape(name) + '=' + escape(val) + ';'; /* + ';expires=' + d.toUTCString() + ';path=/'; */
+		var d = new Date(); d.setDate(d.getDate() + 365);
+		document.cookie = escape(name) + '=' + escape(val) + ';expires=' + d.toUTCString() + ';';
 	}
 
 	function getCookie(name) {
@@ -70,6 +70,7 @@ $(function() {
 	});
 	
 	$('.noscript-alert').remove();
+	$('.noscript-only').remove();
 	$('.for-script').show();
 	
 	$('isindex').replaceWith($('<form><label>검색: </label> <input type=text class=form-control name=isindex></form>'));
@@ -455,6 +456,8 @@ $(function() {
 		setVisibleState();
 	}
 	
+	window.discussPollStart = discussPollStart;
+	
 	/* dateformatter.js 라이브러리 사용 - (C) 저작권자 Paul Armstrong / swig 라이브러리에 내장됨 */
 	$('time[datetime]').each(function() {
 		$(this).text(
@@ -519,5 +522,64 @@ $(function() {
 		}
 	});
 	
-	window.discussPollStart = discussPollStart;
+	if(location.pathname.startsWith('/member/mypage')) {
+		$('#colorSelect').change(function() {
+			$('#wallpaperCode').val($(this).val());
+			$('#previewFrame').css('background', $('#wallpaperCode').val());
+		});
+
+		$(document).on("propertychange change keyup paste input", '#wallpaperCode', function() {
+			$('#previewFrame').css('background', $('#wallpaperCode').val());
+		});
+
+		$(document).on("propertychange change keyup paste input", '#txtImageURL', function() {
+			$('#wallpaperCode').val("url('" + $('#txtImageURL').val() + "');");
+		});
+	}
+	
+	$('.rolling-selector').each(function() {
+		const selector      = $(this);
+		const selectorID    = selector.attr('id');
+		const leftBtn       = selector.find('button#toLeftBtn');
+		const rightBtn      = selector.find('button#toRightBtn');
+		const datalist      = selector.find('options');
+		const indicator     = selector.find('label');
+		const firstOption   = datalist.find('> option:first-child').text();
+		const lastOption    = datalist.find('> option:last-child').text();
+		const valueInput    = selector.find('input.value-input');
+		
+		var currentOption = datalist.find('option[value="' + indicator.text() + '"]').text();
+		
+		function onChange() {
+			switch(selectorID) {
+				case 'skinRoller':
+					selector.next().find('> img').attr('src', '/skins/' + indicator.text() + '/preview.bmp');
+			}
+		}
+		
+		leftBtn.click(function() {
+			/* 스크롤 애니메이션은 나중에... */
+			var previousOption = datalist.find('option[value="' + currentOption + '"]').prev().text();
+			if(!previousOption) {
+				previousOption = lastOption;
+			}
+			currentOption = previousOption;
+			
+			indicator.text(currentOption);
+			valueInput.val(currentOption);
+			onChange();
+		});
+		
+		rightBtn.click(function() {
+			var nextOption = datalist.find('option[value="' + currentOption + '"]').next().text();
+			if(!nextOption) {
+				nextOption = firstOption;
+			}
+			currentOption = nextOption;
+			
+			indicator.text(currentOption);
+			valueInput.val(currentOption);
+			onChange();
+		});
+	});
 });
