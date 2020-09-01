@@ -1069,7 +1069,6 @@ if(config.getString('enable_opennamu_skins', '1') != '0') {
 
 	nunjucks.addFilter('to_date', generateTime);
 
-	// 이거...
 	nunjucks.addFilter('load_lang', function filter_loadLang(input) {
 		return ({
 			recent_change: '최근 변경',
@@ -1086,12 +1085,12 @@ async function fetchNamespaces() {
 	return ['문서', '틀', '분류', '파일', '사용자', config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])), '휴지통', '파일휴지통'];
 }
 
-// 비동기 화일읽기(readFileSync는 여러 사람이 쓴다면 부적절함)
+// 비동기 화일읽기(readFileSync는 여러 사람이 동시에 접속한다면 부적절함)
 async function readFile(p) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(p, 'utf8', (e, r) => {
 			if(e) {
-				console.error(e);
+				console.error(e.stack);
 				reject(e);
 			} else {
 				resolve(r.toString());
@@ -1120,7 +1119,7 @@ async function requireAsync(p) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(p, (e, r) => {
 			if(e) {
-				console.error(e);
+				console.error(e.stack);
 				reject(e);
 			} else {
 				resolve( JSON.parse(r.toString()) );
@@ -1280,8 +1279,9 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					'',  // 전역 JS
 					config.getString('wiki.logo_url', '') + config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 로고
 					`
-						<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
-						<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
+						<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
+						<!--[if !IE]><!--><script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
+						<!--[if IE]> <script src="/js/jquery-1.8.0.min.js"></script> <![endif]-->
 						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 						<script type="text/javascript" src="/js/banana.js"></script>
 						<link rel="stylesheet" href="/css/banana.css">
@@ -1388,8 +1388,9 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 						''
 					 ),  // 필수 CSS, JS
 					`
-						<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
-						<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
+						<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
+						<!--[if !IE]><!--><script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
+						<!--[if IE]> <script src="/js/jquery-1.8.0.min.js"></script> <![endif]-->
 						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 						<script type="text/javascript" src="/js/banana.js"></script>
 						<link rel="stylesheet" href="/css/banana.css">
@@ -1514,8 +1515,9 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
 				}
 				header += `
-					<!--[if !IE]><!--><script type="text/javascript" src="https://code.jquery.com/jquery-2.1.4.min.js"></script><!--<![endif]-->
-					<!--[if IE]> <script src="https://code.jquery.com/jquery-1.8.0.min.js"></script> <![endif]-->
+					<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
+					<!--[if !IE]><!--><script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
+					<!--[if IE]> <script src="/js/jquery-1.8.0.min.js"></script> <![endif]-->
 					<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 					<script type="text/javascript" src="/js/banana.js"></script>
 					<script src="/js/diffview.js"></script>
@@ -1922,13 +1924,13 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function sendTheseedSkinFile(re
 	var skinname = req.params[0];
 	var filepath = req.params[1];
 	
-	if(skinname.includes('../') || filepath.includes('../')) {
+	if(skinname.includes('../') || filepath.includes('../') || skinname.includes('....') || filepath.includes('....')) {
 		return res.send(await showError(req, 'malicious_activity_detected'));
 	}
 	
 	if(skinname.toLowerCase() == 'main_css') return res.send(await showError(req, 'file_not_found'));
 
-	try{if((await requireAsync('./skins/' + skinname + '/config.json'))['type'].toLowerCase() == 'opennamu-seed') {
+	try{if(!(await exists('./skins/' + skinname + '/config.json')) || (await requireAsync('./skins/' + skinname + '/config.json'))['type'].toLowerCase() == 'opennamu-seed') {
 		var skinname = req.params[0];
 		var filepath = req.params[1];
 		var skincfg;
@@ -1940,7 +1942,7 @@ wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function sendTheseedSkinFile(re
 			};
 		}
 		
-		if(skincfg['type'] && skincfg['type'].toLowerCase() != 'opennamu-seed') {
+		if(skincfg['type'] && (skincfg['type'].toLowerCase() != 'opennamu-seed' && skincfg['type'].toLowerCase() != 'opennamu')) {
 			res.send(await showError(req, 'file_not_found'));
 			return;
 		}
@@ -1974,7 +1976,7 @@ wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function sendOpennamuSkinFile(r
 	const skinname = req.params[0];
 	const filepath = req.params[1];
 	
-	if(skinname.includes('../') || filepath.includes('../')) {
+	if(skinname.includes('../') || filepath.includes('../') || skinname.includes('....') || filepath.includes('....')) {
 		return res.send(await showError(req, 'malicious_activity_detected'));
 	}
 	
@@ -2012,13 +2014,23 @@ function dropSourceCode(req, res) {
 
 // wiki.get('/index.js', dropSourceCode);
 
-wiki.get('/js/:filepath', function dropJS(req, res) {
+wiki.get('/js/:filepath', async function dropJS(req, res) {
 	const filepath = req.params['filepath'];
+	
+	if(filepath.includes('../') || filepath.includes('....')) {
+		return res.send(await showError(req, 'malicious_activity_detected'));
+	}
+	
 	res.sendFile(filepath, { root: "./js" });
 });
 
-wiki.get('/css/:filepath', function dropCSS(req, res) {
+wiki.get('/css/:filepath', async function dropCSS(req, res) {
 	const filepath = req.params['filepath'];
+	
+	if(filepath.includes('../') || filepath.includes('....')) {
+		return res.send(await showError(req, 'malicious_activity_detected'));
+	}
+	
 	res.sendFile(filepath, { root: "./css" });
 });
 
@@ -2185,7 +2197,7 @@ wiki.get('/admin/suspend_account', function redirectI(req, res) {
 wiki.get(/^\/record\/(.*)$/, async function redirectJ(req, res) {
 	const username = req.params[0];
 	
-	// 사실 이렇게 하는 거 아니고 res.send를 여러번 해야하는데 표준이 없고 그렇게 해도 에러
+	// 사실 이렇게 하는 거 아니고 응답을 여러번 해야하는데 표준이 없고 그렇게 해도 에러
 	res.status(300).send(`
 		<script>
 			if(confirm('계정이면 <예>, IP이면 <아니오>')) {
