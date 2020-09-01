@@ -287,9 +287,25 @@ const timeFormat = 'Y-m-d H:i:s';
 
 const inputReader = require('wait-console-input');
 
+const read_line = require('readline');
+
 function input(p) {
 	prt(p);  // 일부러 이렇게. 바로하면 한글 깨짐.
 	return inputReader.readLine('');
+}
+
+async function readline(prompt) {
+	return new Promise((resolve, reject) => {
+		const rl = read_line.createInterface({
+			input: process.stdin,
+			output: process.stdout
+		});
+		
+		rl.question(prompt, answer => {
+			rl.close();
+			resolve(answer);
+		});
+	});
 }
 
 function inputpw(p) {
@@ -1765,7 +1781,7 @@ async function getacl(req, title, action) {
 								condition = !islogin(req) && ip_check(req).toUpperCase() == value.replace(/^ip[:]/i, '').toUpperCase();
 							}
 							else {
-								condition = false;
+								condition = getperm(value, ip_check(req));
 							}
 						} catch(e) {
 							condition = false;

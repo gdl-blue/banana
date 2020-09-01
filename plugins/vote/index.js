@@ -19,7 +19,7 @@ const generateCaptcha = require('./../../index.js').generateCaptcha;
 const validateCaptcha = require('./../../index.js').validateCaptcha;
 // 필수 코드 종료 //
 
-// 추가적으로 사용할 함수가 있으면 여기에 쓴다. 없으면 쓰지 않는다.
+// 추가적으로 사용할 함수가 있으면 여기에 쓴다.
 function parseDatetime(date, time) {
 	const dateString = `${date} ${time}:00`;
 	
@@ -161,11 +161,9 @@ module.exports = {
 							res.send(await showError(req, 'invalid_request_body')); return;
 						}
 						
-						curs.execute("insert into votedata (data, username, date, num) values (?, ?, ?, ?)", [
+						await curs.execute("insert into votedata (data, username, date, num) values (?, ?, ?, ?)", [
 							val, ip_check(req), new Date().getTime(), num
 						]);
-						
-						timeout(2000);
 						
 						res.redirect('/vote/' + num);
 					}
@@ -241,7 +239,7 @@ module.exports = {
 					{
 						options = options.replace(/\r/g, '\n');
 					}
-				else if(options.includes('\n') && !options.includes('\r'))  // 도스나 윈도우
+				else if(options.includes('\n') && options.includes('\r'))  // 도스나 윈도우
 					{
 						options = options.replace(/\r/g, '');
 					}
@@ -255,16 +253,14 @@ module.exports = {
 				
 				const num = String(_0x6fac9b.length ? Number(_0x6fac9b[0]['num']) + 1 : 1);
 				
-				curs.execute("insert into elections (num, name, start, end, required_date, options) \
+				await curs.execute("insert into elections (num, name, start, end, required_date, options) \
 								values (?, ?, ?, ?, ?, ?)", [num, title, startingDate, endingDate, requiredDate, options]);
-				
-				timeout(2000);
 				
 				res.redirect('/vote/' + num);
 			}
 		}
 	],
-	// 권한 부여(grant) 페이지에서 다음 권한 부여 가능
+	// 권한 부여(grant) 페이지에 다음 권한 추가
 	permissions: ['create_vote'],
 	permission_descriptions: {
 		'create_vote': '투표 등록'
