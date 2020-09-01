@@ -418,9 +418,9 @@ function toDate(t, d = 0) {
 }
 
 function generateTime(time, fmt = timeFormat) {
-	if(time.replace(/^(\d+)[-](\d+)[-](\d+)T(\d+)[:](\d+)[:](\d+)[.]([A-Z0-9]+)$/i, '') == '') {
+	try {if(time.replace(/^(\d+)[-](\d+)[-](\d+)T(\d+)[:](\d+)[:](\d+)[.]([A-Z0-9]+)$/i, '') == '') {
 		return `<time datetime="${time}" data-format="${fmt}">${time}</time>`;
-	}
+	}}catch(e){}
 	
 	const d = split(time, ' ')[0];
 	const t = split(time, ' ')[1];

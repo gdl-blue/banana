@@ -17,12 +17,20 @@ $(function() {
 	 * const { ... } = <오브젝트>
 	 */
 	 
+	const _ = undefined;
+	 
 	const valueChange = 'propertychange change keyup paste input';
 	
-	window.alertBalloon = function(title, content) {
+	window.alertBalloon = function(title, content, delay, noMsgbox, type) {
+		delay    = delay || 3000;
+		noMsgbox = noMsgbox || 0;
+		type     = type || 'normal';
+		
 		if(compatMode) {
-			alert(title + ' ' + content);
+			if(!noMsgbox) alert(title + ' ' + content);
 		} else {
+			$('.js-alert-balloon').remove();
+			
 			const balloon = $(
 				'<div class=js-alert-balloon>' +
 					/* '<span class=light-arrow>--===||&gt;-</span>' + */
@@ -52,7 +60,7 @@ $(function() {
 				'display': 'none',
 				'margin': '25px',
 				'z-index': '800',
-				'background': 'linear-gradient(to right, #fd7, #fff4c5)',
+				'background': 'linear-gradient(to right, ' + (type == 'normal' ? '#fd7, #fff8c9' : 'rgb(198, 215, 231), rgb(239, 247, 255)') + ')',
 				'padding': '8px 12px 8px 12px',
 				'border-radius': '8px',
 				'border': '1px solid #000',
@@ -67,7 +75,7 @@ $(function() {
 				}, 400, 'linear', function() {
 					light.fadeOut(200, function() {
 						light.remove();
-					})
+					});
 				});
 			}, 120);
 			
@@ -76,7 +84,7 @@ $(function() {
 					balloon.fadeOut(300, function() {
 						balloon.remove();
 					});
-				}, 3000);
+				}, delay);
 			});
 		}
 	};
@@ -241,10 +249,10 @@ $(function() {
 			dataType: 'text',
 			success: function aclAddSuccess(res) {
 				addbtn.parent().parent().next().html(res);
-				alertBalloon('[성공]', 'ACL 등록 성공');
+				alertBalloon('[성공]', 'ACL 등록 성공', 2000, 1, 'blue');
 			},
 			error: function aclAddFail(e) {
-				alertBalloon('[ACL]', 'ACL 추가 실패');
+				alertBalloon('[실패]', 'ACL 추가 실패', 2000);
 			}
 		});
 	});
@@ -264,10 +272,10 @@ $(function() {
 			dataType: 'text',
 			success: function aclRemoveSuccess(res) {
 				delbtn.parent().parent().next().html(res);
-				alertBalloon('[성공]', 'ACL 삭제 성공');
+				alertBalloon('[성공]', 'ACL 삭제 성공', 2000, 1, 'blue');
 			},
 			error: function aclRemoveFail(e) {
-				alertBalloon('[ACL]', 'ACL 삭제 실패');
+				alertBalloon('[실패]', 'ACL 삭제 실패', 2000);
 			}
 		});
 	});
@@ -282,13 +290,17 @@ $(function() {
 			dataType: 'json',
 			success: function(d) {
 				if(d.status == 'error') {
-					alertBalloon('[플러그 인]', '선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
+					alertBalloon('[실패]', '선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
 					return;
 				}
-				$('select#pluginList[size] option:selected').css('text-decoration', 'none');
+				alertBalloon('[완료]', '플러그인 활성화 성공', 2000, 1, 'blue');
+				$('select#pluginList[size] option:selected').css({
+					'text-decoration': 'none',
+					'color': 'initial'
+				});
 			},
 			error: function(d) {
-				alertBalloon('[플러그 인]', '선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
+				alertBalloon('[실패]', '선택한 플러그인을 활성화하는 중 오류가 발생했습니다.');
 			}
 		});
 	});
@@ -303,13 +315,17 @@ $(function() {
 			dataType: 'json',
 			success: function(d) {
 				if(d.status == 'error') {
-					alertBalloon('[플러그 인]', '선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
+					alertBalloon('[실패]', '선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
 					return;
 				}
-				$('select#pluginList[size] option:selected').css('text-decoration', 'line-through');
+				alertBalloon('[완료]', '플러그인 비활성화 성공', 2000, 1, 'blue');
+				$('select#pluginList[size] option:selected').css({
+					'text-decoration': 'line-through',
+					'color': 'gray'
+				});
 			},
 			error: function(d) {
-				alertBalloon('[플러그 인]', '선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
+				alertBalloon('[실패]', '선택한 플러그인을 비활성화하는 중 오류가 발생했습니다.');
 			}
 		});
 	});
@@ -385,12 +401,12 @@ $(function() {
 					submitBtn.removeAttr('disabled');
 					submitBtn.text('전송하기!');
 					$('textarea[name="text"]').val('');
-					alertBalloon('[성공]', '댓글을 달았습니다.');
+					alertBalloon('[성공]', '댓글을 달았습니다.', 2000, 1, 'blue');
 				},
 				error: function(d) {
 					submitBtn.removeAttr('disabled');
 					submitBtn.text('전송하기!');
-					alertBalloon('[토론]', '댓글을 달 수 없습니다.');
+					alertBalloon('[실패]', '댓글을 달 수 없습니다. 충분한 권한이 있는지, 토론이 종결되지 않았는지, 그리고 인터넷에 연결됐는지 확인하십시오.', 4000);
 				}
 			});
 			
@@ -407,12 +423,12 @@ $(function() {
 				data: $(this).serialize(),
 				url: '/admin/thread/' + tnum + '/status',
 				success: function(d) {
-					alertBalloon('[성공]', '상태를 업데이트했습니다.');
+					alertBalloon('[성공]', '상태를 업데이트했습니다.', 2000, 1, 'blue');
 					submitBtn.removeAttr('disabled');
 					history.go(0);
 				},
 				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.');
+					alertBalloon('[실패]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
 				}
 			});
 			
@@ -430,12 +446,12 @@ $(function() {
 				},
 				url: '/admin/thread/' + tnum + '/status',
 				success: function(d) {
-					alertBalloon('[성공]', '상태를 업데이트했습니다.');
+					alertBalloon('[성공]', '상태를 업데이트했습니다.', 2000, 1, 'blue');
 					submitBtn.removeAttr('disabled');
 					history.go(0);
 				},
 				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.');
+					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
 				}
 			});
 			
@@ -452,11 +468,11 @@ $(function() {
 				data: $(this).serialize(),
 				url: '/admin/thread/' + tnum + '/document',
 				success: function(d) {
-					alertBalloon('[성공]', '토론을 이동했습니다.');
+					alertBalloon('[성공]', '토론을 이동했습니다.', 2000, 1, 'blue');
 					submitBtn.removeAttr('disabled');
 				},
 				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.');
+					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
 				}
 			});
 			
@@ -473,11 +489,11 @@ $(function() {
 				data: $(this).serialize(),
 				url: '/admin/thread/' + tnum + '/topic',
 				success: function(d) {
-					alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.');
+					alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.', 2000, 1, 'blue');
 					submitBtn.removeAttr('disabled');
 				},
 				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.');
+					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
 				}
 			});
 			
@@ -494,11 +510,11 @@ $(function() {
 				data: $(this).serialize(),
 				url: '/admin/thread/' + tnum + '/topic',
 				success: function(d) {
-					alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.');
+					alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.', 2000, 1, 'blue');
 					submitBtn.removeAttr('disabled');
 				},
 				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.');
+					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
 				}
 			});
 			
