@@ -277,17 +277,17 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	content += `
 		${
 			(!deleted && getperm('delete_thread', ip_check(req)))
-			? '<span class=pull-right><a onclick="return confirm(\'삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
+			? '<span class=pull-right><a id=deleteThreadBtn href="/admin/thread/' + tnum + '/delete" class="btn btn-danger btn-sm">토론 삭제</a></span>'
 			: ''
 		}
 		${
 			(deleted && getperm('developer', ip_check(req)))
-			? '<span class=pull-right><a onclick="return confirm(\'삭제복구하시겠습니까?\');" href="/admin/thread/' + tnum + '/restore" class="btn btn-warning btn-sm">삭제 복구</a></span>'
+			? '<span class=pull-right><a id=restoreThreadBtn href="/admin/thread/' + tnum + '/restore" class="btn btn-warning btn-sm">삭제 복구</a></span>'
 			: ''
 		}
 		${
 			(getperm('developer', ip_check(req)))
-			? '<span class=pull-right><a onclick="return confirm(\'영구 삭제하시겠습니까?\');" href="/admin/thread/' + tnum + '/permanant_delete" class="btn btn-danger btn-sm">완전 삭제</a></span>'
+			? '<span class=pull-right><a id=explodeThreadBtn" href="/admin/thread/' + tnum + '/permanant_delete" class="btn btn-danger btn-sm">완전 삭제</a></span>'
 			: ''
 		}
 	`;

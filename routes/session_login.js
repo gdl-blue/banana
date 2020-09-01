@@ -5,18 +5,16 @@ wiki.get('/member/login', async function loginScreen(req, res) {
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
 	var warningText = '';
-	var warningScript = '';
 	
 	if(!req.secure) {
 		warningText = '<p><strong><font color=red>[경고!] HTTPS 연결이 아닌 것같습니다. 로그인할 시 개인정보가 유출될 수 있으며, 이에 대한 책임은 본인에게 있습니다.</font></strong></p>';
-		warningScript = ` onsubmit="return confirm('경고 - 지금 HTTPS 연결이 감지되지 않았습니다. 로그인할 경우 비밀번호가 다른 사람에게 노출될 수 있으며, 이에 대한 책임은 본인에게 있습니다. 계속하시겠습니까?');"`;
 	}
 	
 	const captcha = generateCaptcha(req, 3);
 	
 	res.send(await render(req, '로그인', `
 		${warningText}
-		<form class=login-form method=post${warningScript}>
+		<form class=login-form method=post data-nohttps="${!req.secure}">
 			<div class=form-group>
 				<label>사용자 이름:</label><br>
 				<input class=form-control name="username" type="text">

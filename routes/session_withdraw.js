@@ -5,7 +5,7 @@ wiki.get('/member/withdraw', async (req, res) => {
 	}
 	
 	var content = `
-		<form method=post onsubmit="return confirm('마지막 경고입니다. 계속하시겠습니까?');">
+		<form class=withdraw-form method=post>
 			<div class=form-group>
 				<p><strong>[경고]</strong> 탈퇴 시 당신이 기여한 내용의 저작자 식별이 어려울 수 있습니다.</p>
 			</div>

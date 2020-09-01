@@ -39,7 +39,7 @@ wiki.get('/member/signup_key', async function signupScreen(req, res) {
 	res.send(await render(req, '계정 만들기', `
 		${warningText}
 	
-		<form class=signup-form method=post${warningScript}>
+		<form class=signup-form method=post data-nohttps="${!req.secure}">
 			<div class=form-group>
 				<label>사용자 이름:</label><br>
 				<input class=form-control name="username" type="text">

@@ -5,20 +5,15 @@
 */
 
 $(function() {
-	/**
-     * <호환성을 위해 다음 문법 사용 금지!>
-	 
-	 * 함수 인자 기본값("param = param || 기본값" 사용)
-	 * 템플릿 문자열(`A의 값은 ${a}이다` 등 => 'A의 값은 ' + a + '이다')
-	 * 화살표 함수("a => b" => "function(a) { return b; }")
-	 * for(a of b) { ... } => for(ai in b) { const a = b[ai]; ... }
-	 * async, await
-	 * let 변수 선언 (var 사용. let은 재선언이 불가한 차이가 있는데 거의 비슷)
-	 * const { ... } = <오브젝트>
-	 */
-	 
 	const _ = undefined;
-	 
+	var noAsync = false;
+	
+	try {
+		eval('async function __ASYNC_FUNCTION_TEST(x,p, d,a, b,e,s,t) { return 1; }');
+	} catch(e) {
+		noAsync = true;
+	}
+	
 	const valueChange = 'propertychange change keyup paste input';
 	
 	window.alertBalloon = function(title, content, delay, noMsgbox, type) {
@@ -80,11 +75,48 @@ $(function() {
 			}, 120);
 			
 			balloon.fadeIn(300, function() {
-				setTimeout(function() {
-					balloon.fadeOut(300, function() {
-						balloon.remove();
-					});
-				}, delay);
+				if(delay > 0) {
+					setTimeout(function() {
+						balloon.fadeOut(300, function() {
+							balloon.remove();
+						});
+					}, delay);
+				}
+			});
+			
+			return balloon;
+		}
+	};
+	
+	window.confirmBalloon = function(title, content, callbackOK, callbackCancel, y, n) {
+		y = y || '확인';
+		n = n || '취소';
+		
+		callbackCancel = callbackCancel || (function() {});
+		
+		if(compatMode) {
+			if(confirm(title + ' ' + content)) {
+				callbackOK();
+			} else {
+				callbackCancel();
+			}
+		} else {
+			const balloon = alertBalloon(title, content + '<span style="float: right;"><button class=yes-btn>' + y + '</button> <button class=no-btn>' + n + '</button></span>', -1, _, 'blue')
+			
+			balloon.find('> p > span > button.yes-btn').click(function() {
+				callbackOK();
+			
+				balloon.fadeOut(300, function() {
+					balloon.remove();
+				});
+			});
+			
+			balloon.find('> p > span > button.no-btn').click(function() {
+				callbackCancel();
+			
+				balloon.fadeOut(300, function() {
+					balloon.remove();
+				});
 			});
 		}
 	};
@@ -679,5 +711,83 @@ $(function() {
 			valueInput.val(currentOption);
 			onChange();
 		});
+	});
+	
+	$('form.login-form[data-nohttps="true"], form.signup-form[data-nohttps="true"]').submit(function() {
+		const frm = $(this);
+		
+		if(window.submitConfirmed) return true;
+		
+		confirmBalloon('[경고]', 'HTTPS 연결이 감지되지 않았습니다. 비밀번호가 다른 사람에게 노출될 수 있으며, 책임은 본인에게 있습니다.', function() {
+			window.submitConfirmed = true;
+			frm.submit();
+		}, _, '계속');
+		
+		return false;
+	});
+	
+	$('form.withdraw-form').submit(function() {
+		const frm = $(this);
+		
+		if(window.submitConfirmed) return true;
+		
+		confirmBalloon('[경고]', 'HTTPS 연결이 감지되지 않았습니다. 비밀번호가 다른 사람에게 노출될 수 있으며, 책임은 본인에게 있습니다.', function() {
+			window.submitConfirmed = true;
+			frm.submit();
+		}, _, '계속');
+		
+		return false;
+	});
+	
+	$('form#remove-star-category-form').submit(function() {
+		const frm = $(this);
+		
+		if(window.submitConfirmed) return true;
+		
+		confirmBalloon('[경고]', '분류 안의 문서들까지 일괄 해제됩니다. 계속하시겠습니까?', function() {
+			window.submitConfirmed = true;
+			frm.submit();
+		});
+		
+		return false;
+	});
+	
+	$('a#deleteThreadBtn').click(function() {
+		const a = $(this);
+		
+		if(window.submitConfirmedA) return true;
+		
+		confirmBalloon('[경고]', '토론을 지우시겠습니까? 위키 개발자만 복구할 수 있습니다.', function() {
+			window.submitConfirmedA = true;
+			location.href = a.attr('href');
+		});
+		
+		return false;
+	});
+	
+	$('a#restoreThreadBtn').click(function() {
+		const a = $(this);
+		
+		if(window.submitConfirmedB) return true;
+		
+		confirmBalloon('[경고]', '토론을 삭제복구하시겠습니까? 모든 사용자가 토론을 볼 수 있습니다.', function() {
+			window.submitConfirmedB = true;
+			location.href = a.attr('href');
+		});
+		
+		return false;
+	});
+	
+	$('a#explodeThreadBtn').click(function() {
+		const a = $(this);
+		
+		if(window.submitConfirmedC) return true;
+		
+		confirmBalloon('[경고]', '토론을 영구적으로 지우시겠습니까? 복구할 수 없습니다!', function() {
+			window.submitConfirmedC = true;
+			location.href = a.attr('href');
+		});
+		
+		return false;
 	});
 });

@@ -126,7 +126,7 @@ wiki.get('/member/starred_documents/categories', async (req, res) => {
 			<tr>
 				<td>${html.escape(cate.name)}</td>
 				<td>
-					<form method=post onsubmit="return confirm('분류 안의 문서들까지 지워집니다.');">
+					<form method=post id=remove-star-category-form>
 						<input type=hidden name=category value="${html.escape(cate.name)}">
 						<input type=hidden name=submittype value=delete>
 						<button type=submit class="btn btn-danger btn-sm">삭제</button>
