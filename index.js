@@ -1,9 +1,10 @@
 const versionInfo = {
-	major:    1,
-	minor:    99,
-	revision: 4,
-	state:    'alpha',
-	patch:    'A'
+	major:        1,
+	minor:        99,
+	revision:     7,
+	channel:      'alpha',
+	channelDesc:  '알파',
+	patch:        'A'
 };
 
 const isArray = obj => Object.prototype.toString.call(obj) == '[object Array]';
@@ -197,7 +198,7 @@ function TCVreader(filename, timerName) {
 async function timeout(ms, synchronous = true) {
 	if(!synchronous) {
 		return new Promise((r, j) => {
-			setTimeout(() => r(1), s);
+			setTimeout(() => r(1), ms);
 		});
 	} else {
 		// 클라이언트 요청 처리중에 이거 쓰면 안됨.
@@ -207,6 +208,8 @@ async function timeout(ms, synchronous = true) {
 		}
 	}
 }
+
+TCVreader('chick', '_starting');
 
 // 호환용 권한은 쌍따옴표
 var perms = [
@@ -252,8 +255,8 @@ function print(x) { console.log(x); }
 function prt(x) { process.stdout.write(x); }
 
 function beep(cnt = 1) { // 경고음 재생이였음
-	for(var i=1; i<=cnt; i++)
-		prt(''); // prt("");
+	// for(var i=1; i<=cnt; i++)
+		// prt("");
 }
 
 const path = require('path');
@@ -262,10 +265,10 @@ const captchapng = require('captchapng');
 
 // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 function rndval(chars, length) {
-	var result           = '';
-	var characters       = chars;
-	var charactersLength = characters.length;
-	for ( var i = 0; i < length; i++ ) {
+	var   result           = '';
+	const characters       = chars;
+	const charactersLength = characters.length;
+	for (i=0; i<length; i++) {
 		result += characters.charAt(Math.floor(Math.random() * charactersLength));
 	}
 	return result;
@@ -308,23 +311,6 @@ async function readline(prompt) {
 	});
 }
 
-function inputpw(p) {
-	const rlsync = require('readline-sync');
-	
-	prt(p);
-	
-	var retval = '';
-	
-	while(1) {
-		var chr = rlsync.keyIn('');
-		if(chr == '\n') break;
-		retval += chr;
-		prt('*');
-	}
-	
-	return retval;
-}
-
 const exec = eval;
 
 const { SHA3 } = require('sha3');
@@ -350,7 +336,7 @@ const conn = new sqlite3.Database('./wikidata.db', (err) => {}); // 데이타베
 // https://blog.pagesd.info/2019/10/29/use-sqlite-node-async-await/
 conn.query = function (sql, params) {
 	var that = this;
-		return new Promise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		that.all(sql, params, function asyncSQLRun(error, rows) {
 			if(error) {
 				print(error);
@@ -364,7 +350,7 @@ conn.query = function (sql, params) {
 
 conn.exec = function (sql, params) {
 	var that = this;
-		return new Promise(function (resolve, reject) {
+	return new Promise(function (resolve, reject) {
 		that.run(sql, params, function asyncSQLRun(error) {
 			if(error) {
 				print(error);
@@ -433,7 +419,7 @@ function toDate(t, d = 0) {
     return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
 }
 
-function generateTime(time, fmt = timeFormat) {
+function generateTime(time, fmt = timeFormat, iso = null) {
 	try {if(time.replace(/^(\d+)[-](\d+)[-](\d+)T(\d+)[:](\d+)[:](\d+)[.]([A-Z0-9]+)$/i, '') == '') {
 		return `<time datetime="${time}" data-format="${fmt}">${time}</time>`;
 	}}catch(e){}
@@ -472,6 +458,7 @@ swig.setFilter('md5', function filter_md5(input, length = null) {
 
 swig.setFilter('to_date', toDate);
 
+generateTime.safe = true;
 swig.setFilter('localdate', generateTime);
 
 var bodyParser = require('body-parser');
@@ -498,6 +485,9 @@ try {
 } catch(e) {
 	firstrun = 0;
 	(async function setupWiki() {
+		clearInterval(tcvTimers['_starting']);
+		console.clear();
+		
 		if(!fs.existsSync('./config.json')) {
 			if(require('os').platform() == 'win32' && require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\MSVBVM60.DLL') && require('fs').existsSync(require('os').homedir()[0] + ':\\WINDOWS\\SYSTEM32\\VB6KO.DLL')) {
 				print("설치 프로그램을 불러오는 중입니다 . . .");
@@ -506,8 +496,8 @@ try {
 				timeout(3500);
 				process.exit();
 			}
-			print("바나나 위키엔진에 오신것을 환영합니다.");
-			print("버전 2.0.0 [디버그 전용]");
+			print("바나나에 오신것을 환영합니다.");
+			print("버전 " + versionInfo.major + "." + versionInfo.minor + "." + versionInfo.revision + " - 개정 " + versionInfo.patch + " [" + versionInfo.channelDesc + "]");
 			
 			prt('\n');
 			
@@ -622,12 +612,16 @@ try {
 wiki.use(bodyParser.json({
     limit: '50mb'
 }));
+
 wiki.use(bodyParser.urlencoded({ 
 	limit: '50mb',
 	extended: false
 }));
+
 wiki.use(express.static('public'));
+
 wiki.use(cookieParser());
+
 wiki.use(session({
 	key: 'doornot',
 	secret: hostconfig['secret'],
@@ -2390,8 +2384,6 @@ wiki.use(function(req, res, next) {
 
 if(firstrun) {
 	(async function setCacheData() {
-		TCVreader('chick', '_starting');
-		
 		await curs.execute("select key, value from config");
 		
 		for(var cfg of curs.fetchall()) {
@@ -2422,36 +2414,27 @@ if(firstrun) {
 				permlist[prm['username']].push(perm);
 		}
 		
-		// setTimeout(()=>{
-		const server = wiki.listen(hostconfig['port']); // 서버실행
-		clearInterval(tcvTimers['_starting']);
-		console.clear();
-		print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
-		
-		sound('500,100 750,150');
-		// },10000000);
+		const server = wiki.listen(hostconfig['port'], hostconfig['host'], () => {
+			clearInterval(tcvTimers['_starting']);
+			console.clear();
+			print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
+			
+			sound('500,100 750,150');
+		}); // 서버실행
 		
 		// 활성화된 경우 텔넷 서버 열기
 		if(config.getString('allow_telnet', '0') == '1') {
 			const net = require('net');
 			const telnet = net.createServer();
 
-			telnet.on('connection', function telnetHome(client) {
+			telnet.on('connection', async function telnetHome(client) {
 				client.setEncoding('utf8');
 				
-				const readline = require('readline');
-				const rl = readline.createInterface({
-					input: client,
-					output: client
-				});
+				var doctitle = await readline('문서 이름: ');
+				client.write('\n');
 				
-				rl.question('문서 이름: ', answer => {
-					client.write('\n');
-					
-					conn.all("select content from documents where title = ?", [answer], (e, r) => {
-						if(!e) client.write(r[0]['content']);
-					});
-				});
+				var dbdata = await curs.execute("select content from documents where title = ?", [doctitle]);
+				client.write(dbdata[0]['content']);
 			});
 
 			telnet.listen(23);
