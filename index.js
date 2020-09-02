@@ -2265,6 +2265,10 @@ async function getThreadData(req, tnum, tid = '-1') {
 	}
 	content = '';
 	for(rs of dbdata) {
+		if((rs.hidden == '1' || rs.hidden == 'O') && req.cookies['always-hide-hidden-res']) {
+			continue;
+		}
+		
 		var hbtn = ''
 		if((getperm('blind_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000)) {
 			hbtn += `

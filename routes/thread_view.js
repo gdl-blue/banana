@@ -82,6 +82,10 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		content += await getThreadData(req, tnum);
 	} else {
 		for(var i=1; i<=rescount; i++) {
+			if((hiddendata[i-1]['hidden'] == '1' || hiddendata[i-1]['hidden'] == 'O') && req.cookies['always-hide-hidden-res']) {
+				continue;
+			}
+			
 			content += `
 				<div class="res-wrapper res-loading" data-hidden="${hiddendata[i-1]['hidden'] == '1' || hiddendata[i-1]['hidden'] == 'O' ? 'true' : 'false'}" data-id="${i}" data-locked="false" data-visible=false>
 					<div class="res res-type-normal">
@@ -196,13 +200,16 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 						<a href="/member/star_thread/${slug}">[이 토론 주시(미구현)] </a>
 						<a href="/member/unstar_thread/${slug}">[이 토론 주시 해제(미구현)] </a>
 					</div>
-					
-					<div class=form-group>
-						<button id=hideBlindRes>숨겨진 댓글 숨기기</button>
-						<button id=showBlindRes disabled>숨겨진 댓글 표시</button>
-						<label><input id=alwaysHideBlindRes type=checkbox> 항상 숨기기</label>
-					</div>
 	`;
+	if(!req.cookies['always-hide-hidden-res']) {
+		content += `
+			<div class=form-group>
+				<button id=hideBlindRes>숨겨진 댓글 숨기기</button>
+				<button id=showBlindRes disabled>숨겨진 댓글 표시</button>
+				<label><input id=alwaysHideBlindRes type=checkbox> 항상 숨기기</label>
+			</div>
+		`;
+	}
 	
 	if(getperm('update_thread_status', ip_check(req)) && type != 'edit_request') {
 		var sts = '';
