@@ -20,7 +20,7 @@ wiki.get('/Upload', async function fileUploadPage(req, res) {
 	
 	var content = '';
 	
-	if(!req.query['nojs'] && compatMode(req)) {
+	if(!req.query['nojs'] && (compatMode(req) || req.cookies['no-upload-script'])) {
 		res.redirect('/Upload?nojs=1');
 		return;
 	}
@@ -139,14 +139,6 @@ wiki.get('/Upload', async function fileUploadPage(req, res) {
 					<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
 				</div>
 			</form>
-		`;
-	}
-	
-	if(!req.query['nojs']) {
-		content += `
-			<noscript>
-				<meta http-equiv=refresh content="0; url=?nojs=1" />
-			</noscript>
 		`;
 	}
 	

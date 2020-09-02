@@ -34,6 +34,11 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		return;
 	}
 	
+	if(!req.query['nojs'] && (compatMode(req) || req.cookies['no-discuss-script'])) {
+		res.redirect('/thread/' + tnum + '?nojs=1');
+		return;
+	}
+	
 	var trtopic = html.escape(topic);
 	
 	if(getperm('update_thread_topic', ip_check(req))) {
@@ -73,7 +78,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	const hiddendata = await curs.execute("select hidden from res where tnum = ? order by cast(id as integer) asc", [tnum]);
 	
-	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
+	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req)) || req.cookies['no-discuss-script']) {
 		content += await getThreadData(req, tnum);
 	} else {
 		for(var i=1; i<=rescount; i++) {
@@ -298,14 +303,6 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		</div>
 	`;
 	
-	if(!req.query['nojs'] && !(!req.query['nojs'] && compatMode(req))) {
-		content += `
-			<noscript>
-				<meta http-equiv=refresh content="0; url=?nojs=1" />
-			</noscript>
-		`;
-	}
-	
 	res.send(await render(req, title, content, {
 		st: 3
 	}, ' (' + (type == 'edit_request' ? '편집요청' : '토론') + ') - ' + topic, error = false, viewname = 'thread'));
@@ -318,7 +315,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 	}
 	
 	if(!req.body['text']) {
-		if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
+		if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req)) || req.cookies['no-discuss-script']) {
 			res.send(await showError(req, 'invalid_request_body'));
 			return;
 		} else {
@@ -373,7 +370,7 @@ wiki.post('/thread/:tnum', async function postThreadComment(req, res) {
 					
 	curs.execute("update threads set time = ? where tnum = ?", [getTime(), tnum]);
 	
-	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
+	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req)) || req.cookies['no-discuss-script']) {
 		res.redirect('/thread/' + tnum + '?nojs=1');
 	} else {
 		res.json({});

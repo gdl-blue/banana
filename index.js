@@ -1267,6 +1267,19 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	
 	templateVariables['user_document_discuss'] = user_document_discuss;
 	
+	const cssjshead = `
+		<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
+		<!--[if !IE]><!--><script type="text/javascript" src="/js/jquery-2.1.4${req.cookies['bioking'] ? '' : '.min'}.js"></script><!--<![endif]-->
+		<!--[if IE]> <script src="/js/jquery-1.8.0${req.cookies['bioking'] ? '' : '.min'}.js"></script> <![endif]-->
+		<script src="/js/jquery-ui${req.cookies['bioking'] ? '' : '.min'}.js"></script>
+		<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
+		<script type="text/javascript" src="/js/banana.js"></script>
+		<link rel="stylesheet" href="/css/banana.css">
+		<link rel="stylesheet" href="/css/diffview.css">
+		<script src="/js/diffview.js"></script>
+		<script src="/js/difflib.js"></script>
+	`;
+	
 	if(config.getString('enable_opennamu_skins', '1') == '1') {
 		// 오픈나무 스킨 호환용
 		if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu-seed') {
@@ -1287,17 +1300,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					'',  // 전역 CSS
 					'',  // 전역 JS
 					config.getString('wiki.logo_url', '') + config.getString('wiki.site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너'])),  // 로고
-					`
-						<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
-						<!--[if !IE]><!--><script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
-						<!--[if IE]> <script src="/js/jquery-1.8.0.min.js"></script> <![endif]-->
-						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
-						<script type="text/javascript" src="/js/banana.js"></script>
-						<link rel="stylesheet" href="/css/banana.css">
-						<link rel="stylesheet" href="/css/diffview.css">
-						<script src="/js/diffview.js"></script>
-						<script src="/js/difflib.js"></script>
-					`,  // 전역 <HEAD>
+					cssjshead,  // 전역 <HEAD>
 					config.getString('wiki.sitenotice', ''),  // 공지
 					getpermForSkin,  // 권한 유무 여부 함수
 					toDate(getTime())  // 시간
@@ -1396,17 +1399,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					 ) : (
 						''
 					 ),  // 필수 CSS, JS
-					`
-						<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
-						<!--[if !IE]><!--><script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
-						<!--[if IE]> <script src="/js/jquery-1.8.0.min.js"></script> <![endif]-->
-						<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
-						<script type="text/javascript" src="/js/banana.js"></script>
-						<link rel="stylesheet" href="/css/banana.css">
-						<link rel="stylesheet" href="/css/diffview.css">
-						<script src="/js/diffview.js"></script>
-						<script src="/js/difflib.js"></script>
-					`
+					cssjshead
 				]
 			];
 			nunvars['data'] = content;
@@ -1517,21 +1510,12 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					<meta charset=utf-8>
 					<meta name=generator content=banana>
 					<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-					<link rel="stylesheet" href="/css/banana.css">
-					<link rel="stylesheet" href="/css/diffview.css">
-				`;
+				` + cssjshead;
+				
 				for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
 					header += '<link rel=stylesheet href="/skins/' + getSkin(req) + '/' + skinconfig["auto_css_targets"]['*'][i] + '">';
 				}
-				header += `
-					<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
-					<!--[if !IE]><!--><script type="text/javascript" src="/js/jquery-2.1.4.min.js"></script><!--<![endif]-->
-					<!--[if IE]> <script src="/js/jquery-1.8.0.min.js"></script> <![endif]-->
-					<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
-					<script type="text/javascript" src="/js/banana.js"></script>
-					<script src="/js/diffview.js"></script>
-					<script src="/js/difflib.js"></script>
-				`;
+				
 				for(var i=0; i<skinconfig["auto_js_targets"]['*'].length; i++) {
 					header += '<script type="text/javascript" src="/skins/' + getSkin(req) + '/' + skinconfig["auto_js_targets"]['*'][i]['path'] + '"></script>';
 				}
