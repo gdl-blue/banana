@@ -61,13 +61,6 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 							${dsop}
 						</select>
 					</div>
-					
-					<div class=form-group>
-						<label>색상표: </label><br>
-						<select class=form-control name=timecosmos id=schemeSelect>
-							${clrs}
-						</select>
-					</div>
 				</div>
 				
 				<div class=form-group id=accessibilityGroup>
@@ -76,6 +69,24 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 						<label><input type=checkbox id=hideStrikethroughInput name=hide-strikethrough> 취소선 숨기기</label><br />
 						<label><input type=checkbox id=unboldInput name=unbold> 굵은 글씨 속성 해제</label><br />
 						<label><input type=checkbox id=unitalicInput name=unitalic> 기울임 글씨 속성 해제</label><br />
+					</div>
+				</div>
+			</div>
+			
+			<div class=form-group id=debugGroup>
+				<h2 class=tab-page-title>개발 및 디버깅</h2>
+				
+				<div class=form-group>
+					<h4>통신</h4>
+					<div class=form-group>
+						<label><input type=checkbox name=space-bonefish /> 오류에 관계없이 200 코드 반환</label><br>
+					</div>
+				</div>
+				
+				<div class=form-group>
+					<h4>스크립트</h4>
+					<div class=form-group>
+						<label><input type=checkbox name=bioking /> jQuery를 불러올 때 압축되지 않은 버전 불러오기</label><br>
 					</div>
 				</div>
 			</div>
@@ -89,43 +100,10 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 	res.send(await render(req, '사용자 지정', content, {}, _, _, 'customization'));
 });
 
-wiki.post('/Customize', async function saveMemberSettings(req, res) {
-	return;
-	
-	if(!islogin(req)) {
-		res.redirect('/member/login?redirect=' + encodeURIComponent('/member/mypage'));
-		return;
+wiki.post('/Customize', async function saveSettings(req, res) {
+	for(setting in req.body) {
+		res.cookie(setting, req.body[setting]);
 	}
 	
-	var settings = [
-		'skin', 'color'
-	];
-	
-	const currentSkin = getSkin(req);
-	
-	for(settingi of settings) {
-		if(settingi.startsWith('!')) {
-			const setting = settingi.replace(/^[!]/, '');
-			conn.run("delete from user_settings where username = ? and key = ?", [ip_check(req), setting], e => 
-				curs.execute("insert into user_settings (username, key, value) values (?, ?, ?)", [ip_check(req), setting, req.body[setting] ? '1' : '0']));
-			userset[ip_check(req)][setting] = req.body[setting] ? '1' : '0';
-		} else {
-			const setting = settingi;
-			if(!req.body[setting]) continue;
-			conn.run("delete from user_settings where username = ? and key = ?", [ip_check(req), setting], e => 
-				curs.execute("insert into user_settings (username, key, value) values (?, ?, ?)", [ip_check(req), setting, req.body[setting]]));
-			userset[ip_check(req)][setting] = req.body[setting];
-		}
-	}
-	
-	try{if(req.body['skin'] != currentSkin && require('./skins/' + getSkin(req) + '/config.json')['type'].toLowerCase() == 'opennamu-seed') {
-		const dc = fs.readFileSync('./skins/' + getSkin(req) + '/dfltcolr.scl').toString();
-		curs.execute("update user_settings set value = ? where key = 'color' and username = ?", [dc, ip_check(req)]);
-		userset[ip_check(req)]['color'] = dc;
-	}}catch(e) {
-		curs.execute("update user_settings set value = ? where key = 'color' and username = ?", ['default', ip_check(req)]);
-		userset[ip_check(req)]['color'] = 'default';
-	}
-	
-	res.redirect('/member/mypage');
+	res.redirect('/Customize');
 });

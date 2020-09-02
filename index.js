@@ -891,7 +891,7 @@ async function JSnamumark(title, content, initializeBacklinks = 0) {
 }
 
 // 처음 실행해주면 두번째부터는 빠름
-JSnamumark('', '::').then(r => {}).catch(e => {});
+JSnamumark('', '안녕!').then(r => {}).catch(e => {});
 
 function islogin(req) {
 	if(req.cookies.gildong && req.cookies.icestar) {
@@ -911,8 +911,7 @@ function getUsername(req, forceIP = 0) {
 			return req.headers['x-forwarded-for'];
 		} else {
 			try {
-				if(req.connection.remoteAddress == '::ffff:127.0.0.1') return '127.0.0.1';
-				return req.connection.remoteAddress;
+				return req.connection.remoteAddress.replace(/^[:][:]ffff[:]/, '');
 			} catch(e) {
 				return '???';
 			}
@@ -1110,7 +1109,7 @@ async function readFile(p) {
 }
 
 async function exists(p) {
-	// fs.exists는 작동안함(Deprecated여도 쓸 수 있을 줄 알았는데 에러를 무조건 true로 반환하네;;)
+	// fs.exists는 작동안함
 	
 	return new Promise((resolve, reject) => {
 		fs.readFile(p, (e, r) => {
