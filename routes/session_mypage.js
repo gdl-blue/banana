@@ -133,7 +133,7 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 									<img src=xxx>
 								</div>
 								
-								<div class=form-group>
+								<div class="form-group for-script">
 									<label>색상표: </label><br>
 									<select class=form-control style="width: 100%;" name=color id=schemeSelect>
 										${clrs}

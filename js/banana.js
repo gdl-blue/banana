@@ -678,6 +678,8 @@ $(function() {
 		const lastOption    = datalist.find('> option:last-child').text();
 		const valueInput    = selector.find('input.value-input');
 		
+		selector.show();
+		
 		var currentOption = datalist.find('option[value="' + indicator.text() + '"]').text();
 		
 		function onChange() {

@@ -1,11 +1,13 @@
 const versionInfo = {
 	major:        1,
 	minor:        99,
-	revision:     7,
+	revision:     10,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A'
 };
+
+const advCount = 27;
 
 const isArray = obj => Object.prototype.toString.call(obj) == '[object Array]';
 const ifelse = (e, y, n) => e ? y : n;
@@ -2249,8 +2251,8 @@ async function getThreadData(req, tnum, tid = '-1') {
 	
 	if(!rescount) { return ''; }
 	
-	var dbdata = await curs.execute("select username from res where tnum = ? and (id = '1')", [tnum]);
-	const fstusr = dbdata[0]['username'];
+	var dbdata = await curs.execute("select username, ismember from res where tnum = ? and (id = '1')", [tnum]);
+	const fstusr = dbdata[0]['username'] + dbdata[0]['ismember'];
 	
 	var dbdata = await curs.execute("select title, topic, status from threads where tnum = ?", [tnum]);
 	const title = dbdata[0]['title'];
@@ -2272,19 +2274,24 @@ async function getThreadData(req, tnum, tid = '-1') {
 		var hbtn = ''
 		if((getperm('blind_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000)) {
 			hbtn += `
-				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'show' : 'hide'}">[댓글 ${rs['hidden'] == '1' ? '표시' : '숨기기'}]</a>
+				<a href="/admin/thread/${tnum}/${rs['id']}/${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'show' : 'hide'}">[${rs['hidden'] == '1' ? '댓글 표시' : '숨기기'}]</a>
 			`;
 		}
 		
 		content += `
 			<div class=res-wrapper data-id="${rs['id']}" data-hidden="${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'true' : 'false'}">
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
-					<div class="r-head${rs['username'] == fstusr ? " first-author" : ''}">
+					<div class="r-head${rs['username'] + rs['ismember'] == fstusr ? " first-author" : ''}">
 						<span class=num>
 							<a id="${rs['id']}" data-description="나무픽스 호환" style="display: none;">#${rs['id']}</a>
-							${rs['id']}.&nbsp;
-						</span> ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn}
-						<span style="float: right;">${generateTime(toDate(rs['time']), "Y년 m월 d일 H시 i분")}</span>
+							#${rs['id']}&nbsp;
+						</span>
+						${generateTime(toDate(rs['time']), "m월 d일 H시 i분")}에
+						${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])}가 남긴 댓글 ${hbtn}
+						<span style="float: right;">
+							${rs['ismember'] == 'author' && (getperm('admin', rs.username)) ? '[관리자]' : ''}
+							${await ban_check(req, rs['ismember'], rs.username) ? '&nbsp;[차단된 사용자]' : ''}
+						</span>
 					</div>
 					
 					<div class="r-body${rs['hidden'] == '1' || rs['hidden'] == 'O' ? ' r-hidden-body' : ''}">

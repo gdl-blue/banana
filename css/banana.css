@@ -249,3 +249,7 @@ span.footnote-content {
 .rolling-selector options {
 	display: none;
 }
+
+.rolling-selector, .for-script {
+	display: none;
+}

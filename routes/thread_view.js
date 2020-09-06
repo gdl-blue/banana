@@ -106,7 +106,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	`;
 	
 	if(req.query['nojs'] == '1' || (!req.query['nojs'] && compatMode(req))) {
-		content += alertBalloon('경고', '지원되지 않는 브라우저를 사용하기 때문에 새로운 댓글을 자동으로 불러올 수 없습니다. <small>지원되며, 사용자 에이전트를 변경한 것이라면 <a href="?nojs=0">여기</a>를 누르십시오.</small>', 'warning');
+		content += alertBalloon('경고', '지원되지 않는 브라우저를 사용 중이거나 기능이 비활성화되어있어 새로운 댓글을 자동으로 불러올 수 없습니다. (지원되나, 사용자 에이전트를 변경한 것이라면 <a href="?nojs=0">여기</a>를 누르십시오)', 'warning');
 	}
 	
 	content += `

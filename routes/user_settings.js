@@ -8,7 +8,7 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 	`;
 	
 	for(skin of getSkins()) {
-		dsop += `<option value="${skin}" ${getSkin(req) == skin ? 'selected' : ''}>${skin}</option>`;
+		dsop += `<option value="${skin}" ${myskin == skin ? 'selected' : ''}>${skin}</option>`;
 	}
 	
 	var clrs = '';
@@ -115,7 +115,7 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 });
 
 wiki.post('/Customize', async function saveSettings(req, res) {
-	for(setting of ['no-discuss-script', 'no-upload-script', 'always-hide-hidden-res', 'hide-strikethrough', 'unbold', 'unitalic', 'space-bonefish', 'bioking']) {
+	for(setting of ['ddochi', 'no-discuss-script', 'no-upload-script', 'always-hide-hidden-res', 'hide-strikethrough', 'unbold', 'unitalic', 'space-bonefish', 'bioking']) {
 		const val = req.body[setting];
 		if(!val) {
 			res.clearCookie(setting);
