@@ -2216,6 +2216,28 @@ wiki.get('/register', function redirectK(req, res) {
 	res.redirect('/member/signup');
 });
 
+wiki.get('/mc', async (r, s) => {s.send(await render(r, 'test', `
+	<div class=mc-transition-container>
+		<div class=mc-transition id=1 main>
+			<div class=mc-inner-wrapper>
+				<div class=mc-inner-content>
+					<h2>sadsaddasdsadsasddassd</h2>
+					<button onclick="transition($('#1'), $('#2'));">Go</button>
+				</div>
+			</div>
+		</div>
+		
+		<div class=mc-transition id=2>
+			<div class=mc-inner-wrapper>
+				<div class=mc-inner-content>
+					<h2>xzcxzcxcxccxpopopooppp</h2>
+					<button onclick="transitionReverse($('#1'), $('#2'));">Go</button>
+				</div>
+			</div>
+		</div>
+	</div>
+`));});
+
 wiki.get('/d', (r, s) => s.send('<link rel="stylesheet" href="/css/diffview.css"><form method=post><button>S</button><textarea name=a></textarea><textarea name=b></textarea></form>'));
 wiki.post('/d', (r, s) => s.send(difflib.diff(r.body.a, r.body.b, '1', '2')));
 

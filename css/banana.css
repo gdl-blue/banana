@@ -253,3 +253,35 @@ span.footnote-content {
 .rolling-selector, .for-script {
 	display: none;
 }
+
+.mc-transition-container {
+	position: relative;
+	height: 400px;
+	overflow: hidden;
+}
+
+.mc-transition {
+	position: absolute;
+	width: 100%;
+	height: 100%;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.mc-transition:not([main]) {
+	display: none;
+	transform: scale(.01);
+}
+
+.mc-inner-wrapper {
+	display: table;
+	width: 100%;
+	height: 100%;
+}
+
+.mc-inner-content {
+	display: table-cell;
+	vertical-align: middle;
+	width: 100%;
+	height: 100%;
+}

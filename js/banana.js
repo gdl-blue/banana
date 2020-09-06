@@ -14,6 +14,38 @@ $(function() {
 		noAsync = true;
 	}
 	
+	function nevermind() {
+		return;
+	}
+	
+	window.transition = function(oldDiv, newDiv) {
+		newDiv.fadeTo(1, 0, nevermind);
+		oldDiv.css('transition', 'all 0.75s');
+		newDiv.css('transition', 'all 0.75s');
+		
+		oldDiv.css('transform', 'scale(3)');
+		oldDiv.fadeTo(0, 0, () => {
+			setTimeout(() => oldDiv.hide(), 750);
+			
+			newDiv.fadeTo(50, 1, nevermind);
+			newDiv.css('transform', 'scale(1)');
+		});
+	};
+	
+	window.transitionReverse = function(oldDiv, newDiv) {
+		oldDiv.fadeTo(1, 0, nevermind);
+		oldDiv.css('transition', 'all 0.75s');
+		newDiv.css('transition', 'all 0.75s');
+		
+		newDiv.css('transform', 'scale(.1)');
+		newDiv.fadeTo(0, 0, () => {
+			setTimeout(() => newDiv.hide(), 750);
+			
+			oldDiv.fadeTo(50, 1, nevermind);
+			oldDiv.css('transform', 'scale(1)');
+		});
+	};
+	
 	const valueChange = 'propertychange change keyup paste input';
 	
 	window.alertBalloon = function(title, content, delay, noMsgbox, type) {
@@ -206,10 +238,6 @@ $(function() {
 			
 			$('div#config-apply-button').remove();
 		} catch(e) {}
-	}
-	
-	function nevermind() {
-		return;
 	}
 	
 	function isVisible(elmt) {
