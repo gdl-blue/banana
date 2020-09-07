@@ -20,12 +20,12 @@ $(function() {
 	
 	window.transition = function(oldDiv, newDiv) {
 		newDiv.fadeTo(1, 0, nevermind);
-		oldDiv.css('transition', 'all 0.75s');
-		newDiv.css('transition', 'all 0.75s');
+		oldDiv.css('transition', 'all 0.45s');
+		newDiv.css('transition', 'all 0.45s');
 		
 		oldDiv.css('transform', 'scale(3)');
 		oldDiv.fadeTo(0, 0, () => {
-			setTimeout(() => oldDiv.hide(), 750);
+			setTimeout(() => oldDiv.hide(), 450);
 			
 			newDiv.fadeTo(50, 1, nevermind);
 			newDiv.css('transform', 'scale(1)');
@@ -34,12 +34,12 @@ $(function() {
 	
 	window.transitionReverse = function(oldDiv, newDiv) {
 		oldDiv.fadeTo(1, 0, nevermind);
-		oldDiv.css('transition', 'all 0.75s');
-		newDiv.css('transition', 'all 0.75s');
+		oldDiv.css('transition', 'all 0.45s');
+		newDiv.css('transition', 'all 0.45s');
 		
 		newDiv.css('transform', 'scale(.1)');
 		newDiv.fadeTo(0, 0, () => {
-			setTimeout(() => newDiv.hide(), 750);
+			setTimeout(() => newDiv.hide(), 450);
 			
 			oldDiv.fadeTo(50, 1, nevermind);
 			oldDiv.css('transform', 'scale(1)');
@@ -220,6 +220,7 @@ $(function() {
 	
 	if($(window).width() >= 460 && typeof(ActiveXObject) != 'function') {
 		try {
+			
 			$('.vertical-tablist .tablist').show();
 			$('.vertical-tablist .tab-content .tab-page').hide();
 			$('.vertical-tablist .tab-content .tab-page')[0].style.display = '';
@@ -237,6 +238,13 @@ $(function() {
 			});
 			
 			$('div#config-apply-button').remove();
+		} catch(e) {}
+		
+		try {
+			if(!compatMode2) {
+				$('.mc-transition-container').show();
+				$('.mc-fallback').hide();
+			}
 		} catch(e) {}
 	}
 	
