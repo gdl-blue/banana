@@ -1,10 +1,11 @@
 const versionInfo = {
-	major:        1,
-	minor:        99,
-	revision:     10,
+	major:        12,
+	minor:        1,
+	revision:     1,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'A'
+	patch:        'A',
+	tag:          '3.1.0'
 };
 
 const advCount = 27;
@@ -925,23 +926,40 @@ const nodemailer = require('nodemailer');
 
 const ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
 
-async function isBanned(req, ismember = '', username = '') {
-	return false;
-	
+async function isBanned(req, ismember = 'ip', username = '', checkBlockview = false) {
 	if(username == '') {
 		ismember = islogin(req) ? 'author' : 'ip';
 		username = ip_check(req);
 	}
 	
-	await curs.execute("delete from banned_users where cast(startingdate as integer) > ?", new Date().getTime());
+	const ip = ip_check(req, 1);
 	
-	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req, 1), ismember]);
-	if(dbdata.length) return true;
+	var ipBlocked = 0, alb = 0;
 	
-	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = ? and al = '0'", [ip_check(req, 1), ismember]);
-	if(dbdata.length) return true;
+	await curs.execute("delete from banned_users where cast(endingdate as integer) < ?", new Date().getTime());
 	
-	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = ?", [ip_check(req), ismember]);
+	var dbdata = await curs.execute("select username, al from banned_users where ismember = 'ip'");
+	
+	// 루프 천만개 => 1초도 안 걸림, 1억개 => 약 10초, 2억개 => 약 30초~1분
+	// 2,147,483,647개는 약 2분
+	// 5천만개까지는 괜찮을 것으로 예상됨
+	for(item of dbdata) {
+		if(ipRangeCheck(ip, item['username'])) {
+			if(ismember == 'ip') return 1;
+			else {
+				if(item.al) alb = 1;
+				else ipBlocked = 1;
+			}
+		}
+	}
+	
+	if(ismember == 'ip') return false;
+	
+	if(alb) return 0;
+	
+	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = 'author'", [username]);
+	if(dbdata.length) return 1;
+	return 0;
 }
 
 const ban_check = isBanned;
@@ -1211,6 +1229,11 @@ async function getScheme(req) {
 }
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
+	if(await ban_check(req, _, _, 1)) {
+		// 응답을 해주지 않는다
+		return new Promise((a, b) => '...');
+	}
+	
 	const skinInfo = {
 		title: title + subtitle,
 		viewName: viewname
