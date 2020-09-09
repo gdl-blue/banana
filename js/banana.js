@@ -769,10 +769,12 @@ $(function() {
 		
 		if(window.submitConfirmed) return true;
 		
-		confirmBalloon('[경고]', 'HTTPS 연결이 감지되지 않았습니다. 비밀번호가 다른 사람에게 노출될 수 있으며, 책임은 본인에게 있습니다.', function() {
-			window.submitConfirmed = true;
-			frm.submit();
-		}, _, '계속');
+		confirmBalloon('[탈퇴]', '시간여행기는 없습니다. 탈퇴하면 더 이상 로그인할 수 없으며, 사용자 문서를 지우지 않도록 설정한 경우 영구적으로 현재 사용중인 ID로 가입이 불가능합니다. 탈퇴하시겠습니까?', function() {
+			if(confirm('마지막 경고입니다. 계속하려면 [확인]을 누르십시오.')) {
+				window.submitConfirmed = true;
+				frm.submit();
+			}
+		}, _, '예!', '잠시만요');
 		
 		return false;
 	});

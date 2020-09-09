@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        1,
-	revision:     3,
+	revision:     4,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '3.1.3'
+	tag:          '3.1.4'
 };
 
 const advCount = 27;
@@ -901,7 +901,7 @@ function islogin(req) {
 		
 	}
 	
-	if(req.session.username) return true;
+	if(req.session && req.session.username) return true;
 	return false;
 }
 
@@ -927,6 +927,8 @@ const nodemailer = require('nodemailer');
 const ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
 
 async function isBanned(req, ismember = 'ip', username = '', checkBlockview = false) {
+	if(checkBlockview) return false;
+	
 	if(username == '') {
 		ismember = islogin(req) ? 'author' : 'ip';
 		username = ip_check(req);
@@ -2477,14 +2479,14 @@ async function getThreadData(req, tnum, tid = '-1') {
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 					<div class="r-head${rs['username'] + rs['ismember'] == fstusr ? " first-author" : ''}">
 						<span class=num>
-							<a id="${rs['id']}" data-description="나무픽스 호환" style="display: none;">#${rs['id']}</a>
+							<a id="${rs['id']}" description="나무픽스 호환" style="display: none;">#${rs['id']}</a>
 							#${rs['id']}&nbsp;
 						</span>
 						${generateTime(toDate(rs['time']), "m월 d일 H시 i분")}에
 						${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])}가 남긴 댓글 ${hbtn}
 						<span style="float: right;">
-							${rs['ismember'] == 'author' && (getperm('admin', rs.username)) ? '[관리자]' : ''}
-							${await ban_check(req, rs['ismember'], rs.username) ? '&nbsp;[차단된 사용자]' : ''}
+							${rs['ismember'] == 'author' && (getperm('admin', rs.username)) ? '(관리자)' : ''}
+							${await ban_check(req, rs['ismember'], rs.username) ? '&nbsp;(차단된 사용자)' : ''}
 						</span>
 					</div>
 					
@@ -2493,8 +2495,8 @@ async function getThreadData(req, tnum, tid = '-1') {
 							rs['hidden'] == '1' || rs['hidden'] == 'O'
 							? (
 								((getperm('hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))
-								? '[' + rs['hider'] + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'], 1)
-								: '[' + rs['hider'] + '가 숨긴 댓글입니다. 관리자에게 문의하십시오.]'
+								? '[' + (rs['hider'] == '' ? '운영자' : '') + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'], 1)
+								: '[' + (rs['hider'] == '' ? '운영자' : '') + '가 숨긴 댓글입니다. 관리자에게 문의하십시오.]'
 							  )
 							: (
 								rs['status'] == 1
@@ -2515,11 +2517,10 @@ async function getThreadData(req, tnum, tid = '-1') {
 					${
 						getperm('blind_thread_comment', ip_check(req))
 						? (
-							'<div class="combo admin-menu"><a data-description="나무픽스 호환용 숨기기 단추" href="/admin/thread/' + tnum + '/' + rs['id'] + '/hide"></a></div>'
+							'<div class="combo admin-menu"><a description="나무픽스 호환용 숨기기 단추" href="/admin/thread/' + tnum + '/' + rs['id'] + '/hide"></a></div>'
 						) : ''
 					}
-				</div>`;
-		content += `
+				</div>
 			</div>
 		`;
 	}

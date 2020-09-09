@@ -72,7 +72,7 @@ wiki.post('/member/withdraw', async (req, res) => {
 	await curs.execute("delete from useragents where username = ?", [username]);
 	await curs.execute("delete from login_history where username = ?", [username]);
 	
-	delete req.session.username;
+	try { req.session.username = undefined; } catch(e) { };
 	req.session = null;
 	
 	res.send(await render(req, '탈퇴 완료', '<strong>' + html.escape(username) + '</strong>님, 안녕히 가십시오.', {}, _, _, 'withdraw_complete'));
