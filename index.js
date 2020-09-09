@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        1,
-	revision:     1,
+	revision:     3,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '3.1.0'
+	tag:          '3.1.3'
 };
 
 const advCount = 27;
@@ -936,7 +936,7 @@ async function isBanned(req, ismember = 'ip', username = '', checkBlockview = fa
 	
 	var ipBlocked = 0, alb = 0;
 	
-	await curs.execute("delete from banned_users where cast(endingdate as integer) < ?", new Date().getTime());
+	await curs.execute("delete from banned_users where (cast(endingdate as integer) < ? and not cast(endingdate as integer) = 0)", new Date().getTime());
 	
 	var dbdata = await curs.execute("select username, al from banned_users where ismember = 'ip'");
 	
@@ -958,6 +958,7 @@ async function isBanned(req, ismember = 'ip', username = '', checkBlockview = fa
 	if(alb) return 0;
 	
 	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = 'author'", [username]);
+	print(dbdata);
 	if(dbdata.length) return 1;
 	return 0;
 }
@@ -1086,7 +1087,7 @@ function compatMode2(req) {
 }
 
 function getSkin(req) {
-	return (islogin(req)
+	const retval = (islogin(req)
 		? (getUserset(ip_check(req), 'skin', 
 				(
 					compatMode(req)
@@ -1105,6 +1106,16 @@ function getSkin(req) {
 			)
 		)
 	);
+	
+	if(!(getSkins().includes(retval))){
+		return (
+			compatMode(req)
+				? config.getString('default_skin_legacy', hostconfig['skin'])
+				: config.getString('default_skin', hostconfig['skin'])
+		);
+	} else {
+		return retval;
+	}
 }
 
 function getperm(perm, username, noupdating = false) {
