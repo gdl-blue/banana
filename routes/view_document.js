@@ -47,14 +47,14 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			
 			if(title.startsWith("사용자:") && await ban_check(req, 'author', title.replace(/^사용자[:]/, ''))) {
 				content = `
-					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: red gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'blue\';" onmouseout="this.style.borderTopColor=\'red\';">
-						<span style="font-size: 14pt;">이 사용자는 관리자에 의해 차단되었습니다.</span><br>
-						사유:
+					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: crimson gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'darkred\';" onmouseout="this.style.borderTopColor=\'crimson\';">
+						<span style="font-size: 14pt;">이 사용자는 차단되었습니다. 관리자에게 문의하십시오.</span><br />
+						사유 내용
 					</div>
 				` + content;
 			}
 			
-			if(title.startsWith("사용자:") && (getperm('admin', title.replace(/^사용자[:]/, '')) || getperm('fake_admin', title.replace(/^사용자[:]/, '')))) {
+			if(title.startsWith("사용자:") && (getperm('admin', title.replace(/^사용자[:]/, '')) || getperm('bot', title.replace(/^사용자[:]/, '')) || getperm('fake_admin', title.replace(/^사용자[:]/, '')))) {
 				content = `
 					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'${getperm('admin', title.replace(/^사용자[:]/, '')) ? 'red' : 'blue'}\';" onmouseout="this.style.borderTopColor=\'orange\';">
 						<span style="font-size: 14pt;">이 사용자는 특수 권한을 가지고 있습니다.</span>

@@ -109,6 +109,8 @@ const find = (obj, fnc) => {
 	return -1;
 };
 
+const nvm = (a, r, g, s) => 12345678;
+
 module.exports = {
 	update_sql_flags: ''
 };
@@ -225,6 +227,9 @@ var perms = [
 
 // 이 권한들은 부여 불가능
 var permsc = ['suspend_account', 'ipacl', 'hide_thread_comment', 'login_history', 'nsacl'];
+
+// 소유자만 부여 가능
+var permso = ['developer'];
 	
 var permnames = {
 	'admin': '관리자', 
