@@ -10,7 +10,7 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 		<form method=get>
 			<div class=form-group>
 				<label>사용자 이름: </label><br />
-				<input type=text class=form-control name=username>
+				<input type=text class=form-control name=username value="${html.escape(username ? username : '')}" />
 			</div>
 			
 			<div class=btns>
@@ -20,7 +20,7 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 	`;
 	
 	if(!username) {
-		res.send(await render(req, '권한 부여', content));
+		res.send(await render(req, '사용자 권한 부여', content));
 		return;
 	}
 	
@@ -33,17 +33,21 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 	var chkbxs = '';
 	
 	for(prm of perms) {
+		if(permsc.includes(prm)) continue;
+		
 		chkbxs += `
-			<label><input type=checkbox ${getperm(prm, username, 1) ? 'checked' : ''} name="${prm}"> ${permnames[prm] ? permnames[prm] : prm}</label><br />
+			<label><input type=checkbox ${getperm(prm, username, 1) ? 'checked' : ''} name="${prm}" /> ${permnames[prm] ? permnames[prm] : prm}</label><br />
 		`;
 	}
 	
 	content += `
 		<form method=post>
 			<div class=form-group>
-				${chkbxs}
+				<div class=multicol>
+					${chkbxs}
+				</div>
 			</div>
-		
+			
 			<div class=form-group>
 				<label>메모:</label><br>
 				<input type=text name=note class=form-control>
@@ -55,7 +59,7 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 		</form>
 	`;
 	
-	res.send(await render(req, username + ' 권한 부여', content));
+	res.send(await render(req, '사용자 권한 부여', content));
 });
 
 wiki.post('/admin/grant', async function grantPermissions(req, res) {
@@ -74,7 +78,9 @@ wiki.post('/admin/grant', async function grantPermissions(req, res) {
 	
 	var logstring = '';
 	
-	for(prm of perms) {
+	for(prmi of perms) {
+		const prm = updateTheseedPerm(prmi);
+		
 		if(!getperm('developer', ip_check(req), 1) && ['developer'].includes(prm)) continue;
 		if(getperm(prm, username, 1) && !req.body[prm]) {
 			logstring += '-' + prm + ' ';

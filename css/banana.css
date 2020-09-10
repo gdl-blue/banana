@@ -393,3 +393,15 @@ table.settings-menu td img {
 	background: linear-gradient(to bottom, rgb(108, 154, 211) 30%, rgb(237, 244, 254) 100%);
 	box-shadow: inset 4px 4px 2px rgb(0, 64, 128);
 }
+
+div.multicol {
+	column-count: 3;
+	column-gap: 20px;
+}
+
+@media ( max-width: 759px ) {
+	div.multicol {
+		column-count: 1;
+		column-gap: 0;
+	}
+}

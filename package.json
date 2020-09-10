@@ -7,9 +7,11 @@
     "test": "test"
   },
   "dependencies": {
+    "assert": "^2.0.0",
     "body-parser": "^1.19.0",
     "captchapng": "^0.0.1",
     "cookie-parser": "^1.4.5",
+    "crypto": "^1.0.1",
     "express": "^4.17.1",
     "express-fileupload": "^1.2.0",
     "express-session": "^1.17.1",

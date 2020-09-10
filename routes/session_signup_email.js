@@ -59,26 +59,7 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 	
 	await curs.execute("select email from account_creation where email = ?", [req.body['email']]);
 	if(curs.fetchall().length) {
-		res.send(await render(req, '계정 만들기', `
-			<form method=post class=signup-form>
-				<div class=form-group>
-					<label>전자우편 주소:</label><br>
-					<input type=email name=email class=form-control>
-					<p class=error-desc>사용 중인 이메일입니다.</p>
-				</div>
-				
-				<div class=form-group>
-					${captcha}
-				</div>
-			
-				<div class=btns>
-					<button type=reset class="btn btn-secondary">초기화</button>
-					<button type=submit class="btn btn-primary">가입</button>
-				</div>
-			</form>
-		`, {}));
-		
-		return;
+		return res.send(await showError(req, 'email_taken'));
 	}
 	
 	const key = rndval('abcdef1234567890', 64);

@@ -181,7 +181,8 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 								
 								<div class=form-group>
 									<label>사용자 이름: </label><br>
-									<input type=text readonly value="${ip_check(req)}" class=form-control>
+									<input name=username type=text value="${ip_check(req)}" class=form-control />
+									<p>이름을 변경하면 기여내역이 많을 수록 기여를 이전하는 데 오래걸릴 수 있습니다.</p>
 								</div>
 								
 								<div class=form-group>

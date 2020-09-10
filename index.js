@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        1,
-	revision:     4,
+	revision:     5,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '3.1.4'
+	tag:          '4.1.5'
 };
 
 const advCount = 27;
@@ -214,7 +214,6 @@ async function timeout(ms, synchronous = true) {
 
 TCVreader('chick', '_starting');
 
-// 호환용 권한은 쌍따옴표
 var perms = [
 	'admin', "suspend_account", 'developer', 'update_thread_document', "ipacl",
 	'update_thread_status', 'update_thread_topic', "hide_thread_comment", 'grant',
@@ -223,24 +222,22 @@ var perms = [
 	'delete_board_post', 'edit_board_comment', 'delete_board_comment', 'bot', 
 	'edit_namespace_acl', 'view_login_history', 'blind_thread_comment', 'fake_admin'
 ];
+
+// 이 권한들은 부여 불가능
+var permsc = ['suspend_account', 'ipacl', 'hide_thread_comment', 'login_history', 'nsacl'];
 	
 var permnames = {
 	'admin': '관리자', 
-	"suspend_account": '사용자 차단',
 	'developer': '개발자',
 	'update_thread_document': '토론 상태 변경', 
-	"ipacl": 'IPACL',
 	'update_thread_status': '토론 상태 변경',
 	'update_thread_topic': '토론 주제 변경',
-	"hide_thread_comment": '토론 댓글 숨기기', 
 	'grant': '권한 부여',
-	"login_history": '로그인 내역', 
 	'delete_thread': '토론 삭제', 
 	'acl': 'ACL 조정', 
-	'ban_users': '이용자 차단', 
+	'ban_users': '사용자 차단', 
 	'tribune': '호민관', 
 	'arbiter': '중재자', 
-	"nsacl": 'NSACL', 
 	'head_admin': '최고 관리자', 
 	'edit_board_post': 'BBS 글 수정',
 	'delete_board_post': 'BBS 글 삭제', 
@@ -248,16 +245,18 @@ var permnames = {
 	'delete_board_comment': 'BBS 댓글 삭제', 
 	'bot': '봇', 
 	'edit_namespace_acl': '이름공간 ACL 수정', 
-	'view_login_history': '로그인 내역', 
-	'blind_thread_comment': '토론 댓글 블라인드'
+	'view_login_history': '로그인 내역 조회', 
+	'blind_thread_comment': '토론 댓글 숨김',
+	'highspeed': '하이 스피드',
+	'fake_admin': '페이크 어드민'
 };
 
 var _perms = perms;
 
-function print(x) { console.log(x); }
-function prt(x) { process.stdout.write(x); }
+const print = console.log;
+const prt   = process.stdout.write;
 
-function beep(cnt = 1) { // 경고음 재생이였음
+function beep(cnt = 1) {
 	// for(var i=1; i<=cnt; i++)
 		// prt("");
 }
@@ -289,7 +288,7 @@ const random = {
 	randint: randint
 };
 
-const timeFormat = 'Y-m-d H:i:s';
+const timeFormat = 'Y-m-d H시 i분';
 
 const inputReader = require('wait-console-input');
 
@@ -318,8 +317,8 @@ const exec = eval;
 
 const { SHA3 } = require('sha3');
 
-function sha3(p) {
-	const hash = new SHA3(256);
+function sha3(p, b) {
+	const hash = new SHA3(b || 256);
 	
 	hash.update(p);
 	return hash.digest('hex');
@@ -389,7 +388,8 @@ const curs = {
 
 const express = require('express');
 const session = require('express-session');
-const swig = require('swig');
+
+const swig     = require('swig');
 const nunjucks = new (require('nunjucks')).Environment();
 
 const wiki = express();
@@ -450,8 +450,7 @@ swig.setFilter('encode_doc', function filter_encodeDocURL(input) {
 });
 
 swig.setFilter('avatar_url', function filter_avatarURL(input) {
-	// 나중에...
-	return input;
+	return '//secure.gravatar.com/avatar/' + md5('나중에 작성 예정') + '?d=retro';
 });
 
 swig.setFilter('md5', function filter_md5(input, length = null) {
@@ -893,8 +892,8 @@ async function JSnamumark(title, content, initializeBacklinks = 0) {
 	});
 }
 
-// 처음 실행해주면 두번째부터는 빠름
-JSnamumark('', '안녕!').then(r => {}).catch(e => {});
+// 한 번 실행해주면 두번째부터는 빠름
+JSnamumark('', '안녕!').catch(e => 12345678);
 
 function islogin(req) {
 	if(req.cookies.gildong && req.cookies.icestar) {
@@ -924,7 +923,7 @@ function getUsername(req, forceIP = 0) {
 
 const nodemailer = require('nodemailer');
 
-const ip_check = getUsername; // 오픈나무를 오랫동안 커스텀하느라 이 함수명에 익숙해진 바 있음
+const ip_check = getUsername;
 
 async function isBanned(req, ismember = 'ip', username = '', checkBlockview = false) {
 	if(checkBlockview) return false;
@@ -960,7 +959,6 @@ async function isBanned(req, ismember = 'ip', username = '', checkBlockview = fa
 	if(alb) return 0;
 	
 	var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = 'author'", [username]);
-	print(dbdata);
 	if(dbdata.length) return 1;
 	return 0;
 }
@@ -1173,7 +1171,6 @@ async function readFile(p) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(p, 'utf8', (e, r) => {
 			if(e) {
-				console.error(e.stack);
 				reject(e);
 			} else {
 				resolve(r.toString());
@@ -1202,7 +1199,6 @@ async function requireAsync(p) {
 	return new Promise((resolve, reject) => {
 		fs.readFile(p, (e, r) => {
 			if(e) {
-				console.error(e.stack);
 				reject(e);
 			} else {
 				resolve( JSON.parse(r.toString()) );
@@ -1244,7 +1240,7 @@ async function getScheme(req) {
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
 	if(await ban_check(req, _, _, 1)) {
 		// 응답을 해주지 않는다
-		return new Promise((a, b) => '...');
+		return new Promise((a, b) => 12345678);
 	}
 	
 	const skinInfo = {
@@ -1283,11 +1279,12 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		strc: varlist['star_count'],
 		us: varlist['user'],
 		un: title.replace(/^사용자[:]/, ''),
-		cont: viewname == 'contribution' || viewname == 'contribution_discuss' ? 1 : undefined
+		cont: viewname == 'contribution' || viewname == 'contribution_discuss' ? 1 : undefined,
+		contm: false
 	};
 	
 	function getpermForSkin(permname) {
-		return getperm(permname, ip_check(req));
+		return getperm(updateTheseedPerm(permname), ip_check(req));
 	}
 
 	var output;
@@ -1634,8 +1631,7 @@ function fetchErrorString(code, tag = null) {
 		'user_not_found': '사용자를 찾을 수 없습니다.',
 		'document_not_found': '문서를 찾을 수 없습니다.',
 		'syntax_error': '구문오류',
-		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.',
-		'validator_required': tag + '의 값이 빠져서 처리가 불가능합니다.'
+		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.'
 	};
 	
 	if(typeof(codes[code]) == 'undefined') return code;
@@ -2482,7 +2478,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 							<a id="${rs['id']}" description="나무픽스 호환" style="display: none;">#${rs['id']}</a>
 							#${rs['id']}&nbsp;
 						</span>
-						${generateTime(toDate(rs['time']), "m월 d일 H시 i분")}에
+						${generateTime(toDate(rs['time']), "Y-m-d H시 i분")}에
 						${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])}가 남긴 댓글 ${hbtn}
 						<span style="float: right;">
 							${rs['ismember'] == 'author' && (getperm('admin', rs.username)) ? '(관리자)' : ''}
@@ -2595,7 +2591,7 @@ if(firstrun) {
 		await curs.execute("select username, perm from perms order by username");
 		
 		for(var prm of curs.fetchall()) {
-			perm = (prm['perm']);
+			perm = updateTheseedPerm(prm['perm']);
 			
 			if(typeof(permlist[prm['username']]) == 'undefined')
 				permlist[prm['username']] = [perm];
