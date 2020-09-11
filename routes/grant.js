@@ -56,6 +56,50 @@ wiki.get('/admin/permissions', async function grantPanel(req, res) {
 				<input type=text name=note class=form-control>
 			</div>
 			
+			<div class=form-group>
+				<label>유효 기간 (미구현):</label><br>
+				<label><input type=radio name=permanant value=true checked /> 무기한</label><br />
+				<label>
+					<input type=radio name=permanant value=false /> 만료일 지정
+					
+					<div style="margin-left: 40px;">
+						<!-- placeholder: 구버전 브라우저 배려 -->
+						<input group=expiration value="${req.query['expirationdate'] ? html.escape(req.query['expirationdate']) : ''}" type=date name=expiration-date placeholder="YYYY-MM-DD" class=form-control style="display: inline-block; width: auto;" />
+						<input group=expiration value="${req.query['expirationtime'] ? html.escape(req.query['expirationtime']) : ''}" type=time name=expiration-time placeholder="HH:MM" class=form-control style="display: inline-block; width: auto;" /><br />
+					</div>
+				</label>
+				<label>
+					<input type=radio name=permanant value=duration checked /> 기간 지정
+					
+					<div style="margin-left: 40px;">
+						<!-- placeholder: 구버전 브라우저 배려 -->
+						<select name=duration class=form-control style="display: inline-block; width: auto;">
+							<option value=60>1분</option>
+							<option value=180>3분</option>
+							<option value=300>5분</option>
+							<option value=600>10분</option>
+							<option value=1800>30분</option>
+							<option value=3600>1시간</option>
+							<option value=7200>2시간</option>
+							<option value=21600>6시간</option>
+							<option value=86400>하루</option>
+							<option value=172800>이틀</option>
+							<option value=259200>사흘</option>
+							<option value=259200>나흘</option>
+							<option value=432000>닷새</option>
+							<option value=604800>이레</option>
+							<option value=864000>열흘</option>
+							<option value=1296000>보름</option>
+							<option value=2592000>그믐</option>
+							<option value=5184000>2달</option>
+							<option value=7776000>3달</option>
+							<option value=15552000>6달</option>
+							<option value=31104000>한 해</option>
+						</select>
+					</div>
+				</label>
+			</div>
+			
 			<div class=btns>
 				<button type=submit class="btn btn-info" style="width: 100px;">확인</button>
 			</div>

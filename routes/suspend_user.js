@@ -53,19 +53,40 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 					</div>
 				</label>
 				<label>
-					<input type=radio name=permanant value=duration checked /> 기간 지정 (미구현)
+					<input type=radio name=permanant value=duration checked /> 기간 지정
 					
 					<div style="margin-left: 40px;">
 						<!-- placeholder: 구버전 브라우저 배려 -->
-						<input group=expiration value="${req.query['expirationdate'] ? html.escape(req.query['expirationdate']) : ''}" type=date name=expiration-date placeholder="YYYY-MM-DD" class=form-control style="display: inline-block; width: auto;" />
-						<input group=expiration value="${req.query['expirationtime'] ? html.escape(req.query['expirationtime']) : ''}" type=time name=expiration-time placeholder="HH:MM" class=form-control style="display: inline-block; width: auto;" /><br />
+						<select name=duration class=form-control style="display: inline-block; width: auto;">
+							<option value=60>1분</option>
+							<option value=180>3분</option>
+							<option value=300>5분</option>
+							<option value=600>10분</option>
+							<option value=1800>30분</option>
+							<option value=3600>1시간</option>
+							<option value=7200>2시간</option>
+							<option value=21600>6시간</option>
+							<option value=86400>하루</option>
+							<option value=172800>이틀</option>
+							<option value=259200>사흘</option>
+							<option value=259200>나흘</option>
+							<option value=432000>닷새</option>
+							<option value=604800>이레</option>
+							<option value=864000>열흘</option>
+							<option value=1296000>보름</option>
+							<option value=2592000>그믐</option>
+							<option value=5184000>2달</option>
+							<option value=7776000>3달</option>
+							<option value=15552000>6달</option>
+							<option value=31104000>한 해</option>
+						</select>
 					</div>
 				</label>
 			</div>
 			
 			<div class=form-group>
-				<label><input ${req.query['blockview'] == '1' ? 'checked' : ''} type=checkbox name=blockview /> 접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[!]</a></sup>:</label><br>
-				<label><input ${req.query['al'] == '1' ? 'checked' : ''} type=checkbox name=al /> 로그인 시 차단하지 않음<sup><a title="IP 주소를 차단할 때에만 유효한 설정입니다. 로그인하면 편집할 수 있습니다.">[?]</a></sup>:</label><br>
+				<label><input ${req.query['blockview'] == '1' ? 'checked' : ''} type=checkbox name=blockview /> 접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[!]</a></sup></label><br>
+				<label><input ${req.query['al'] == '1' ? 'checked' : ''} type=checkbox name=al /> 로그인 시 차단하지 않음<sup><a title="IP 주소를 차단할 때에만 유효한 설정입니다. 로그인하면 편집할 수 있습니다.">[?]</a></sup></label><br>
 			</div>
 			
 			<div class=btns>
@@ -74,7 +95,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 		</form>
 		
 		<form method=post action="/admin/unban_user" style="display: inline-block; float: left; width: 49%;">
-			<label>바로해제:</label><br />
+			<label>바로 해제:</label><br />
 			<div class="input-group btn-group">
 				<select type=text name=usertype class=form-control>
 					<option value=ip>IP</option>
@@ -203,23 +224,29 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	const fake             = req.body['fakepermanant'];
 	const note             = req.body['note'];
 	const expirationString = `${expirationDate} ${expirationTime}:00`;
+	const eduration        = req.body['duration'];
 	
 	if(!getperm('ban_users', ip_check(req))) {
 		res.send(await showError(req, 'insufficient_privileges'));
 		return;
 	}
 	
-	if(!note || !username || !usertype || !isPermanant || (isPermanant == 'false' && (!expirationDate || !expirationTime))) {
+	if(!note || !username || !usertype || !isPermanant || (isPermanant == 'false' && (!expirationDate || !expirationTime)) || (isPermanant == 'duration' && !eduration)) {
 		res.send(await showError(req, 'invalid_request_body'));
 		return;
 	}
 	
-	if(!['author', 'ip'].includes(usertype) || (isPermanant != 'true' && (!stringInFormat(/^\d{1,}[-]\d{2,2}[-]\d{2,2}$/, expirationDate) || !stringInFormat(/^\d{2,2}[:]\d{2,2}$/, expirationTime)))) {
+	if(!['author', 'ip'].includes(usertype) || (isPermanant == 'false' && (!stringInFormat(/^\d{1,}[-]\d{2,2}[-]\d{2,2}$/, expirationDate) || !stringInFormat(/^\d{2,2}[:]\d{2,2}$/, expirationTime)))) {
 		res.send(await showError(req, 'invalid_value'));
 		return;
 	}
 	
-	if(isPermanant != 'true' && isNaN(Date.parse(expirationString))) {
+	if(isPermanant == 'false' && isNaN(Date.parse(expirationString))) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
+	
+	if(isPermanant == 'duration' && isNaN(Number(eduration))) {
 		res.send(await showError(req, 'invalid_value'));
 		return;
 	}
@@ -231,7 +258,15 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 			username += '/128';
 	}
 	
-	const expiration = isPermanant == 'true' ? '0' : new Date(expirationString).getTime();
+	var expiration;
+	if(isPermanant == 'duration') {
+		const dt = new Date();
+		dt.setSeconds(dt.getSeconds() + eduration);
+		expiration = dt.getTime();
+	} else {
+		expiration = isPermanant == 'true' ? '0' : new Date(expirationString).getTime();
+	}
+	
 	const startTime  = new Date().getTime();
 	
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
