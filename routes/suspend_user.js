@@ -41,15 +41,24 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			<div class=form-group>
 				<label>차단 만료일:</label><br>
 				
-				<label><input type=radio name=permanant value=true onclick="$('input[group=expiration]').attr('disabled', '');" /> 무기한</label><br />
+				<label><input type=radio name=permanant value=true checked /> 무기한</label><br />
 				<label>
-					<input type=radio name=permanant value=false onclick="$('input[group=expiration]').removeAttr('disabled');" checked /> 만료일 지정
+					<input type=radio name=permanant value=false /> 만료일 지정
 					
 					<div style="margin-left: 40px;">
 						<!-- placeholder: 구버전 브라우저 배려 -->
 						<input group=expiration value="${req.query['expirationdate'] ? html.escape(req.query['expirationdate']) : ''}" type=date name=expiration-date placeholder="YYYY-MM-DD" class=form-control style="display: inline-block; width: auto;" />
 						<input group=expiration value="${req.query['expirationtime'] ? html.escape(req.query['expirationtime']) : ''}" type=time name=expiration-time placeholder="HH:MM" class=form-control style="display: inline-block; width: auto;" /><br />
 						<label><input group=expiration type=checkbox name=fakepermanant /> 무기한으로 표시<sup><a title="실제로는 기한을 지정하지만 무기한으로 표시합니다. VPN IP 차단을 목적으로 하는 반달을 차단할 때 사용하면 좋습니다.">[?]</a></sup></label>
+					</div>
+				</label>
+				<label>
+					<input type=radio name=permanant value=duration checked /> 기간 지정 (미구현)
+					
+					<div style="margin-left: 40px;">
+						<!-- placeholder: 구버전 브라우저 배려 -->
+						<input group=expiration value="${req.query['expirationdate'] ? html.escape(req.query['expirationdate']) : ''}" type=date name=expiration-date placeholder="YYYY-MM-DD" class=form-control style="display: inline-block; width: auto;" />
+						<input group=expiration value="${req.query['expirationtime'] ? html.escape(req.query['expirationtime']) : ''}" type=time name=expiration-time placeholder="HH:MM" class=form-control style="display: inline-block; width: auto;" /><br />
 					</div>
 				</label>
 			</div>
@@ -61,6 +70,26 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			
 			<div class=btns>
 				<button type=submit class="btn btn-info" style="width: 120px;">차단</button>
+			</div>
+		</form>
+		
+		<form method=post action="/admin/unban_user" style="display: inline-block; float: left; width: 49%;">
+			<label>바로해제:</label><br />
+			<div class="input-group btn-group">
+				<select type=text name=usertype class=form-control>
+					<option value=ip>IP</option>
+					<option value=author>계정</option>
+				</select>
+				<input type=text name=username class=form-control />
+				<button type=submit class="btn btn-info">해제</button>
+			</div>
+		</form>
+		
+		<form method=get style="display: inline-block; float: right; width: 49%;">
+			<label>검색:</label><br />
+			<div class="input-group btn-group">
+				<input type=text name=from class=form-control />
+				<button type=submit class="btn btn-info">이동</button>
 			</div>
 		</form>
 		

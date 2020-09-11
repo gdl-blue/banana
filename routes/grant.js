@@ -110,7 +110,7 @@ wiki.post('/admin/permissions', async function grantPermissions(req, res) {
 	res.redirect('/admin/grant?username=' + encodeURIComponent(username));
 });
 
-// 호환용
+// 더시드 호환용
 wiki.post('/admin/grant', async function (req, res) {
 	const username = req.query['username'];
 	
