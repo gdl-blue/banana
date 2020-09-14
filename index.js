@@ -4,8 +4,8 @@ const versionInfo = {
 	revision:     2,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'B',
-	tag:          '4.2.2a'
+	patch:        'C',
+	tag:          '4.2.2b'
 };
 
 const advCount = 27;
