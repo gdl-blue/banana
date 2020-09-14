@@ -4,8 +4,8 @@ const versionInfo = {
 	revision:     2,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'C',
-	tag:          '4.2.2b'
+	patch:        'D',
+	tag:          '4.2.2c'
 };
 
 const advCount = 27;
@@ -2475,8 +2475,9 @@ async function getThreadData(req, tnum, tid = '-1') {
 			`;
 		}
 		
+		// ${rs['status'] == '1' && !(rs['hidden'] == '1' || rs['hidden'] == 'O') ? 'style="display: none !important; width: 0 !important; height: 0 !important;" description="호환용 레스 오브젝트"' : ''}
 		content += `
-			<div ${rs['status'] == '1' && !(rs['hidden'] == '1' || rs['hidden'] == 'O') ? 'style="display: none !important; width: 0 !important; height: 0 !important;" description="호환용 레스 오브젝트"' : ''} class=res-wrapper data-id="${rs['id']}" data-hidden="${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'true' : 'false'}">
+			<div class=res-wrapper data-id="${rs['id']}" data-hidden="${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'true' : 'false'}">
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 					<div class="r-head${rs['username'] + rs['ismember'] == fstusr ? " first-author" : ''}">
 						<span class=num>
@@ -2524,7 +2525,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 				</div>
 			</div>
 		`;
-		
+		/*
 		if(rs['status'] == '1' && !(rs['hidden'] == '1' || rs['hidden'] == 'O')) {
 			content += `
 				<div>
@@ -2538,6 +2539,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 				</div>
 			`;
 		}
+		*/
 	}
 	
 	return content;
