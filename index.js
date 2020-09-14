@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        2,
-	revision:     0,
+	revision:     2,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.2.0'
+	tag:          '4.2.2'
 };
 
 const advCount = 27;
@@ -214,7 +214,7 @@ async function timeout(ms, synchronous = true) {
 	}
 }
 
-TCVreader('chick', '_starting');
+if(!process.env.PORT) TCVreader('chick', '_starting');
 
 var perms = [
 	'admin', "suspend_account", 'developer', 'update_thread_document', "ipacl",
@@ -262,7 +262,7 @@ const print = console.log;
 const prt   = process.stdout.write;
 
 function beep(cnt = 1) {
-	// for(var i=1; i<=cnt; i++)
+	// for(i=1; i<=cnt; i++)
 		// prt("");
 }
 
@@ -412,7 +412,7 @@ function updateTheseedPerm(perm) {
 function getTime() { return Math.floor(new Date().getTime()); }; const get_time = getTime;
 
 function toDate(t, d = 0) {
-	if(isNaN(Number(t))) return t;  // 문자열(1983-04-22 12:45:56 등)로 되어있는 경우 그냥 반환
+	if(isNaN(Number(t))) return t;
 	
 	var date = new Date(Number(t));
 	if(!d) return date.toISOString();
@@ -2623,13 +2623,17 @@ if(firstrun) {
 			curs.execute("delete from perms where cast(expiration as integer) < ? and not cast(expiration as integer) = 0", [getTime()]);
 		}, 3000);
 		
-		const server = wiki.listen(hostconfig['port'], hostconfig['host'], () => {
+		const lcb = () => {
 			clearInterval(tcvTimers['_starting']);
 			console.clear();
 			print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
 			
 			sound('500,100 750,150');
-		}); // 서버실행
+		}
+		
+		var server;
+		if(process.env.PORT) wiki.listen(process.env.PORT, lcb); // 서버실행
+		else wiki.listen(hostconfig['port'], hostconfig['host'], lcb);
 		
 		// 활성화된 경우 텔넷 서버 열기
 		if(config.getString('allow_telnet', '0') == '1') {

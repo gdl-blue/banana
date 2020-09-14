@@ -1,14 +1,14 @@
 wiki.get('/License', async function(req, res) {
 	var sl = '';
 	try {
-		sl = await readFile('./skins/' + getSkins(req) + '/license.html');
+		sl = await readFile('./skins/' + getSkin(req) + '/license.html');
 	} catch(e) {
-		sl = '(½ºÅ² ¶óÀÌ¼±½º¸¦ ºÒ·¯¿Ã ¼ö ¾ø½À´Ï´Ù.)';
+		sl = '(ìŠ¤í‚¨ ë¼ì´ì„ ìŠ¤ë¥¼ ë¶ˆëŸ¬ì˜¬ ìˆ˜ ì—†ìŠµë‹ˆë‹¤.)';
 	}
 
-	res.send(await render(req, '¹Ù³ª³ª Á¤º¸', `
-		<h2>¹Ù³ª³ª ${versionInfo.major}.${versionInfo.minor}.${versionInfo.revesion}</h2>
-		<p>ÀÓ½ÃÀûÀ¸·Î GNU ÀÏ¹İ °øÁß »ç¿ë Çã°¡¼­ ¹öÀü 3À» »ç¿ëÇÕ´Ï´Ù.</p>
+	res.send(await render(req, 'ë°”ë‚˜ë‚˜ ì •ë³´', `
+		<h2>ë°”ë‚˜ë‚˜ ${versionInfo.major}.${versionInfo.minor}.${versionInfo.revesion}</h2>
+		<p>ì„ì‹œì ìœ¼ë¡œ GNU ì¼ë°˜ ê³µì¤‘ ì‚¬ìš© í—ˆê°€ì„œ ë²„ì „ 3ì„ ì‚¬ìš©í•©ë‹ˆë‹¤.</p>
 		
 		${sl}
 	`));
