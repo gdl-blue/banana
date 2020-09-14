@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
-	minor:        1,
-	revision:     7,
+	minor:        2,
+	revision:     0,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.1.7'
+	tag:          '4.2.0'
 };
 
 const advCount = 27;
@@ -541,8 +541,8 @@ try {
 			'email_filters': ['address'],
 			'stars': ['title', 'username', 'lastedit', 'category'],
 			'star_categories': ['name', 'username'],
-			'perms': ['perm', 'username'],
-			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system', 'ncontent', 'ocontent', 'baserev'],
+			'perms': ['perm', 'username', 'expiration'],
+			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system', 'ncontent', 'ocontent', 'baserev', 'num'],
 			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin', 'stype'],
 			'useragents': ['username', 'string'],
 			'login_history': ['username', 'ip'],
@@ -2476,7 +2476,7 @@ async function getThreadData(req, tnum, tid = '-1') {
 		}
 		
 		content += `
-			<div class=res-wrapper data-id="${rs['id']}" data-hidden="${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'true' : 'false'}">
+			<div ${rs['status'] == '1' && !(rs['hidden'] == '1' || rs['hidden'] == 'O') ? 'style="display: none !important; width: 0 !important; height: 0 !important;" description="호환용 레스 오브젝트"' : ''} class=res-wrapper data-id="${rs['id']}" data-hidden="${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'true' : 'false'}">
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
 					<div class="r-head${rs['username'] + rs['ismember'] == fstusr ? " first-author" : ''}">
 						<span class=num>
@@ -2524,6 +2524,20 @@ async function getThreadData(req, tnum, tid = '-1') {
 				</div>
 			</div>
 		`;
+		
+		if(rs['status'] == '1' && !(rs['hidden'] == '1' || rs['hidden'] == 'O')) {
+			content += `
+				<div>
+					[${generateTime(toDate(rs['time']), "Y-m-d H시 i분")}에 ${ip_pas(rs['username'], rs['ismember'], rs['isadmin'])}가 ${rs['stype'] == 'status'
+									? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 상태로 표시'
+									: (
+										rs['stype'] == 'document'
+										? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 문서로 이동'
+										: '토론의 주제를 <strong>' + html.escape(rs['content']) + '</strong>(으)로 변경'
+									)}했습니다]
+				</div>
+			`;
+		}
 	}
 	
 	return content;
@@ -2603,6 +2617,11 @@ if(firstrun) {
 			else
 				permlist[prm['username']].push(perm);
 		}
+		
+		// 유효 기간이 지난 권한은 자동으로 회수한다.
+		var permTimebomb = setInterval(function() {
+			curs.execute("delete from perms where cast(expiration as integer) < ? and not cast(expiration as integer) = 0", [getTime()]);
+		}, 3000);
 		
 		const server = wiki.listen(hostconfig['port'], hostconfig['host'], () => {
 			clearInterval(tcvTimers['_starting']);

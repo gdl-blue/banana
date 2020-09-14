@@ -181,8 +181,8 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 								
 								<div class=form-group>
 									<label>사용자 이름: </label><br>
-									<input name=username type=text value="${ip_check(req)}" class=form-control />
-									<p>이름을 변경하면 기여내역이 많을수록 기여를 이전하는 데 오래걸릴 수 있습니다.</p>
+									<input name=username type=text readonly value="${ip_check(req)}" class=form-control />
+									<p>이름 변경은 곧 구현됩니다. 이름을 변경하면 기여내역이 많을수록 기여를 이전하는 데 오래걸릴 수 있습니다. 또한 다름 사욪ㅇ자가 현재 이름을 사용할 수 있게 됩니다.</p>
 								</div>
 								
 								<div class=form-group>
@@ -192,8 +192,6 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 								
 								<div class=form-group>
 									<label>현재 비밀번호: </label><br>
-									
-									<!-- 큰동그라미 대신 별표나오게 못하나.. -->
 									<input type=password value="" class=form-control name=current-password>
 								</div>
 								
@@ -243,6 +241,23 @@ wiki.post('/member/mypage', async function saveMemberSettings(req, res) {
 		return;
 	}
 	
+	const n = req.body['username'].toString();
+	if(ip_check(req) !== n) {
+		return res.send(await showError(req, 'invalid'));
+		
+		if((await curs.execute("select username from users where username = ? COLLATE NOCASE", [u])).length) {
+			return res.send(await showError(req, 'username_already_exists'));
+		}
+		
+		curs.execute("update history set username = ? where ismember = 'author' and username = ?", [n, ip_check(req)]);
+		curs.execute("update documents set title = ? where title = ?", ['사용자:' + n, '사용자:' + ip_check(req)]);
+		curs.execute("update history set title = ? where title = ?", ['사용자:' + n, '사용자:' + ip_check(req)]);
+		
+		['title', 'content', 'rev', 'time', 'username', 'changes', 'log', 'iserq', 'erqnum', 'advance', 'ismember']
+		
+		curs.execute("insert into history (title, content, rev, tile)")
+	}
+	
 	var settings = [
 		'skin', 'color'
 	];
@@ -271,6 +286,19 @@ wiki.post('/member/mypage', async function saveMemberSettings(req, res) {
 	}}catch(e) {
 		curs.execute("update user_settings set value = ? where key = 'color' and username = ?", ['default', ip_check(req)]);
 		userset[ip_check(req)]['color'] = 'default';
+	}
+	
+	if(req.body['current_password'].length) {
+		if(sha3(req.body['current_password']) !== (await curs.execute("select password from users where username = ?", [ip_check(req)]))[0]['password']) {
+			return res.send(await showError(req, 'password_not_matching'));
+		}
+		if(!(req.body['new-password'].length)) {
+			return res.send(await showError(req, 'no_password'));
+		}
+		if(req.body['new-password'] !== req.body['confirm-new-password']) {
+			return res.send(await showError(req, 'password_not_matching'));
+		}
+		curs.execvte("update users set password = ? where username = ?", [ip_check(req)]);
 	}
 	
 	res.redirect('/member/mypage');

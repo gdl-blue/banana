@@ -41,7 +41,7 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			<div class=form-group>
 				<label>차단 만료일:</label><br>
 				
-				<label><input type=radio name=permanant value=true checked /> 무기한</label><br />
+				<label><input type=radio name=permanant value=true /> 무기한</label><br />
 				<label>
 					<input type=radio name=permanant value=false /> 만료일 지정
 					

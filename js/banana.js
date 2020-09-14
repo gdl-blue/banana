@@ -9,10 +9,12 @@ $(function() {
 	var noAsync = false;
 	
 	try {
-		eval('async function __ASYNC_FUNCTION_TEST(x,p, d,a, b,e,s,t) { return 1; }');
+		eval('async function __ASYNC_FUNCTION_TEST(아, 기, 공, 룡, 둘, 리) { return 1; }');
 	} catch(e) {
 		noAsync = true;
 	}
+	
+	if(typeof Promise == 'undefined') noAsync = true;
 	
 	function nevermind() {
 		return;
@@ -414,215 +416,223 @@ $(function() {
 	
 	document.addEventListener("scroll", setVisibleState);
 	
-	function fetchComments(tnum) {
-		setVisibleState();
-		
-		$(loadingRes).each(function() {
-			const item = $(this);
+	if (
+		typeof historyInit == 'function' && typeof discussPollCancel == 'function' && 
+		typeof discussPollStart == 'function' && typeof recaptchaInit == 'function' &&
+		typeof recaptchaExecute == 'function' && typeof recaptchaOnLoad == 'function'
+	) {
+		console.log("theseed.js이 감지되었읍니다. 자체 방식 토론 스크립트가 비활성화됩니다.");
+	} else {
+		function fetchComments(tnum) {
+			setVisibleState();
+			
+			$(loadingRes).each(function() {
+				const item = $(this);
 
-			if(item.attr('data-locked') != 'true') {
-				item.attr('data-locked', 'true');
+				if(item.attr('data-locked') != 'true') {
+					item.attr('data-locked', 'true');
+					
+					$.ajax({
+						type: "GET",
+						url: '/thread/' + tnum + '/' + item.attr('data-id'),
+						dataType: 'html',
+						success: function(d) {
+							const data = $(d);
+							
+							data.each(function() {
+								const itm = $(this);
+								const res = $('div.res-wrapper.res-loading[data-id="' + itm.attr('data-id') + '"]');
+								
+								res.after(itm);
+								res.remove();
+							});
+		
+							/* dateformatter.js 라이브러리 사용 - (C) 저작권자 Paul Armstrong / swig 라이브러리에 내장됨 */
+							$('time[datetime]').each(function() {
+								$(this).text(
+									formatDate(new Date($(this).attr('datetime')), $(this).attr('data-format'))
+								);
+							});
+						},
+						error: function(e) {
+							history.go(0);
+						}
+					});
+				}
+			});
+		}
+		
+		window.discussPollStart = function(tnum) {
+			$('form#new-thread-form').submit(function() {
+				var submitBtn = $('form#new-thread-form').find('button[type="submit"]');
+				submitBtn.attr('disabled', '');
+				submitBtn.text('대기 중...');
 				
 				$.ajax({
-					type: "GET",
-					url: '/thread/' + tnum + '/' + item.attr('data-id'),
-					dataType: 'html',
-					success: function(d) {
-						const data = $(d);
-						
-						data.each(function() {
-							const itm = $(this);
-							const res = $('div.res-wrapper.res-loading[data-id="' + itm.attr('data-id') + '"]');
-							
-							res.after(itm);
-							res.remove();
-						});
-	
-						/* dateformatter.js 라이브러리 사용 - (C) 저작권자 Paul Armstrong / swig 라이브러리에 내장됨 */
-						$('time[datetime]').each(function() {
-							$(this).text(
-								formatDate(new Date($(this).attr('datetime')), $(this).attr('data-format'))
-							);
-						});
+					type: "POST",
+					dataType: 'json',
+					data: {
+						'text': $('textarea[name="text"]').val()
 					},
-					error: function(e) {
-						history.go(0);
+					success: function(d) {
+						submitBtn.removeAttr('disabled');
+						submitBtn.text('전송하기!');
+						$('textarea[name="text"]').val('');
+						alertBalloon('[성공]', '댓글을 달았습니다.', 2000, 1, 'blue');
+					},
+					error: function(d) {
+						submitBtn.removeAttr('disabled');
+						submitBtn.text('전송하기!');
+						alertBalloon('[실패]', '댓글을 달 수 없습니다. 충분한 권한이 있는지, 토론이 종결되지 않았는지, 그리고 인터넷에 연결됐는지 확인하십시오.', 4000);
 					}
 				});
-			}
-		});
-	}
-	
-	window.discussPollStart = function(tnum) {
-		$('form#new-thread-form').submit(function() {
-			var submitBtn = $('form#new-thread-form').find('button[type="submit"]');
-			submitBtn.attr('disabled', '');
-			submitBtn.text('대기 중...');
-			
-			$.ajax({
-				type: "POST",
-				dataType: 'json',
-				data: {
-					'text': $('textarea[name="text"]').val()
-				},
-				success: function(d) {
-					submitBtn.removeAttr('disabled');
-					submitBtn.text('전송하기!');
-					$('textarea[name="text"]').val('');
-					alertBalloon('[성공]', '댓글을 달았습니다.', 2000, 1, 'blue');
-				},
-				error: function(d) {
-					submitBtn.removeAttr('disabled');
-					submitBtn.text('전송하기!');
-					alertBalloon('[실패]', '댓글을 달 수 없습니다. 충분한 권한이 있는지, 토론이 종결되지 않았는지, 그리고 인터넷에 연결됐는지 확인하십시오.', 4000);
-				}
+				
+				return false;
 			});
 			
-			return false;
-		});
-		
-		$('form#thread-status-form').submit(function() {
-			var submitBtn = $(this).find('button[type="submit"]');
-			submitBtn.attr('disabled', '');
-			
-			$.ajax({
-				type: "POST",
-				dataType: 'json',
-				data: $(this).serialize(),
-				url: '/admin/thread/' + tnum + '/status',
-				success: function(d) {
-					alertBalloon('[성공]', '상태를 업데이트했습니다.', 2000, 1, 'blue');
-					submitBtn.removeAttr('disabled');
-					history.go(0);
-				},
-				error: function(d) {
-					alertBalloon('[실패]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
-				}
-			});
-			
-			return false;
-		});
-		
-		$('form#new-thread-status-form button').click(function() {
-			var statusName = $(this).attr('data-status');
-			
-			$.ajax({
-				type: "POST",
-				dataType: 'json',
-				data: {
-					status: statusName
-				},
-				url: '/admin/thread/' + tnum + '/status',
-				success: function(d) {
-					alertBalloon('[성공]', '상태를 업데이트했습니다.', 2000, 1, 'blue');
-					submitBtn.removeAttr('disabled');
-					history.go(0);
-				},
-				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
-				}
-			});
-			
-			return false;
-		});
-		
-		$('form#thread-document-form').submit(function() {
-			var submitBtn = $(this).find('button[type="submit"]');
-			submitBtn.attr('disabled', '');
-			
-			$.ajax({
-				type: "POST",
-				dataType: 'json',
-				data: $(this).serialize(),
-				url: '/admin/thread/' + tnum + '/document',
-				success: function(d) {
-					alertBalloon('[성공]', '토론을 이동했습니다.', 2000, 1, 'blue');
-					submitBtn.removeAttr('disabled');
-				},
-				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
-				}
-			});
-			
-			return false;
-		});
-		
-		$('form#thread-topic-form').submit(function() {
-			var submitBtn = $(this).find('button[type="submit"]');
-			submitBtn.attr('disabled', '');
-			
-			$.ajax({
-				type: "POST",
-				dataType: 'json',
-				data: $(this).serialize(),
-				url: '/admin/thread/' + tnum + '/topic',
-				success: function(d) {
-					alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.', 2000, 1, 'blue');
-					submitBtn.removeAttr('disabled');
-				},
-				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
-				}
-			});
-			
-			return false;
-		});
-		
-		$('form#new-thread-topic-form').submit(function() {
-			var submitBtn = $(this).find('button[type="submit"]');
-			submitBtn.attr('disabled', '');
-			
-			$.ajax({
-				type: "POST",
-				dataType: 'json',
-				data: $(this).serialize(),
-				url: '/admin/thread/' + tnum + '/topic',
-				success: function(d) {
-					alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.', 2000, 1, 'blue');
-					submitBtn.removeAttr('disabled');
-				},
-				error: function(d) {
-					alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
-				}
-			});
-			
-			return false;
-		});
-		
-		var refresher = setInterval(function() {
-			$.ajax({
-				type: "POST",
-				url: '/notify/thread/' + tnum,
-				data: {},
-				dataType: 'json',
-				success: function(data) {
-					const tid = atoi(data['comment_id']);
-					var rescount = $('#res-container div.res-wrapper').length;
-					
-					for(var i=rescount+1; i<=tid; i++, rescount++) {
-						$('div.res-wrapper[data-id="' + itoa(rescount) + '"]').after($(
-							'<div class="res-wrapper res-loading" data-id="' + itoa(i) + '" data-locked=false data-visible=false>' +
-								'<div class="res res-type-normal">' +
-									'<div class="r-head">' + 
-										'<span class="num"><a id="' + itoa(i) + '">#' + itoa(i) + '</a>&nbsp;</span>' +
-									'</div>' +
-									'' +
-									'<div class="r-body"></div>' +
-								'</div>' +
-							'</div>'
-						));
+			$('form#thread-status-form').submit(function() {
+				var submitBtn = $(this).find('button[type="submit"]');
+				submitBtn.attr('disabled', '');
+				
+				$.ajax({
+					type: "POST",
+					dataType: 'json',
+					data: $(this).serialize(),
+					url: '/admin/thread/' + tnum + '/status',
+					success: function(d) {
+						alertBalloon('[성공]', '상태를 업데이트했습니다.', 2000, 1, 'blue');
+						submitBtn.removeAttr('disabled');
+						history.go(0);
+					},
+					error: function(d) {
+						alertBalloon('[실패]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
 					}
-					
-					setVisibleState();
-				},
-				error: nevermind
+				});
+				
+				return false;
 			});
 			
-			fetchComments(tnum);
-		}, 500);
-		
-		setVisibleState();
-	};
+			$('form#new-thread-status-form button').click(function() {
+				var statusName = $(this).attr('data-status');
+				
+				$.ajax({
+					type: "POST",
+					dataType: 'json',
+					data: {
+						status: statusName
+					},
+					url: '/admin/thread/' + tnum + '/status',
+					success: function(d) {
+						alertBalloon('[성공]', '상태를 업데이트했습니다.', 2000, 1, 'blue');
+						submitBtn.removeAttr('disabled');
+						history.go(0);
+					},
+					error: function(d) {
+						alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
+					}
+				});
+				
+				return false;
+			});
+			
+			$('form#thread-document-form').submit(function() {
+				var submitBtn = $(this).find('button[type="submit"]');
+				submitBtn.attr('disabled', '');
+				
+				$.ajax({
+					type: "POST",
+					dataType: 'json',
+					data: $(this).serialize(),
+					url: '/admin/thread/' + tnum + '/document',
+					success: function(d) {
+						alertBalloon('[성공]', '토론을 이동했습니다.', 2000, 1, 'blue');
+						submitBtn.removeAttr('disabled');
+					},
+					error: function(d) {
+						alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
+					}
+				});
+				
+				return false;
+			});
+			
+			$('form#thread-topic-form').submit(function() {
+				var submitBtn = $(this).find('button[type="submit"]');
+				submitBtn.attr('disabled', '');
+				
+				$.ajax({
+					type: "POST",
+					dataType: 'json',
+					data: $(this).serialize(),
+					url: '/admin/thread/' + tnum + '/topic',
+					success: function(d) {
+						alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.', 2000, 1, 'blue');
+						submitBtn.removeAttr('disabled');
+					},
+					error: function(d) {
+						alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
+					}
+				});
+				
+				return false;
+			});
+			
+			$('form#new-thread-topic-form').submit(function() {
+				var submitBtn = $(this).find('button[type="submit"]');
+				submitBtn.attr('disabled', '');
+				
+				$.ajax({
+					type: "POST",
+					dataType: 'json',
+					data: $(this).serialize(),
+					url: '/admin/thread/' + tnum + '/topic',
+					success: function(d) {
+						alertBalloon('[성공]', '토론의 주제를 바꾸었습니다.', 2000, 1, 'blue');
+						submitBtn.removeAttr('disabled');
+					},
+					error: function(d) {
+						alertBalloon('[토론]', '문제가 있습니다.' + (d.status ? ' ' + d.status : ''));
+					}
+				});
+				
+				return false;
+			});
+			
+			var refresher = setInterval(function() {
+				$.ajax({
+					type: "POST",
+					url: '/notify/thread/' + tnum,
+					data: {},
+					dataType: 'json',
+					success: function(data) {
+						const tid = atoi(data['comment_id']);
+						var rescount = $('#res-container div.res-wrapper').length;
+						
+						for(var i=rescount+1; i<=tid; i++, rescount++) {
+							$('div.res-wrapper[data-id="' + itoa(rescount) + '"]').after($(
+								'<div class="res-wrapper res-loading" data-id="' + itoa(i) + '" data-locked=false data-visible=false>' +
+									'<div class="res res-type-normal">' +
+										'<div class="r-head">' + 
+											'<span class="num"><a id="' + itoa(i) + '">#' + itoa(i) + '</a>&nbsp;</span>' +
+										'</div>' +
+										'' +
+										'<div class="r-body"></div>' +
+									'</div>' +
+								'</div>'
+							));
+						}
+						
+						setVisibleState();
+					},
+					error: nevermind
+				});
+				
+				fetchComments(tnum);
+			}, 500);
+			
+			setVisibleState();
+		};
+	}
 	
 	/* dateformatter.js 라이브러리 사용 - (C) 저작권자 Paul Armstrong / swig 라이브러리에 내장됨 */
 	$('time[datetime]').each(function() {

@@ -57,7 +57,7 @@ wiki.get('/admin/permissions', async function grantPanel(req, res) {
 			</div>
 			
 			<div class=form-group>
-				<label>유효 기간 (미구현):</label><br>
+				<label>유효 기간 (미구현)<a title="이번에 새로 부여한 권한만 해당되며 이미 가지고 있던 권한에는 자동으로 적용되지 않습니다.">[!]</a>:</label><br>
 				<label><input type=radio name=permanant value=true checked /> 무기한</label><br />
 				<label>
 					<input type=radio name=permanant value=false /> 만료일 지정
@@ -69,7 +69,7 @@ wiki.get('/admin/permissions', async function grantPanel(req, res) {
 					</div>
 				</label>
 				<label>
-					<input type=radio name=permanant value=duration checked /> 기간 지정
+					<input type=radio name=permanant value=duration /> 기간 지정
 					
 					<div style="margin-left: 40px;">
 						<!-- placeholder: 구버전 브라우저 배려 -->
@@ -151,10 +151,9 @@ wiki.post('/admin/permissions', async function grantPermissions(req, res) {
 					'author', 'grant', ip_check(req), username, '', getTime(), '-1', '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')'
 				]);
 	
-	res.redirect('/admin/grant?username=' + encodeURIComponent(username));
+	res.redirect('/admin/permissions?username=' + encodeURIComponent(username));
 });
 
-// 더시드 호환용
 wiki.post('/admin/grant', async function (req, res) {
 	const username = req.query['username'];
 	
@@ -178,12 +177,12 @@ wiki.post('/admin/grant', async function (req, res) {
 		
 		if(!getperm('developer', ip_check(req), 1) && permso.includes(prm)) continue;
 		
-		if(getperm(prm, username, 1) && (typeof(prmval.find(prm)) == 'undefined')) {
+		if(getperm(prm, username, 1) && (typeof(prmval.includes(prm)) == 'undefined')) {
 			logstring += '-' + prm + ' ';
 			if(permlist[username]) permlist[username].splice(find(permlist[username], item => item == prm), 1);
 			curs.execute("delete from perms where perm = ? and username = ?", [prm, username]);
 		}
-		else if(!getperm(prm, username, 1) && (typeof(prmval.find(prm)) != 'undefined')) {
+		else if(!getperm(prm, username, 1) && (typeof(prmval.includes(prm)) != 'undefined')) {
 			logstring += '+' + prm + ' ';
 			if(!permlist[username]) permlist[username] = [prm];
 			else permlist[username].push(prm);
@@ -192,7 +191,7 @@ wiki.post('/admin/grant', async function (req, res) {
 	}
 	
 	if(!logstring.length) {
-		return res.send(await showError(req, 'nothing_changed'));
+		return res.send(await showError(req, 'no_change'));
 	}
 	
 	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \

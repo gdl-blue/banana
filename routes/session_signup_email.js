@@ -14,6 +14,10 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 		return;
 	}
 	
+	if(config.getString('disable_email', '0') == '1') {
+		return res.redirect('/member/signup_key?key=pass');
+	}
+	
 	res.send(await render(req, '계정 만들기', `
 		<form method=post class=signup-form>
 			<div class=form-group>

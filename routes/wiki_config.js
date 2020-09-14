@@ -218,6 +218,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 									<label><input type=checkbox name=disable_recentchanges ${config.getString('disable_recentchanges', '0') == '1' ? 'checked' : ''}> 최근 변경 열람 금지</label><br>
 									<label><input type=checkbox name=disable_recentdiscuss ${config.getString('disable_recentdiscuss', '0') == '1' ? 'checked' : ''}> 최근 토론 열람 금지</label><br>
 									<label><input type=checkbox name=disable_contribution_list ${config.getString('disable_contribution_list', '0') == '1' ? 'checked' : ''}> 기여 목록 열람 금지</label><br>
+									<label><input type=checkbox name=disable_email ${config.getString('disable_email', '0') == '1' ? 'checked' : ''}> 전자우편 등록 금지</label><br>
 								</div>
 								
 								<div class=form-group>
@@ -431,7 +432,7 @@ wiki.post('/admin/config', async function saveWikiConfiguration(req, res) {
 		'!disable_recentdiscuss', '!disable_contribution_list', '!enhanced_security', '!allow_upload', 'acl_type',
 		'privacy', 'email_service', /* 'email_addr', 'email_pass',*/ 'registeration_verification', 'password_recovery',
 		'file_extensions', 'email_whitelist', 'sitenotice', 'edit_notice', 'discussion_notice', '!allow_telnet',
-		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history', 'registeration_notice', '!no_welcome'
+		'!enable_captcha', '!ip2md5', '!denial', '!no_login_history', 'registeration_notice', '!no_welcome', '!disable_email'
 	];
 	
 	for(settingi of settings) {
