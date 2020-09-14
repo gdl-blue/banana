@@ -7,7 +7,7 @@ wiki.get('/License', async function(req, res) {
 	}
 
 	res.send(await render(req, '바나나 정보', `
-		<h2>바나나 ${versionInfo.major}.${versionInfo.minor}.${versionInfo.revision}</h2>
+		<h2>바나나 ${versionInfo.major}.${versionInfo.minor}.${versionInfo.revision} ${versionInfo.patch}</h2>
 		<p>임시적으로 GNU 일반 공중 사용 허가서 버전 3을 사용합니다.</p>
 		
 		${sl}
