@@ -15,7 +15,8 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 		
 		return;
 	}
-	var dbdata;
+	
+	var content = '', dbdata;
 	if(from) {
 		dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and (cast(rev as integer) <= ? AND cast(rev as integer) > ?) \
@@ -27,6 +28,8 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 						order by cast(rev as integer) desc",
 						[title, Number(until), Number(until) + 30]);
 	} else if(target && query) {
+		content += '<p>처음 1,000개의 검색 결과입니다.</p>';
+		
 		switch(target.toLowerCase()) {
 			case 'username':
 				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
@@ -37,19 +40,21 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 						where title = ? and changes = ? order by cast(rev as integer) desc limit 1000",
 						[title, query]);
 			break; case 'biggercount':
-				if(isNaN(Number(query))) return res.send(await showError(req, 'invalud_value'));
+				if(isNaN(Number(query))) return res.send(await showError(req, 'invalid_value'));
 				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and cast(changes as integer) > ? order by cast(rev as integer) desc limit 1000",
-						[title, query]);
+						[title, Number(query)]);
 			break; case 'smallercount':
-				if(isNaN(Number(query))) return res.send(await showError(req, 'invalud_value'));
+				if(isNaN(Number(query))) return res.send(await showError(req, 'invalid_value'));
 				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and cast(changes as integer) < ? order by cast(rev as integer) desc limit 1000",
-						[title, query]);
+						[title, Number(query)]);
 			break; case 'editrequest':
 				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and iserq = '1' order by cast(rev as integer) desc limit 1000",
 						[title]);
+			break; default:
+				return res.send(await showError(req, 'invalid_value'));
 		}
 	} else {
 		dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
@@ -57,20 +62,21 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 						[title]);
 	}
 	
-	if(!dbdata.length) {
+	if(!dbdata.length && !(target && query)) {
 		res.send(await showError(req, 'document_not_found'));
 		return;
 	}
 	
 	var set = 0, lr, fr;
 	
-	var content = `
+	content += `
 		<form method=get>
 			<label>필터:</label>
 			<table>
 				<colgroup>
-					<col style="width: 120px;">
+					<col style="width: 140px;">
 					<col>
+					<col style="width: 100px;">
 				</colgroup>
 				
 				<tr>
@@ -89,6 +95,10 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 					
 					<td style="padding: 0 0 0 20px;">
 						<input class="form-control" name=query />
+					</td>
+					
+					<td style="padding: 0 0 0 20px;">
+						<button type=submit class="btn btn-info">이동</button>
 					</td>
 				</tr>
 			</table>
@@ -173,7 +183,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 			</tbody>
 		</table>
 		
-		${navbtn('/history/' + encodeURIComponent(title), lr, fr)}
+		${target && query ? '' : (navbtn('/history/' + encodeURIComponent(title), lr, fr))}
 	`;
 	
 	res.send(await render(req, title, content, {
