@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        2,
-	revision:     2,
+	revision:     3,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'D',
-	tag:          '4.2.2c'
+	patch:        'A',
+	tag:          '4.2.3'
 };
 
 const advCount = 27;
@@ -2622,7 +2622,17 @@ if(firstrun) {
 		
 		// 유효 기간이 지난 권한은 자동으로 회수한다.
 		var permTimebomb = setInterval(function() {
-			curs.execute("delete from perms where cast(expiration as integer) < ? and not cast(expiration as integer) = 0", [getTime()]);
+			curs.execute("select username, perm from perms where cast(expiration as integer) < ? and not cast(expiration as integer) = 0 and not expiration = ''", [getTime()])
+			.then(data => {
+				curs.execute("delete from perms where cast(expiration as integer) < ? and not cast(expiration as integer) = 0 and not expiration = ''", [getTime()]);
+				for(prm of data) {
+					try {
+						permlist[prm.username].splice(permlist[prm.username].findIndex(item => item == prm.perm), 1);
+					} catch(e) {
+						print(e.stack);
+					}
+				}
+			}).catch(console.error);
 		}, 3000);
 		
 		const lcb = () => {
