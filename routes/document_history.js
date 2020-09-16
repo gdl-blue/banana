@@ -38,8 +38,8 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 			break; case 'count':
 				if(isNaN(Number(query))) return res.send(await showError(req, 'invalid_value'));
 				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where title = ? and changes = ? order by cast(rev as integer) desc limit 1000",
-						[title, String(Number(query))]);
+						where title = ? and cast(query as integer) = ? order by cast(rev as integer) desc limit 1000",
+						[title, Number(query)]);
 			break; case 'biggercount':
 				if(isNaN(Number(query))) return res.send(await showError(req, 'invalid_value'));
 				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
