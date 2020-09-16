@@ -125,6 +125,46 @@ wiki.post('/admin/permissions', async function grantPermissions(req, res) {
 	
 	var logstring = '';
 	
+	const isPermanant      = req.body['permanant'];
+	const expirationDate   = req.body['expiration-date'];
+	const expirationTime   = req.body['expiration-time'];
+	const expirationString = `${expirationDate} ${expirationTime}:00`;
+	const eduration        = req.body['duration'];
+	
+	if(!getperm('grant', ip_check(req))) {
+		res.send(await showError(req, 'insufficient_privileges'));
+		return;
+	}
+	
+	if(!isPermanant || (isPermanant == 'false' && (!expirationDate || !expirationTime)) || (isPermanant == 'duration' && !eduration)) {
+		res.send(await showError(req, 'invalid_request_body'));
+		return;
+	}
+	
+	if((isPermanant == 'false' && (!stringInFormat(/^\d{1,}[-]\d{2,2}[-]\d{2,2}$/, expirationDate) || !stringInFormat(/^\d{2,2}[:]\d{2,2}$/, expirationTime)))) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
+	
+	if(isPermanant == 'false' && isNaN(Date.parse(expirationString))) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
+	
+	if(isPermanant == 'duration' && isNaN(Number(eduration))) {
+		res.send(await showError(req, 'invalid_value'));
+		return;
+	}
+	
+	var expiration;
+	if(isPermanant == 'duration') {
+		const dt = new Date();
+		dt.setSeconds(dt.getSeconds() + eduration);
+		expiration = dt.getTime();
+	} else {
+		expiration = isPermanant == 'true' ? '0' : new Date(expirationString).getTime();
+	}
+	
 	for(prmi of perms) {
 		const prm = updateTheseedPerm(prmi);
 		
@@ -134,11 +174,11 @@ wiki.post('/admin/permissions', async function grantPermissions(req, res) {
 			if(permlist[username]) permlist[username].splice(find(permlist[username], item => item == prm), 1);
 			curs.execute("delete from perms where perm = ? and username = ?", [prm, username]);
 		}
-		else if(!getperm(prm, username, 1) && req.body[prm] == 'on') {
+		else if(!getperm(prm, username, 1) && req.body[prm]) {
 			logstring += '+' + prm + ' ';
 			if(!permlist[username]) permlist[username] = [prm];
 			else permlist[username].push(prm);
-			curs.execute("insert into perms (perm, username) values (?, ?)", [prm, username]);
+			curs.execute("insert into perms (perm, username, expiration) values (?, ?, ?)", [prm, username, String(expiration)]);
 		}
 	}
 	
@@ -186,7 +226,7 @@ wiki.post('/admin/grant', async function (req, res) {
 			logstring += '+' + prm + ' ';
 			if(!permlist[username]) permlist[username] = [prm];
 			else permlist[username].push(prm);
-			curs.execute("insert into perms (perm, username) values (?, ?)", [prm, username]);
+			curs.execute("insert into perms (perm, username, expiration) values (?, ?, '0')", [prm, username]);
 		}
 	}
 	
