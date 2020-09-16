@@ -6,7 +6,7 @@
 wiki.get('/BlockHistory', async function(req, res) {
 	// 나무픽스
 	if(req.query['target'] && req.query['query']) {
-		if(!req.xhr) return res.send('Bad Request');
+		if(!req.xhr) return res.send('올바르지 않은 작업입니다.');
 		
 		var content = '<div class=wiki-article style="display: none;"><ul class=wiki-list>';
 		var dbdata;
@@ -48,20 +48,20 @@ wiki.get('/BlockHistory', async function(req, res) {
 	
 		<table class="table table-hover">
 			<colgroup>
-				<col style="width: 180px;">
-				<col>
-				<col>
-				<col style="width: 180px;">
+				<col style="width: 200px;">
 				<col style="width: 150px;">
+				<col>
+				<col>
+				<col style="width: 200px;">
 			</colgroup>
 			
 			<thead>
 				<tr>
 					<th>날짜</th>
-					<th>차단자</th>
-					<th>피차단자</th>
-					<th>만료일</th>
 					<th>유형</th>
+					<th>실행자</th>
+					<th>대상</th>
+					<th>만료일</th>
 				</tr>
 			</thead>
 			
@@ -90,9 +90,6 @@ wiki.get('/BlockHistory', async function(req, res) {
 		var data = `
 			<tr>
 				<td>${generateTime(toDate(row.startingdate), timeFormat)}</td>
-				<td>${ip_pas(row.blocker, 'author')}</td>
-				<td>${html.escape(row.username)}</td>
-				<td>${generateTime(toDate(row.endingdate), timeFormat)}</td>
 				<td>${
 					row.type == 'suspend' ? (
 						'계정 차단'
@@ -120,6 +117,19 @@ wiki.get('/BlockHistory', async function(req, res) {
 						)
 					)
 				}</td>
+				<td>${ip_pas(row.blocker, 'author')}</td>
+				<td>${html.escape(row.username)}</td>
+				<td>${
+					row.endingdate == '0' ? (
+						'무기한'
+					) : (
+						row.endingdate == '-1' ? (
+							'해제'
+						) : (
+							generateTime(toDate(row.endingdate), timeFormat)
+						)
+					)
+				}</td>
 			</tr>
 			
 			<tr>
@@ -142,7 +152,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 		${navbtn('/BlockHistory', ld, fd)}
 	`;
 	
-	res.send(await render(req, '차단 기록', content, {}, _, _, 'blockhistory'));
+	res.send(await render(req, '차단 및 관리 기록', content, {}, _, _, 'blockhistory'));
 });
 
 wiki.get('/LegacyBlockHistory', async function(req, res) {

@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
-	minor:        2,
-	revision:     4,
+	minor:        3,
+	revision:     0,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'B',
-	tag:          '4.2.4a'
+	patch:        'A',
+	tag:          '4.3.0'
 };
 
 const advCount = 27;

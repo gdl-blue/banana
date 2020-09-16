@@ -188,7 +188,7 @@ wiki.post('/admin/permissions', async function grantPermissions(req, res) {
 	
 	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
 				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-					'author', 'grant', ip_check(req), username, '', getTime(), '-1', '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')'
+					'author', 'grant', ip_check(req), username, '', getTime(), expiration, '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')'
 				]);
 	
 	res.redirect('/admin/permissions?username=' + encodeURIComponent(username));

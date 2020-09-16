@@ -7,6 +7,8 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	const title = req.params[0];
 	const from = req.query['from'];
 	const until = req.query['until'];
+	const target = req.query['target'];
+	const query = req.query['query'];
 	
 	if(!await getacl(req, title, 'read')) {
 		res.send(await showError(req, 'insufficient_privileges_read'));
@@ -24,6 +26,31 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 						where title = ? and (cast(rev as integer) >= ? AND cast(rev as integer) < ?) \
 						order by cast(rev as integer) desc",
 						[title, Number(until), Number(until) + 30]);
+	} else if(target && query) {
+		switch(target.toLowerCase()) {
+			case 'username':
+				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and username = ? order by cast(rev as integer) desc limit 1000",
+						[title, query]);
+			break; case 'count':
+				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and changes = ? order by cast(rev as integer) desc limit 1000",
+						[title, query]);
+			break; case 'biggercount':
+				if(isNaN(Number(query))) return res.send(await showError(req, 'invalud_value'));
+				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and cast(changes as integer) > ? order by cast(rev as integer) desc limit 1000",
+						[title, query]);
+			break; case 'smallercount':
+				if(isNaN(Number(query))) return res.send(await showError(req, 'invalud_value'));
+				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and cast(changes as integer) < ? order by cast(rev as integer) desc limit 1000",
+						[title, query]);
+			break; case 'editrequest':
+				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and iserq = '1' order by cast(rev as integer) desc limit 1000",
+						[title]);
+		}
 	} else {
 		dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? order by cast(rev as integer) desc limit 30",
@@ -38,6 +65,35 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	var set = 0, lr, fr;
 	
 	var content = `
+		<form method=get>
+			<label>필터:</label>
+			<table>
+				<colgroup>
+					<col style="width: 120px;">
+					<col>
+				</colgroup>
+				
+				<tr>
+					<td style="padding: 0;">
+						<select class="form-control" name=target>
+							<option value=username>사용자</option>
+							<option value=date hidden>날짜</option>
+							<option value=beforedate hidden>날짜 이전</option>
+							<option value=afterdate hidden>날짜 이후</option>
+							<option value=count>글자 변경점</option>
+							<option value=biggercount>변경점 초과</option>
+							<option value=smallercount>변경점 미만</option>
+							<option value=editrequest>편집요청</option>
+						</select>
+					</td>
+					
+					<td style="padding: 0 0 0 20px;">
+						<input class="form-control" name=query />
+					</td>
+				</tr>
+			</table>
+		</form>
+	
 		<table class="table table-hover">
 			<thead>
 				<tr>
