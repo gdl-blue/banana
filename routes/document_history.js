@@ -54,6 +54,14 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where title = ? and iserq = '1' order by cast(rev as integer) desc limit 1000",
 						[title]);
+			break; case 'log':
+				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and log like ? order by cast(rev as integer) desc limit 1000 COLLATE NOCASE",
+						[title, query.replace('*', '%').replace('?', '_')]);
+			break; case 'logmatch':
+				dbdata = await curs.execute("select rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where title = ? and log = ? order by cast(rev as integer) desc limit 1000 COLLATE NOCASE",
+						[title, query.replace('*', '%').replace('?', '_')]);
 			break; default:
 				return res.send(await showError(req, 'invalid_value'));
 		}
@@ -75,7 +83,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 			<label>필터:</label>
 			<table>
 				<colgroup>
-					<col style="width: 140px;">
+					<col style="width: 150px;">
 					<col>
 					<col style="width: 100px;">
 				</colgroup>
@@ -91,6 +99,8 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 							<option value=biggercount>변경점 초과</option>
 							<option value=smallercount>변경점 미만</option>
 							<option value=editrequest>편집요청</option>
+							<option value=log>요약</option>
+							<option value=logmatch>요약 완전일치</option>
 						</select>
 					</td>
 					
