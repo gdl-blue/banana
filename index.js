@@ -530,10 +530,10 @@ try {
 		TCVreader('snow', '_initializing');
 		
 		const tables = {
-			'documents': ['title', 'content'],
+			'documents': ['title', 'content', 'views'],
 			'history': ['title', 'content', 'rev', 'time', 'username', 'changes', 'log', 'iserq', 'erqnum', 'advance', 'ismember'],
 			'namespaces': ['namespace', 'locked', 'norecent', 'file'],
-			'users': ['username', 'password', 'id'],
+			'users': ['username', 'password', 'id', 'tribe'],
 			'user_settings': ['username', 'key', 'value'],
 			'acl': ['title', 'notval', 'type', 'value', 'action', 'hipri'],
 			'nsacl': ['namespace', 'no', 'type', 'content', 'action', 'expire'],
@@ -599,6 +599,16 @@ try {
 		
 		for(var lice of flices) {
 			await curs.execute("insert into filelicenses (license, creator) values (?, '')", [lice]);
+		}
+		
+		await curs.execute("create table tribes (id, alias)");
+		
+		// 나중에 바꿀 수 있게 할 예정
+		const tribes = ['없음', '호신', '환신', '광신', '옥신', '선신', '수신', '경신', '천신', '양신'];
+		
+		for(ii in tribes) {
+			if(!ii) continue;
+			conn.run("insert into tribes (id, alias) values (?, ?)", [itoa(ii), tribes[atoi(ii)]], nvm);
 		}
 		
 		fs.writeFileSync('config.json', JSON.stringify(hostconfig), 'utf8');
@@ -809,7 +819,7 @@ function markdown(content, discussion = 0, title = '') {
 
 async function JSnamumark(title, content, initializeBacklinks = 0) {
 	return new Promise((resolve, reject) => {
-		(new (require('js-namumark'))(title, {
+		try {(new (require('js-namumark'))(title, {
 			wiki: {
 				// CR LF 안고치니까 문단 렌더링이 안 됐네..
 				read: title => content.replace(/\r\n/g, '\n').replace(/\r/g, '\n').replace(/{{{[#][!]html/gi, '{{{')
@@ -817,7 +827,7 @@ async function JSnamumark(title, content, initializeBacklinks = 0) {
 			allowedExternalImageExts: [ 'jpg', 'jpeg', 'bmp', 'gif', 'png' ]
 		})).parse(async (e, r) => {
 			if(e) {
-				print(e);
+				print(e.stack);
 				reject(e);
 				return;
 			}
@@ -894,6 +904,10 @@ async function JSnamumark(title, content, initializeBacklinks = 0) {
 			
 			resolve(ctgr + htmlc);
 		});
+		} catch(e) {
+			print(e.stack);
+			resolve('<렌더링에 실패했읍니다 - ' + e + '>');
+		}
 	});
 }
 
@@ -908,6 +922,21 @@ function islogin(req) {
 	if(req.session && req.session.username) return true;
 	return false;
 }
+
+// https://stackoverflow.com/questions/7313395/case-insensitive-replace-all
+String.prototype.replaceAll = function(tofind, replacewith, matchcase = 1) {
+	if(matchcase) {
+		var esc = tofind.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
+		var reg = new RegExp(esc, 'ig');
+		return this.replace(reg, replacewith);
+	} else {
+		var ss = this;
+		while(ss.includes(tofind)) {
+			ss = ss.replace(tofind, replacewith);
+		}
+		return ss;
+	}
+};
 
 function getUsername(req, forceIP = 0) {
 	if(!forceIP && req.session.username) {

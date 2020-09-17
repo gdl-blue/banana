@@ -1,4 +1,37 @@
-wiki.get('/member/signup', async function signupEmailScreen(req, res) {
+wiki.get('/member/signup', (a, b) => b.redirect('/member/signup_privacy'));
+
+wiki.get('/member/signup_privacy', async function signupEmailScreen(req, res) {
+	var desturl = req.query['redirect'];
+	if(!desturl) desturl = '/';
+	
+	if(islogin(req)) { res.redirect(desturl); return; }
+	
+	const captcha = generateCaptcha(req, 1);
+	
+	await curs.execute("select username from users");
+	const maxusercount = atoi(config.getString('max_users', '-1'));
+	
+	if(maxusercount != -1 && curs.fetchall().length >= maxusercount) {
+		res.send(await showError(req, 'user_count_reached_maximum'));
+		return;
+	}
+	
+	res.send(await render(req, '사용 약관을 읽어주십시오.', `
+		<form class=signup-form>
+			<div class=form-group>
+				<label>개인정보처리방침:</label><br />
+				<textarea class=form-control readonly rows=15>${config.getString('privacy', '')}</textarea>
+			</div>
+		
+			<div class=btns>
+				<a href="/member/signup_email" class="btn btn-secondary">동의함</a>
+				<a href=/ id=declinePrivacyBtn class="btn btn-primary">동의 안 함</a>
+			</div>
+		</form>
+	`, {}));
+});
+
+wiki.get('/member/signup_email', async function signupEmailScreen(req, res) {
 	var desturl = req.query['redirect'];
 	if(!desturl) desturl = '/';
 	
@@ -21,11 +54,7 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 	res.send(await render(req, '계정 만들기', `
 		<form method=post class=signup-form>
 			<div class=form-group>
-				<textarea class=form-control readonly rows=15>${config.getString('privacy', '')}</textarea>
-			</div>
-		
-			<div class=form-group>
-				<label>전자우편 주소:</label><br>
+				<label>전자 우편:</label><br>
 				<input type=email name=email class=form-control>
 			</div>
 				
@@ -41,7 +70,7 @@ wiki.get('/member/signup', async function signupEmailScreen(req, res) {
 	`, {}));
 });
 
-wiki.post('/member/signup', async function emailConfirmation(req, res) {
+async function emailConfirmation(req, res) {
 	await curs.execute("select username from users");
 	const maxusercount = atoi(config.getString('max_users', '-1'));
 	
@@ -111,4 +140,7 @@ wiki.post('/member/signup', async function emailConfirmation(req, res) {
 			[디버그] 가입 열쇳말: ${key}
 		</p>
 	`, {}));
-});
+}
+
+wiki.post('/member/signup_email', emailConfirmation);
+wiki.post('/member/signup', emailConfirmation);

@@ -68,7 +68,6 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 				</li>
 			</ul>
 			
-			<!-- 개인적으로 테두리있는것을 좋아하지만 여기에 쳐버리면 너무 지저분해보여서 bordered 클래스 생략 -->
 			<div class=tab-content>
 				<div id=thread class="tab-pane active" role=tabpanel aria-expanded=true>
 		`;
@@ -299,7 +298,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		}
 		${
 			(getperm('developer', ip_check(req)))
-			? '<span class=pull-right><a id=explodeThreadBtn" href="/admin/thread/' + tnum + '/permanant_delete" class="btn btn-danger btn-sm">완전 삭제</a></span>'
+			? '<span class=pull-right><a id=explodeThreadBtn href="/admin/thread/' + tnum + '/permanant_delete" class="btn btn-danger btn-sm">완전 삭제</a></span>'
 			: ''
 		}
 	`;

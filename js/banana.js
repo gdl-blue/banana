@@ -840,4 +840,17 @@ $(function() {
 		
 		return false;
 	});
+	
+	$('a#declinePrivacyBtn').click(function() {
+		const a = $(this);
+		
+		if(window.submitConfirmed) return true;
+		
+		confirmBalloon('[알림]', '가입을 취소하시겠습니까?', function() {
+			window.submitConfirmed = true;
+			location.href = a.attr('href');
+		});
+		
+		return false;
+	});
 });

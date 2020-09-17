@@ -57,7 +57,7 @@ wiki.get('/admin/permissions', async function grantPanel(req, res) {
 			</div>
 			
 			<div class=form-group>
-				<label>유효 기간<sup><a title="이번에 새로 부여한 권한만 해당되며 이미 가지고 있던 권한에는 자동으로 적용되지 않습니다.">[!]</a></sup>:</label><br>
+				<label>유효 기간<sup><a title="이번에 새로 부여한 권한만 해당되며 이미 가지고 있던 권한에는 자동으로 적용되지 않습니다. 또한 유효기간을 변경하려면 권한을 회수한 후 다시 부여해야 합니다.">[!]</a></sup>:</label><br>
 				<label><input type=radio name=permanant value=true checked /> 무기한</label><br />
 				<label>
 					<input type=radio name=permanant value=false /> 만료일 지정

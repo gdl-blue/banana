@@ -45,6 +45,21 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			
 			content = await JSnamumark(title, rawContent[0]['content'], 1);
 			
+			if(title.startsWith("사용자:")) {
+				try {
+					const trb = await curs.execute("select tribe from users where username = ?", [title.replace(/^사용자[:]/, '')]);
+					const tdp = (await curs.execute("select alias from tribes where id = ?", [trb[0]['tribe']]))[0]['alias'];
+					
+					if(trb[0]['tribe'] != '0') {
+						content = `
+							<div style="border-width: 5px 1px 1px; border-style: solid; border-color: rgb(170, 215, 255) gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'#00C8C8\';" onmouseout="this.style.borderTopColor=\'rgb(170, 215, 255)\';">
+								<span style="font-size: 14pt;">이 사용자는 ${tdp}족 입니다.</span><br />
+							</div>
+						` + content;
+					}
+				} catch(e) {}
+			}
+			
 			if(title.startsWith("사용자:") && await ban_check(req, 'author', title.replace(/^사용자[:]/, ''))) {
 				content = `
 					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: crimson gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'darkred\';" onmouseout="this.style.borderTopColor=\'crimson\';">

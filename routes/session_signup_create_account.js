@@ -54,6 +54,10 @@ wiki.get('/member/signup_key', async function signupScreen(req, res) {
 				<label>비밀번호 확인:</label><br>
 				<input class=form-control name="password_check" type="password">
 			</div>
+
+			<div class=form-group>
+				<label><input name=use-tribe type=checkbox checked /> 내 계정에 종족 지정하기<sup><a title="계정을 종족에 가입시킵니다. 종족은 무작위로 결정되며 변경하거나 나가기가 불가능합니다. 이 기능을 원하지 않는다면 끄실 수 있습니다. 그냥 재미로 보세요.">[?]</a></sup></label>
+			</div>
 			
 			<div class=form-group>
 				${captcha}
@@ -260,7 +264,7 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 	
 	req.session.username = id;
 	
-	curs.execute("insert into users (username, password) values (?, ?)", [id, sha3(pw)]);
+	curs.execute("insert into users (username, password, tribe) values (?, ?, ?)", [id, sha3(pw), req.body['use-tribe'] ? (itoa(randint(1, 9))) : '0']);
 	
 	curs.execute("insert into documents (title, content) values (?, '')", ["사용자:" + id]);
 	

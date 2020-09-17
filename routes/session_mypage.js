@@ -288,7 +288,7 @@ wiki.post('/member/mypage', async function saveMemberSettings(req, res) {
 		userset[ip_check(req)]['color'] = 'default';
 	}
 	
-	if(req.body['current_password'].length) {
+	if(req.body['current-password'].length) {
 		if(sha3(req.body['current_password']) !== (await curs.execute("select password from users where username = ?", [ip_check(req)]))[0]['password']) {
 			return res.send(await showError(req, 'password_not_matching'));
 		}

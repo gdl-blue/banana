@@ -17,14 +17,14 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		<table class="table table-hover">
 			<colgroup>
 				<col style="width: 100px;">
-				<col>
 				<col style="width: 22%;">
+				<col>
 			</colgroup>
 			<thead>
 				<tr>
 					<th>시간</th>
-					<th>토론</th>
 					<th>작성자</th>
+					<th>토론</th>
 				</tr>
 			</thead>
 			
@@ -72,11 +72,11 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 				</td>
 				
 				<td>
-					<a href="/thread/${trd['tnum']}">${html.escape(trd['topic'])}</a> (<a href="/discuss/${encodeURIComponent(trd['title'])}">${html.escape(trd['title'])}</a>)
+					${ip_pas(un, im)}
 				</td>
 				
 				<td>
-					${ip_pas(un, im)}
+					<a href="/thread/${trd['tnum']}">${html.escape(trd['topic'])}</a> (<a href="/discuss/${encodeURIComponent(trd['title'])}">${html.escape(trd['title'])}</a>)
 				</td>
 			</tr>
 			
