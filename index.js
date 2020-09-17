@@ -602,7 +602,7 @@ try {
 			await curs.execute("insert into filelicenses (license, creator) values (?, '')", [lice]);
 		}
 		
-		await curs.execute("create table tribes (id, alias)");
+		await curs.execute("create table tribes (id text default '', alias text default '')");
 		
 		// 나중에 바꿀 수 있게 할 예정
 		const tribes = ['없음', '호신', '환신', '광신', '옥신', '선신', '수신', '경신', '천신', '양신'];
