@@ -34,6 +34,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 			<ol class="breadcrumb link-nav">
 				<li><strong>[문서]</strong></li>
 				<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
+				<li><a href="/contribution/${ismember}/${username}/requests">[편집요청]</a></li>
 				<li>&nbsp;</li>
 				<li><a href="?logtype=create">[새 문서]</a></li>
 				<li><a href="?logtype=revert">[되돌림]</a></li>

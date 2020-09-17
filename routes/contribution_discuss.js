@@ -24,6 +24,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 		<ol class="breadcrumb link-nav">
 			<li><a href="/contribution/${ismember}/${username}/document">[문서]</a></li>
 			<li><strong>[토론]</strong></li>
+			<li><a href="/contribution/${ismember}/${username}/requests">[편집요청]</a></li>
 		</ol>
 		
 		<table class="table table-hover">
