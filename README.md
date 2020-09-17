@@ -5,6 +5,8 @@ banana is a wiki engine that supports many convinient features. (English is not 
 
 버전은 기존 엔진 버전 번호를 이어서 9부터 시작한다. *(참고로 기존 엔진은 더 이상 본인도 가지고 있지 않다. 삭제 후 이중 덮어쓰기하였다.)*
 
+실제 가동 사이트는 알파위키 사문(은서 차원에서 일부러 줄임말 사용)에 주소를 남겼다.
+
 ## 요구 환경
 Windows 7(Node.js 7.6 이상)
 
