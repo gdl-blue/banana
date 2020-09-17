@@ -43,7 +43,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 				throw Error("빠라빠라 빠라밤");
 			}
 			
-			content = await JSnamumark(title, rawContent[0]['content'], 1);
+			content = await JSnamumark(title, rawContent[0]['content'], req.query['rev'] ? 0 : 1);
 			
 			if(title.startsWith("사용자:")) {
 				try {
