@@ -81,7 +81,7 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 	
 	const key = req.query['key'];
 	await curs.execute("select key from account_creation where key = ?", [key]);
-	if(!curs.fetchall().length) {
+	if(!curs.fetchall().length && config.getString('disable_email', '0') != '1') {
 		res.send(await showError(req, 'invalid_signup_key'));
 		
 		return;

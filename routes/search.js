@@ -50,6 +50,8 @@ wiki.get(/\/search\/(.*)/, async (req, res) => {
 				<li><strong>${page}쪽</strong></li>
 				<li><a href="?page=${page + 1}">다음 &gt;</a></li>
 				<li>&nbsp;</li>
+				<li><a href="/w/${encodeURIComponent(query)}">[문서로]</a></li>
+				<li>&nbsp;</li>
 		`;
 		
 		var content = `
