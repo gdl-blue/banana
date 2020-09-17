@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        3,
-	revision:     2,
+	revision:     3,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.3.2'
+	tag:          '4.3.3'
 };
 
 const advCount = 27;
@@ -566,6 +566,7 @@ try {
 			'login_attempts': ['ip', 'username'],
 			'rb': ['block', 'end', 'today', 'blocker', 'why', 'band', 'ipacl'],  // 구조적으로 많이 달라서...
 			'backlink_category': ['title', 'category'],
+			'backlink': ['title', 'link'],
 			'old_edit_requests': ['name', 'num', 'send', 'leng', 'data', 'user', 'state', 'time', 'closer', 'pan', 'why', 'ap'],
 			
 			// 마지막에 쉼표 들으가도 됨
@@ -883,19 +884,33 @@ async function JSnamumark(title, content, initializeBacklinks = 0) {
 			
 			var ctgr = '';
 			
-			if(initializeBacklinks) {
-				await curs.execute("delete from backlink_category where title = ?", [title]);
-			}
-			
 			for(cate of r['categories']) {
 				ctgr += `
 					<li class=wiki-link-internal><a class=wiki-internal-link href="/w/${encodeURIComponent('분류:' + cate)}">${html.escape(cate)}</a></li>
 				`;
+			}
+			
+			if(initializeBacklinks) {
+				// 속도 느려질 수 있으니 비동기로
+				curs.execute("delete from backlink_category where title = ?", [title])
+				.then(x => {
+					for(cate of r['categories']) {
+						curs.execute("insert into backlink_category (title, category) values (?, ?)", [title, cate]);
+					}
+				})
+				.catch(console.error);
 				
-				if(initializeBacklinks) {
-					// await X
-					curs.execute("insert into backlink_category (title, category) values (?, ?)", [title, cate]);
-				}
+				curs.execute("delete from backlink where title = ?", [title])
+				.then(x => {
+					qa('a.wiki-internal-link', el => {
+						try {
+							curs.execute("insert into backlink (title, link) values (?, ?)", [title, el.getAttribute('href').replace(/^\/wiki\//, '')]);
+						} catch(e) {
+							print(e.stack);
+						}
+					});
+				})
+				.catch(console.error);
 			}
 			
 			if(ctgr.length) {
