@@ -22,9 +22,11 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 	
 	var content = `
 		<ol class="breadcrumb link-nav">
-			<li><a href="/contribution/${ismember}/${username}/document">[문서]</a></li>
-			<li><strong>[토론]</strong></li>
-			<li><a href="/contribution/${ismember}/${username}/requests">[편집요청]</a></li>
+			<li><a href="/contribution/${ismember}/${username}/document">[문서 편집]</a></li>
+			<li><strong>[토론 참여]</strong></li>
+			<li><a href="/contribution/${ismember}/${username}/requests">[편집 요청 생성]</a></li>
+			<li><a href="/contribution/${ismember}/${username}/accept">[편집 요청 승인]</a></li>
+			<li><a href="/contribution/${ismember}/${username}/reject">[편집 요청 거절]</a></li>
 		</ol>
 		
 		<table class="table table-hover">
