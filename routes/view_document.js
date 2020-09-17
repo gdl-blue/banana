@@ -115,8 +115,8 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 	if(title.startsWith('사용자:')) isUserDoc = true;
 	
 	res.status(httpstat).send(await render(req, title, content, {
-		star_count: 0,
-		starred: false,
+		star_count: (await curs.execute("select title from stars where title = ?", [title])).length,
+		starred: ((await curs.execute("select title from stars where title = ? and username = ?", [title, ip_check(req)])).length ? true : false),
 		date: lstedt,
 		user: isUserDoc,
 		category: [],
