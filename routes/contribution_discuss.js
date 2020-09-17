@@ -33,7 +33,6 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 			<colgroup>
 				<col>
 				<col style="width: 25%;">
-				<col style="width: 22%;">
 			</colgroup>
 			
 			<thead id>

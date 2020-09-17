@@ -47,15 +47,15 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		<table class="table table-hover">
 			<colgroup>
 				<col style="width: 100px;">
-				<col>
 				<col style="width: 25%;">
+				<col>
 			</colgroup>
 			
 			<thead id>
 				<tr>
 					<th>시간</th>
-					<th>문서명</th>
 					<th>수정자</th>
+					<th>문서명</th>
 				</tr>
 			</thead>
 			
@@ -67,6 +67,10 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
 						${generateTime(toDate(row['time']), 'H시 i분')}
+					</td>
+					
+					<td>
+						${ip_pas(row['username'], row['ismember'])}
 					</td>
 					
 					<td>
@@ -91,10 +95,6 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 							)
 							
 						};">${row['changes']}</span>]
-					</td>
-					
-					<td>
-						${ip_pas(row['username'], row['ismember'])}
 					</td>
 				</tr>
 		`;
