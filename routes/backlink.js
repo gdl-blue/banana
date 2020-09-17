@@ -54,4 +54,6 @@ wiki.get(/\/xref\/(.*)/, async (req, res) => {
 			</ul>
 		</div>
 	`;
+	
+	res.send(await render(req, title, content, {}, '의 역링크', _, 'xref'));
 });
