@@ -99,7 +99,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 				</div>
 				
 				<div class="tab-pane" id="delete" role="tabpanel">
-					<form method="post" id="editForm" data-title="${title}" data-recaptcha="0">
+					<form method="post" action="/delete/${encodeURIComponent(title)}" data-title="${title}" data-recaptcha="0">
 						<input type="hidden" name="token" value="">
 						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
 						<input type="hidden" name="baserev" value="${baserev}">

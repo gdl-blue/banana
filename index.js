@@ -1780,6 +1780,8 @@ async function getacl(req, title, action) {
 	switch(acltyp) {
 		case 'action-based':
 			if(action == 'revert') action = 'edit';
+			if(action == 'delete') action = 'edit';
+			if(action == 'move') action = 'edit';
 			if(action == 'diff') action = 'read';
 		
 			var fullacllst = [];
