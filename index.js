@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        4,
-	revision:     1,
+	revision:     2,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.4.1'
+	tag:          '4.4.2'
 };
 
 const advCount = 27;
@@ -1290,6 +1290,18 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	if(await ban_check(req, _, _, 1)) {
 		// 응답을 해주지 않는다
 		return new Promise((a, b) => 12345678);
+	}
+	
+	if((!req.cookies['authd'] || req.cookies['authd'] !== hostconfig['authpw']) && hostconfig['authpw']) {
+		return `
+			<meta charset=utf-8>
+			
+			<form method=post action=/member/checkpw>
+				<label>비밀번호:</label><br />
+				<input type=password name=password />
+				<input type=submit value=Go />
+			</form>
+		`;
 	}
 	
 	const skinInfo = {
@@ -2617,6 +2629,17 @@ wiki.get(/\/file\/(.*)/, async function redirectM(req, res) {
 		res.redirect('/images/' + sha224(filename) + extension);
 	} catch(e) {
 		res.send(await showError(req, 'invalid'));
+	}
+});
+
+wiki.post('/member/checkpw', function checkPW(req, res) {
+	if(req.body.password == hostconfig['authpw']) {
+		res.cookie('authd', hostconfig['authpw'], {
+			maxAge: 1000 * 3600 * 24 * 365
+		});
+		res.redirect('/');
+	} else {
+		res.send('<meta charset=utf-8><h2>비밀번호가 틀립니다.');
 	}
 });
 

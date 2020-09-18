@@ -1,4 +1,4 @@
-wiki.post('/check_/thread/:tnum', async function notifyEvent(req, res) {
+wiki.post('/check/thread/:tnum', async function notifyEvent(req, res) {
 	if(config.getString('disable_discuss', '0') == '1') {
 		res.send(await showError(req, 'disabled_feature'));
 		return;
