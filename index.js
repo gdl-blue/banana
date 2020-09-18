@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        5,
-	revision:     2,
+	revision:     3,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.5.2'
+	tag:          '4.5.3'
 };
 
 const advCount = 27;
@@ -2604,6 +2604,12 @@ async function getThreadData(req, tnum, tid = '-1') {
 
 wiki.get('/settings', async function skinSettings(req, res) {
 	res.send(await render(req, '스킨 설정', '.', { __isSkinSettingsPage: 1 }));
+});
+
+wiki.get('/random', (req, res) => {
+	curs.execute("select title from documents order by random() limit 1")
+	.then(data => res.redirect(data.length ? ('/w/' + data[0].title) : ('/')))
+	.catch(e => res.redirect('/'));
 });
 
 wiki.get(/\/images\/(.*)/, async function sendImage(req, res) {

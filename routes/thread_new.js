@@ -186,6 +186,10 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				</form>
 			`;
 			
+			if(!islogin(req)) {
+				content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 토론 댓글에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
+			}
+			
 			subtitle = ' (토론 목록)';
 			viewname = 'thread_list'
 	}
