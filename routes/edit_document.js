@@ -100,11 +100,6 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 				
 				<div class="tab-pane" id="delete" role="tabpanel">
 					<form method="post" action="/delete/${encodeURIComponent(title)}" data-title="${title}" data-recaptcha="0">
-						<input type="hidden" name="token" value="">
-						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
-						<input type="hidden" name="baserev" value="${baserev}">
-						<input type=hidden name=submittype value=delete>
-
 						<div class="form-group" style="margin-top: 1rem;">
 							<label>사유: </label>
 							<input type="text" class="form-control" id="logInput" name="log" value="">
@@ -123,14 +118,9 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 				</div>
 				
 				<div class="tab-pane" id="move" role="tabpanel">
-					<form method="post" id="editForm" data-title="${title}" data-recaptcha="0">
-						<input type="hidden" name="token" value="">
-						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
-						<input type="hidden" name="baserev" value="${baserev}">
-						<input type=hidden name=submittype value=move>
-
+					<form method="post" action="/move/${encodeURIComponent(title)}" data-title="${title}" data-recaptcha="0">
 						<div class="form-group" style="margin-top: 1rem;">
-							<label>제목: </label>
+							<label>새로운 제목: </label>
 							<input type=text class=form-control name=newtitle>
 						</div>
 
