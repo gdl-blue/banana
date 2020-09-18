@@ -1,7 +1,7 @@
 const versionInfo = {
 	major:        12,
 	minor:        5,
-	revision:     0,
+	revision:     1,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
