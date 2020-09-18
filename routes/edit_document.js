@@ -84,6 +84,8 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 							${captcha}
 						</div>
 						
+						${config.getString('edit_warning', '')}
+						
 						<div class="btns">
 							<button id="editBtn" class="btn btn-primary" style="width: 100px;">저장</button>
 						</div>
