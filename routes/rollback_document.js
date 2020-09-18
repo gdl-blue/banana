@@ -147,11 +147,11 @@ wiki.post(/\/revert\/(.*)/, async (req, res) => {
 	const recentRev = _recentRev[0]
 ;
 	
-	await curs.execute("update document set content = ? where title = ?", [revdata.content, title]);
-	
+	await curs.execute("update documents set content = ? where title = ?", [revdata.content, title]);
+	const rawChanges = revdata.content.length - recentRev.content.length;
 	curs.execute("insert into history (title, content, rev, username, time, changes, log, iserq, erqnum, ismember, advance) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-		title, revdata.content, String(Number(recentRev.rev) + 1), ip_check(req), getTime(), (rawChanges > 0 ? '+' : '') + (revdata.content.length - recentRev.content.length), req.body['log'], '0', '-1', islogin(req) ? 'author' : 'ip', '(' + rev + '판으로 복원)'
+		title, revdata.content, String(Number(recentRev.rev) + 1), ip_check(req), getTime(), (rawChanges > 0 ? '+' : '') + rawChanges, req.body['log'], '0', '-1', islogin(req) ? 'author' : 'ip', '(' + rev + '판으로 복원)'
 	]);
 	
 	res.redirect('/w/' + encodeURIComponent(title));
