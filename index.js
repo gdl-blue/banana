@@ -5,7 +5,7 @@ const versionInfo = {
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.5.0'
+	tag:          '4.5.1'
 };
 
 const advCount = 27;
@@ -1286,7 +1286,7 @@ async function getScheme(req) {
 }
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
-	if(await ban_check(req, _, _, 1)) {
+	if(await ban_check(req, _, _, 1) || (hostconfig['blockip'] && hostconfig['blockip'].includes(ip_check(req, 1)))) {
 		// 응답을 해주지 않는다
 		return new Promise((a, b) => 12345678);
 	}
