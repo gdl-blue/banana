@@ -1,11 +1,11 @@
 const versionInfo = {
 	major:        12,
 	minor:        4,
-	revision:     2,
+	revision:     3,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.4.2'
+	tag:          '4.4.3'
 };
 
 const advCount = 27;
@@ -1292,7 +1292,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		return new Promise((a, b) => 12345678);
 	}
 	
-	if((!req.cookies['authd'] || req.cookies['authd'] !== hostconfig['authpw']) && hostconfig['authpw']) {
+	if(((!req.cookies['authd'] || req.cookies['authd'] !== hostconfig['authpw']) && hostconfig['authpw']) && !(hostconfig['noauthxhr'] && req.xhr)) {
 		return `
 			<meta charset=utf-8>
 			
