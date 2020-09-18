@@ -10,7 +10,7 @@ wiki.get('/member/login', async function loginScreen(req, res) {
 		warningText = '<p><strong><font color=red>[경고!] HTTPS 연결이 아닌 것같습니다. 로그인할 시 개인정보가 유출될 수 있으며, 이에 대한 책임은 본인에게 있습니다.</font></strong></p>';
 	}
 	
-	const captcha = generateCaptcha(req, 3);
+	const captcha = generateCaptcha(req, 2);
 	
 	res.send(await render(req, '로그인', `
 		${warningText}
@@ -54,7 +54,7 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	if(!validateCaptcha(req)){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
-	const captcha = generateCaptcha(req, 3);
+	const captcha = generateCaptcha(req, 2);
 	
 	var warningText = '';
 	var warningScript = '';

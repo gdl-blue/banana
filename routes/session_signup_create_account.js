@@ -34,7 +34,7 @@ wiki.get('/member/signup_key', async function signupScreen(req, res) {
 		warningScript = ` onsubmit="return confirm('지금 HTTPS 연결이 감지되지 않았습니다. 가입할 경우 비밀번호가 다른 사람에게 노출될 수 있으며, 이에 대한 책임은 본인에게 있습니다. 계속하시겠습니까?');"`;
 	}
 	
-	const captcha = generateCaptcha(req, 2);
+	const captcha = generateCaptcha(req, 1);
 	
 	res.send(await render(req, '계정 만들기', `
 		${warningText}
@@ -98,7 +98,7 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 	
 	if(!validateCaptcha(req)){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
-	const captcha = generateCaptcha(req, 2);
+	const captcha = generateCaptcha(req, 1);
 	
 	if(id.match(/(?:[^A-Za-z0-9_ㄱ-힣?!&lt;&gt;※#★☆♣♠♤☎☏♨ -])/)) {  // 터보위키와 동일한 문자허용 방식임
 		res.send(await render(req, '계정 만들기', `

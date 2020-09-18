@@ -4,8 +4,8 @@ const versionInfo = {
 	revision:     3,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'B',
-	tag:          '4.4.3a'
+	patch:        'C',
+	tag:          '4.4.3b'
 };
 
 const advCount = 27;
@@ -1678,7 +1678,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 
 function fetchErrorString(code, tag = null) {
 	const codes = {
-		'invalid_captcha_number': '보안문자 값이 올바르지 않습니다.',
+		'invalid_captcha_number': '보안문자 값이 올바르지 않습니다. 참고로 1처럼 생겼는데 약간 두껍고 오른쪽으로 살짝 기울어져있는 숫자는 7입니다.',
 		'disabled_feature': '이 기능이 사용하도록 설정되지 않았습니다.',
 		'invalid_signup_key': '이 인증은 만료되었거나 올바르지 않습니다.',
 		'invalid_vote_type': '투표 방식이 올바르지 않습니다.',
