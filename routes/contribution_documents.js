@@ -34,7 +34,6 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 			<ol class="breadcrumb link-nav">
 				<li><strong>[문서 편집]</strong></li>
 				<li><a href="/contribution/${ismember}/${username}/discuss">[토론 참여]</a></li>
-				<li><a href="/contribution/${ismember}/${username}/requests">[편집요청]</a></li>
 				<li><a href="/contribution/${ismember}/${username}/requests">[편집 요청 생성]</a></li>
 				<li><a href="/contribution/${ismember}/${username}/accept">[편집 요청 승인]</a></li>
 				<li><a href="/contribution/${ismember}/${username}/reject">[편집 요청 거절]</a></li>

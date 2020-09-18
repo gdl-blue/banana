@@ -108,3 +108,51 @@ wiki.get(/\/revert\/(.*)/, async (req, res) => {
 		text: revdata.content
 	}, ' (' + rev + '판으로 복원)', _, 'revert'))
 });
+
+wiki.post(/\/revert\/(.*)/, async (req, res) => {
+	const title = req.params[0];
+	
+	if(!await getacl(req, title, 'read')) {
+		return res.send(await showError(req, 'insuffisient_privileges_read'));
+	}
+	
+	if(!await getacl(req, title, 'edit')) {
+		return res.send(await showError(req, 'insuffisient_privileges_edit'));
+	}
+	
+	if(!await getacl(req, title, 'revert')) {
+		return res.send(await showError(req, 'insuffisient_privileges_revert'));
+	}
+	
+	const rev = req.query['rev'];
+	if(!rev) {
+		return res.send(await showError(req, 'revision_not_specified'));
+	}
+	
+	if(isNaN(atoi(rev))) {
+		return res.send(await showError(req, 'invalid_value'));
+	}
+	
+	const _recentRev = await curs.execute("select content, rev from history where title = ? order by cast(rev as integer) desc limit 1", [title]);
+	if(!_recentRev.length) {
+		return res.send(await showError(req, 'document_not_found'));
+	}
+	
+	const dbdata = await curs.execute("select content, time, username from history where title = ? and rev = ?", [title, rev]);
+	if(!dbdata.length) {
+		return res.send(await showError(req, 'revision_not_found'));
+	}
+	
+	const revdata   = dbdata[0];
+	const recentRev = _recentRev[0]
+;
+	
+	await curs.execute("update document set content = ? where title = ?", [revdata.content, title]);
+	
+	curs.execute("insert into history (title, content, rev, username, time, changes, log, iserq, erqnum, ismember, advance) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+		title, revdata.content, String(Number(recentRev.rev) + 1), ip_check(req), getTime(), (rawChanges > 0 ? '+' : '') + (revdata.content.length - recentRev.content.length), req.body['log'], '0', '-1', islogin(req) ? 'author' : 'ip', '(' + rev + '판으로 복원)'
+	]);
+	
+	res.redirect('/w/' + encodeURIComponent(title));
+});
