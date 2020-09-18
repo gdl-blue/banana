@@ -4,8 +4,8 @@ const versionInfo = {
 	revision:     3,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'A',
-	tag:          '4.4.3'
+	patch:        'B',
+	tag:          '4.4.3a'
 };
 
 const advCount = 27;
@@ -304,11 +304,11 @@ function input(p) {
 	return inputReader.readLine('');
 }
 
-async function readline(prompt) {
+async function readline(prompt, i, o) {
 	return new Promise((resolve, reject) => {
 		const rl = read_line.createInterface({
-			input: process.stdin,
-			output: process.stdout
+			input: i || process.stdin,
+			output: o || process.stdout
 		});
 		
 		rl.question(prompt, answer => {
@@ -563,7 +563,6 @@ try {
 			'bots': ['username', 'token', 'owner'],
 			'email_config': ['service', 'email', 'password'],
 			'edit_requests': ['baserev', 'author', 'slug', 'original', 'content'],
-			'login_attempts': ['ip', 'username'],
 			'rb': ['block', 'end', 'today', 'blocker', 'why', 'band', 'ipacl'],  // 구조적으로 많이 달라서...
 			'backlink_category': ['title', 'category'],
 			'backlink': ['title', 'link'],
@@ -2722,7 +2721,7 @@ if(firstrun) {
 			telnet.on('connection', async function telnetHome(client) {
 				client.setEncoding('utf8');
 				
-				var doctitle = await readline('문서 이름: ');
+				var doctitle = await readline('문서 이름: ', client.stdin, client.stdout);
 				client.write('\n');
 				
 				var dbdata = await curs.execute("select content from documents where title = ?", [doctitle]);

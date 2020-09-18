@@ -90,35 +90,6 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	await curs.execute("select username, password from users where username = ? and password = ?", [id, sha3(pw)]);
 	if(!curs.fetchall().length) {
-		await curs.execute("select ip from login_attempts where ip = ? and username = ?", [md5(ip_check(req)), id]);
-		const lc = curs.fetchall().length;
-		
-		const restext = `\
-IP 주소의 MD5가 ${md5(ip_check(req))}인 사용자가 이 계정으로 연속으로 ${lc}번 로그인에 실패했읍니다. 앞으로 동일 IP에서 계속 실패하면 알림이 옵니다.
-
-이 쓰레드를 닫으려면 "!close"을 입력하십시오.`;
-		
-		if(lc >= 2) {
-			const title = '사용자:' + id;
-			
-			var slug = rndval('abcdef0123456789', 32);
-			
-			while(1) {
-				await curs.execute("select tnum from threads where tnum = ?", [slug]);
-				if(!curs.fetchall().length) break;
-				slug = rndval('abcdef0123456789', 32);
-			}
-			
-			curs.execute("insert into threads (title, topic, status, time, tnum, system) values (?, ?, ?, ?, ?, ?)",
-							[title, '보안 알림', 'normal', getTime(), slug, '1']);
-			
-			curs.execute("insert into res (id, content, username, time, hidden, hider, status, tnum, ismember, isadmin) values \
-							(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-							['1', restext, '시스템', getTime(), '0', '', '0', slug, 'author', '1']);
-		}
-		
-		curs.execute("insert into login_attempts (ip, username) values (?, ?)", [md5(ip_check(req)), id]);
-		
 		res.send(await showError(req, 'invalid_password'));
 		
 		return;
