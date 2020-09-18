@@ -1292,7 +1292,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		return new Promise((a, b) => 12345678);
 	}
 	
-	if(((!req.cookies['authd'] || req.cookies['authd'] !== hostconfig['authpw']) && hostconfig['authpw']) && !(hostconfig['noauthxhr'] && req.xhr)) {
+	if(((!req.cookies['authd'] || req.cookies['authd'] !== hostconfig['authpw']) && hostconfig['authpw']) && !(hostconfig['noauthxhr'] == '1' && req.xhr)) {
 		return `
 			<meta charset=utf-8>
 			
