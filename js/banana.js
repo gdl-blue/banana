@@ -761,6 +761,17 @@ $(function() {
 		});
 	});
 	
+	function bdb() {
+		$('form#grant-form table#perm-list tr td button.delete-permission-btn').click(function() {
+			const val   = $(this).prev().val();
+			const tarea = $('form#grant-form').find('textarea#perm-tlist');
+			
+			$('table#perm-list tbody tr#perm-' + val).remove();
+			tarea.val(tarea.val().replace(val + ',', ''));
+			alertBalloon('[성공]', '권한을 회수했읍니다. 저장하려면 하단의 적용 단추를 누르십시오.', 2000, 1, 'blue');
+		});
+	}
+	
 	$('form#grant-form button#addPermissionBtn').click(function() {
 		const combo = $(this).prev();
 		const val   = combo.val();
@@ -774,16 +785,11 @@ $(function() {
 			tarea.val(tarea.val() + val + ',');
 			alertBalloon('[성공]', '권한을 추가했읍니다. 저장하려면 하단의 적용 단추를 누르십시오.', 2000, 1, 'blue');
 		}
+		
+		bdb();
 	});
 	
-	$('form#grant-form table#perm-list tr td button.delete-permission-btn').click(function() {
-		const val   = $(this).prev().val();
-		const tarea = $('form#grant-form').find('textarea#perm-tlist');
-		
-		$('table#perm-list tbody tr#perm-' + val).remove();
-		tarea.val(tarea.val().replace(val + ',', ''));
-		alertBalloon('[성공]', '권한을 회수했읍니다. 저장하려면 하단의 적용 단추를 누르십시오.', 2000, 1, 'blue');
-	});
+	bdb();
 	
 	$('form.login-form[data-nohttps="true"], form.signup-form[data-nohttps="true"]').submit(function() {
 		const frm = $(this);
