@@ -62,30 +62,30 @@ wiki.get(/\/revert\/(.*)/, async (req, res) => {
 				<input type=text readonly class=form-control value="${html.escape(revdata.username)}" />
 			</div>
 			
-			<ul class="nav nav-tabs" role=tablist style="height: 38px;">
+			<ul class="nav nav-tabs" style="height: 38px;">
 				<li class=nav-item>
-					<a class="nav-link active" data-toggle=tab href="#preview" role=tab aria-expanded=true>미리보기</a>
+					<a class="nav-link active" href="#preview">미리보기</a>
 				</li>
 				
 				<li class=nav-item>
-					<a class=nav-link data-toggle=tab href="#raw" role=tab aria-expanded=true>날내용</a>
+					<a class=nav-link href="#raw">날내용</a>
 				</li>
 				
 				<li class=nav-item>
-					<a class=nav-link data-toggle=tab href="#diff" role=tab aria-expanded=true>비교</a>
+					<a class=nav-link href="#diff">비교</a>
 				</li>
 			</ul>
 			
 			<div class="tab-content bordered">
-				<div id=preview class="tab-pane active" role=tabpanel aria-expanded=true>
+				<div id=preview class="tab-pane active">
 					${await JSnamumark(title, revdata.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n'))}
 				</div>
 				
-				<div id=raw class=tab-pane role=tabpanel aria-expanded=true>
+				<div id=raw class=tab-pane>
 					<textarea class=form-control rows=15 readonly>${html.escape(revdata.content)}</textarea>
 				</div>
 				
-				<div id=diff class=tab-pane role=tabpanel aria-expanded=true>
+				<div id=diff class=tab-pane>
 					${difflib.diff(recentRev.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n'), revdata.content.replace(/\r\n/g, '\n').replace(/\r/g, '\n'), recentRev.rev + '판', rev + '판')}
 				</div>
 			</div>

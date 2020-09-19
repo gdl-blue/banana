@@ -58,18 +58,18 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	
 	if(type == 'edit_request') {
 		content += `
-			<ul class="nav nav-tabs" role=tablist style="height: 38px;">
+			<ul class="nav nav-tabs" style="height: 38px;">
 				<li class=nav-item>
-					<a class="nav-link active" data-toggle=tab href="#thread" role=tab aria-expanded=true>댓글</a>
+					<a class="nav-link active" href="#thread">댓글</a>
 				</li>
 				
 				<li class=nav-item>
-					<a class=nav-link data-toggle=tab href="#contents" role=tab aria-expanded=true>편집 내용</a>
+					<a class=nav-link href="#contents">편집 내용</a>
 				</li>
 			</ul>
 			
 			<div class=tab-content>
-				<div id=thread class="tab-pane active" role=tabpanel aria-expanded=true>
+				<div id=thread class="tab-pane active">
 		`;
 	}
 	
@@ -134,7 +134,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		content += `
 				</div>
 				
-				<div class=tab-pane id=contents role=tabpanel aria-expanded=true>
+				<div class=tab-pane id=contents>
 					<table class=vertical-tablist>
 						<colgroup>
 							<col style="width: 140px;">
@@ -232,7 +232,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		}
 		
 		content += `
-		    <form method="post" id="thread-status-form" style="display: none;">
+		    <form method=post id=thread-status-form style="display: none;">
         		토론 상태: 
         		<select name="status">${sts}</select>
         		<button>변경</button>

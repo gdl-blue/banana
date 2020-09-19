@@ -42,42 +42,39 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 		`;
 	} else {
 		content = `
-			<ul class="nav nav-pills" role=tablist>
+			<ul class="nav nav-pills">
 				<li class="nav-item">
-					<a class="nav-link active" data-toggle="tab" href="#edit" role="tab" aria-expanded=true>편집기</a>
+					<a class="nav-link active" href="#edit">편집기</a>
 				</li>
 				
 				<li class="nav-item">
-					<a id="previewLink" class="nav-link" data-toggle="tab" href="#preview" role="tab" aria-expanded=true>미리보기</a>
+					<a id=previewLink class=nav-link href="#preview">미리보기</a>
 				</li>
 				
 				<li class="nav-item">
-					<a id=diffLink class="nav-link" data-toggle="tab" href="#diff" role="tab" aria-expanded=true>비교</a>
+					<a id=diffLink class=nav-link href="#diff">비교</a>
 				</li>
 				
 				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#delete" role="tab" aria-expanded=true>삭제</a>
+					<a class=nav-link href="#delete">삭제</a>
 				</li>
 				
 				<li class="nav-item">
-					<a class="nav-link" data-toggle="tab" href="#move" role="tab" aria-expanded=true>이동</a>
+					<a class=nav-link href="#move">이동</a>
 				</li>
 			</ul>
 			
 			<div class="tab-content bordered">
-				<div class="tab-pane active" id="edit" role="tabpanel">
-					<form method="post" id="editForm" data-title="${html.escape(title)}" data-recaptcha="0">
-						<input type="hidden" name="token" value="">
-						<input type="hidden" name="identifier" value="${islogin(req) ? 'm' : 'i'}:${ip_check(req)}">
-						<input type="hidden" name="baserev" value="${baserev}">
-						<input type=hidden name=submittype value="edit">
+				<div class="tab-pane active" id=edit>
+					<form method=post id=editForm data-title="${html.escape(title)}">
+						<input type=hidden name=baserev value="${baserev}">
 						
 						<textarea id=originalContent style="display: none;">${html.escape(rawContent)}</textarea>
-						<textarea id="textInput" name="text" wrap="soft" class="form-control">${html.escape(rawContent)}</textarea>
+						<textarea name=text class=form-control>${html.escape(rawContent)}</textarea>
 
-						<div class="form-group" style="margin-top: 1rem;">
-							<label class="control-label" for="summaryInput">편집 메모:</label>
-							<input type="text" class="form-control" id="logInput" name="log" value="">
+						<div class=form-group>
+							<label>편집 메모:</label>
+							<input type=text class=form-control id=logInput name=log>
 						</div>
 						
 						<div class=form-group>
@@ -86,21 +83,21 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 						
 						${config.getString('edit_warning', '')}
 						
-						<div class="btns">
-							<button id="editBtn" class="btn btn-primary" style="width: 100px;">저장</button>
+						<div class=btns>
+							<button id=editBtn class="btn btn-primary" style="width: 100px;">저장</button>
 						</div>
 					</form>
 				</div>
 				
-				<div class="tab-pane" id="preview" role="tabpanel">
+				<div class=tab-pane id=preview>
 					<iframe id=previewFrame name=previewFrame></iframe>
 				</div>
 				
-				<div class="tab-pane" id=diff role="tabpanel">
+				<div class=tab-pane id=diff>
 				
 				</div>
 				
-				<div class="tab-pane" id="delete" role="tabpanel">
+				<div class=tab-pane id=delete>
 					<form method="post" action="/delete/${encodeURIComponent(title)}" data-title="${title}" data-recaptcha="0">
 						<div class="form-group" style="margin-top: 1rem;">
 							<label>사유: </label>
@@ -119,7 +116,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 					</form>
 				</div>
 				
-				<div class="tab-pane" id="move" role="tabpanel">
+				<div class=tab-pane id=move>
 					<form method="post" action="/move/${encodeURIComponent(title)}" data-title="${title}" data-recaptcha="0">
 						<div class="form-group" style="margin-top: 1rem;">
 							<label>새로운 제목: </label>
