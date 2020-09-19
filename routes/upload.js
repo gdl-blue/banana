@@ -142,6 +142,14 @@ wiki.get('/Upload', async function fileUploadPage(req, res) {
 		`;
 	}
 	
+	if(!req.query.nojs) {
+		content += `
+			<noscript>
+				<meta http-equiv=refresh content="0; url=?nojs=1" />
+			</noscript>
+		`;
+	}
+	
 	res.send(await render(req, '그림 올리기', content, {}, _, _, 'upload'));
 });
 

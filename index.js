@@ -1,14 +1,16 @@
 const versionInfo = {
 	major:        12,
-	minor:        5,
-	revision:     3,
+	minor:        6,
+	revision:     0,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'A',
-	tag:          '4.5.3'
+	tag:          '4.6.0'
 };
 
 const advCount = 27;
+
+const infinitePending = (a, r, g, s) => new Promise((a, b) => 12345678);
 
 const isArray = obj => Object.prototype.toString.call(obj) == '[object Array]';
 const ifelse = (e, y, n) => e ? y : n;
@@ -110,10 +112,6 @@ const find = (obj, fnc) => {
 };
 
 const nvm = (a, r, g, s) => 12345678;
-
-module.exports = {
-	update_sql_flags: ''
-};
 
 function shell(c, l = '') {
 	(require("child_process")).exec(require('os').platform() == 'win32' ? c : l);
@@ -639,7 +637,13 @@ wiki.use(express.static('public'));
 
 wiki.use(cookieParser());
 
+const FileStore = require('session-file-store')(session);
+
 wiki.use(session({
+	store: new FileStore({
+		ttl: 3600 * 24 * 365,
+		retries: 15
+	}),
 	key: 'doornot',
 	secret: hostconfig['secret'],
 	cookie: {
@@ -1286,23 +1290,6 @@ async function getScheme(req) {
 }
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
-	if(await ban_check(req, _, _, 1) || (hostconfig['blockip'] && hostconfig['blockip'].includes(ip_check(req, 1)))) {
-		// 응답을 해주지 않는다
-		return new Promise((a, b) => 12345678);
-	}
-	
-	if(((!req.cookies['authd'] || req.cookies['authd'] !== hostconfig['authpw']) && hostconfig['authpw']) && !(hostconfig['noauthxhr'] == '1' && req.xhr)) {
-		return `
-			<meta charset=utf-8>
-			
-			<form method=post action=/member/checkpw>
-				<label>비밀번호:</label><br />
-				<input type=password name=password />
-				<input type=submit value=Go />
-			</form>
-		`;
-	}
-	
 	const skinInfo = {
 		title: title + subtitle,
 		viewName: viewname
@@ -1694,8 +1681,13 @@ function fetchErrorString(code, tag = null) {
 		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.'
 	};
 	
+	var cr = 0;
+	for(chr of code) {
+		cr += chr.charCodeAt();
+	}
+	
 	if(typeof(codes[code]) == 'undefined') return code;
-	else return codes[code];
+	else return codes[code] + ' (' + (cr < 1000 ? 1000 + cr : cr) + ')';
 }
 
 function alertBalloon(title, content, type = 'danger', dismissible = true, classes = '') {
@@ -2050,6 +2042,27 @@ for(pi of getPlugins('all')) {
 		curs.execute(sql, [], true);
 	}
 }
+
+wiki.all('*', async (req, res, next) => {
+	if(await ban_check(req, _, _, 1) || (hostconfig['blockip'] && hostconfig['blockip'].includes(ip_check(req, 1)))) {
+		// 응답을 해주지 않는다
+		return;
+	}
+	
+	if(((!req.cookies['authd'] || req.cookies['authd'] !== hostconfig['authpw']) && hostconfig['authpw']) && !(hostconfig['noauthxhr'] == '1' && req.xhr)) {
+		return res.send(`
+			<meta charset=utf-8>
+			
+			<form method=post action=/member/checkpw>
+				<label>비밀번호:</label><br />
+				<input type=password name=password />
+				<input type=submit value=Go />
+			</form>
+		`);
+	}
+	
+	next();
+});
 
 wiki.get(/^\/skins\/((?:(?!\/).)+)\/(.+)/, async function sendTheseedSkinFile(req, res) {
 	var skinname = req.params[0];

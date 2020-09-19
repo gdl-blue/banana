@@ -1,6 +1,6 @@
-wiki.get('/admin/grant', (req, res) => res.redirect('/admin/permissions' + (req.query.username ? ('?username=' + encodeURIComponent(req.query.username)) : '')));
+// wiki.get('/admin/grant', (req, res) => res.redirect('/admin/permissions' + (req.query.username ? ('?username=' + encodeURIComponent(req.query.username)) : '')));
 
-wiki.get('/admin/permissions', async function grantPanel(req, res) {
+wiki.get('/admin/grant', async function grantPanel(req, res) {
 	const username = req.query['username'];
 	
 	if(!getperm('grant', ip_check(req))) {
@@ -26,34 +26,102 @@ wiki.get('/admin/permissions', async function grantPanel(req, res) {
 		return;
 	}
 	
+	if(!req.query['nojs'] && compatMode(req)) {
+		res.redirect('/Upload?nojs=1');
+		return;
+	}
+	
 	await curs.execute("select username from users where username = ?", [username]);
 	if(!curs.fetchall().length) {
 		res.send(await showError(req, 'user_not_found'));
 		return;
 	}
 	
-	var chkbxs = '';
+	var chkbxs = '', opts = '', trows = '', tarea = '';
 	
 	for(prm of perms) {
 		if(permsc.includes(prm)) continue;
 		if(!getperm('developer', ip_check(req), 1) && permso.includes(prm)) continue;
 		
 		chkbxs += `
-			<label title="${html.escape(prm)}"><input type=checkbox ${getperm(prm, username, 1) ? 'checked' : ''} name="${prm}" /> ${permnames[prm] ? permnames[prm] : prm}</label><br />
+			<label title="${html.escape(prm)}"><input type=checkbox ${getperm(prm, username, 1) ? 'checked' : ''} name=permission value="${prm}" /> ${permnames[prm] ? permnames[prm] : prm}</label><br />
 		`;
+		
+		opts += `
+			<option value="${prm}">${permnames[prm] ? permnames[prm] : prm}</option>
+		`;
+		
+		if(getperm(prm, username, 1)) {
+			trows += `
+				<tr id="perm-${prm}">
+					<td>${permnames[prm] ? permnames[prm] : prm}</td>
+					<td>${prm}</td>
+					<td>
+						<input type=hidden id=permissionInput value="${prm}" />
+						<button type=button class="btn btn-danger btn-sm delete-permission-btn">회수</button>
+					</td>
+				</tr>
+			`;
+			
+			tarea += prm + ',';
+		}
 	}
 	
-	content += `
-		<form method=post>
-			<div class=form-group>
-				<div class=multicol>
-					${chkbxs}
+	const _form = (
+		req.query['nojs'] == '1' ? (
+			`
+				<div class=form-group>
+					<div class=multicol>
+						${chkbxs}
+					</div>
 				</div>
-			</div>
-			
+			`
+		) : (
+			`
+				<p>하단의 적용 단추를 눌러야 권한이 실제로 부여됩니다.
+		
+				<div class=form-group>
+					<label>추가할 권한:</label><br />
+					<div class="btn-group input-group">
+						<select id=permissionSelect class=form-control>
+							${opts}
+						</select>
+						<button type=button class="btn btn-info" id=addPermissionBtn>부여</button>
+					</div>
+				</div>
+				
+				<table class=table id=perm-list>
+					<colgroup>
+						<col />
+						<col />
+						<col style="width: 80px;" />
+					</colgroup>
+					
+					<thead>
+						<tr>
+							<th>권한 이름</th>
+							<th>권한 ID</th>
+							<th>작업</th>
+						<tr>
+					</thead>
+					
+					<tbody>
+						${trows}
+					</tbody>
+				</table>
+				
+				<textarea id=perm-tlist name=permission style="display: none;">${tarea}</textarea>
+			`
+		)
+	);
+	
+	content += `
+		<form method=post id=grant-form>
+			${_form}
+		
 			<div class=form-group>
 				<label>메모:</label><br>
-				<input type=text name=note class=form-control>
+				<input type=text name=note class=form-control />
 			</div>
 			
 			<div class=form-group>
@@ -101,15 +169,23 @@ wiki.get('/admin/permissions', async function grantPanel(req, res) {
 			</div>
 			
 			<div class=btns>
-				<button type=submit class="btn btn-info" style="width: 100px;">확인</button>
+				<button type=submit class="btn btn-info" style="width: 100px;">적용</button>
 			</div>
 		</form>
 	`;
 	
+	if(!req.query.nojs) {
+		content += `
+			<noscript>
+				<meta http-equiv=refresh content="0; url=?nojs=1&username=${encodeURIComponent(username)}" />
+			</noscript>
+		`;
+	}
+	
 	res.send(await render(req, '사용자 권한 부여', content));
 });
 
-wiki.post('/admin/permissions', async function grantPermissions(req, res) {
+wiki.post('/admin/grant', async function grantPermissions(req, res) {
 	const username = req.query['username'];
 	
 	if(!username) {
@@ -164,17 +240,22 @@ wiki.post('/admin/permissions', async function grantPermissions(req, res) {
 	} else {
 		expiration = isPermanant == 'true' ? '0' : new Date(expirationString).getTime();
 	}
+	//                                                                    ↓↓  필요없지만 혹시 몰라서 해둠  ↓↓
+	const prmval = req.body['permission'].toString().replace(/\s/, '').replace(/^\[/, '').replace(/\]$/, '').replace(/[,]$/, '').split(',');
 	
 	for(prmi of perms) {
+		if(!prmi) continue;
+		
 		const prm = updateTheseedPerm(prmi);
 		
 		if(!getperm('developer', ip_check(req), 1) && permso.includes(prm)) continue;
-		if(getperm(prm, username, 1) && !req.body[prm]) {
+		
+		if(getperm(prm, username, 1) && !prmval.includes(prm)) {
 			logstring += '-' + prm + ' ';
 			if(permlist[username]) permlist[username].splice(find(permlist[username], item => item == prm), 1);
 			curs.execute("delete from perms where perm = ? and username = ?", [prm, username]);
 		}
-		else if(!getperm(prm, username, 1) && req.body[prm]) {
+		else if(!getperm(prm, username, 1) && prmval.includes(prm)) {
 			logstring += '+' + prm + ' ';
 			if(!permlist[username]) permlist[username] = [prm];
 			else permlist[username].push(prm);
@@ -189,54 +270,6 @@ wiki.post('/admin/permissions', async function grantPermissions(req, res) {
 	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
 				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
 					'author', 'grant', ip_check(req), username, '', getTime(), expiration, '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')'
-				]);
-	
-	res.redirect('/admin/permissions?username=' + encodeURIComponent(username));
-});
-
-wiki.post('/admin/grant', async function (req, res) {
-	const username = req.query['username'];
-	
-	if(!username) {
-		res.send(await showError(req, 'invalid_request_body'));
-		return;
-	}
-	
-	await curs.execute("select username from users where username = ?", [username]);
-	if(!curs.fetchall().length) {
-		res.send(await showError(req, 'user_not_found'));
-		return;
-	}
-	
-	const prmval = req.body['permission'];
-	
-	var logstring = '';
-	
-	for(prmi of perms) {
-		const prm = updateTheseedPerm(prmi);
-		
-		if(!getperm('developer', ip_check(req), 1) && permso.includes(prm)) continue;
-		
-		if(getperm(prm, username, 1) && (typeof(prmval.includes(prm)) == 'undefined')) {
-			logstring += '-' + prm + ' ';
-			if(permlist[username]) permlist[username].splice(find(permlist[username], item => item == prm), 1);
-			curs.execute("delete from perms where perm = ? and username = ?", [prm, username]);
-		}
-		else if(!getperm(prm, username, 1) && (typeof(prmval.includes(prm)) != 'undefined')) {
-			logstring += '+' + prm + ' ';
-			if(!permlist[username]) permlist[username] = [prm];
-			else permlist[username].push(prm);
-			curs.execute("insert into perms (perm, username, expiration) values (?, ?, '0')", [prm, username]);
-		}
-	}
-	
-	if(!logstring.length) {
-		return res.send(await showError(req, 'no_change'));
-	}
-	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
-				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-					'author', 'grant', ip_check(req), username, '', getTime(), '-1', '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')'
 				]);
 	
 	res.redirect('/admin/grant?username=' + encodeURIComponent(username));

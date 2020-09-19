@@ -105,3 +105,5 @@ Windows 7(Node.js 7.6 이상)
 ### jsdifflib
 (C)저작권자 cemerick 2007~2011 [[깃허브]](https://github.com/cemerick/jsdifflib)
 
+## 기타 라이선스
+- 스킨 호환 관련: [the seed](https://theseed.io/License), [openNAMU](https://github.com/2du/openNAMU#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4)

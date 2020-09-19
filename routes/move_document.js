@@ -42,7 +42,7 @@ wiki.get(/\/move\/(.*)/, async(req, res) => {
 		</form>
 	`;
 	
-	res.send(await render(req, title, content, {}, ' 문서 지우기', _, 'delete'));
+	res.send(await render(req, title, content, {}, '의 제목 바꾸기', _, 'move'));
 });
 
 wiki.post(/\/move\/(.*)/, async (req, res) => {
@@ -83,7 +83,7 @@ wiki.post(/\/move\/(.*)/, async (req, res) => {
 	const rawChanges = 0;
 	curs.execute("insert into history (title, content, rev, username, time, changes, log, iserq, erqnum, ismember, advance) \
 					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-		title, '', String(Number(recentRev.rev) + 1), ip_check(req), getTime(), itoa(rawChanges), req.body['log'] || '', '0', '-1', islogin(req) ? 'author' : 'ip', '(' + title + '에서 ' + newtitle + '(으)로 문서 제목 변경)'
+		title, recentRev.content, String(Number(recentRev.rev) + 1), ip_check(req), getTime(), itoa(rawChanges), req.body['log'] || '', '0', '-1', islogin(req) ? 'author' : 'ip', '(' + title + '에서 ' + newtitle + '(으)로 문서 제목 변경)'
 	]).then(x => {
 		curs.execute("update history set title = ? where title = ?", [newtitle, title]);
 	}).catch(console.error);

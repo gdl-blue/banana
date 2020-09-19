@@ -1,4 +1,5 @@
 node_modules/
+sessions/
 /wikidata.db
 /config.json
 skins/before_namu/
