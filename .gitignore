@@ -2,15 +2,11 @@ node_modules/
 sessions/
 /wikidata.db
 /config.json
-skins/before_namu/
 skins/buma/
 skins/liberty/
 skins/Material/
 skins/modern-black/
-skins/yousoro/
 skins/namuvector/
-skins/vector/
-plugins/theseed-acl/
 /test.txt
 images/
 !images/dummyfile

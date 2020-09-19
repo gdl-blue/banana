@@ -168,7 +168,7 @@ $(function() {
 		};
 	}
 	
-	$('head').append('<style id=hide-blind-res></style>');
+	$('head').append('<style id="hide-blind-res"></style>');
 	
 	$('button#hideBlindRes').click(function() {
 		$('button#hideBlindRes').attr('disabled', '');
@@ -400,8 +400,8 @@ $(function() {
 		});
 	});
 	
-	const allLoadingRes = 'div#res-container div.res-wrapper.res-loading[data-locked="false"]';
-	const loadingRes = allLoadingRes + '[data-locked="false"]';
+	const allLoadingRes = 'div#res-container div.res-wrapper.res-loading';
+	const loadingRes = allLoadingRes + '[data-visible="true"]';
 	
 	function setVisibleState() {
 		$(allLoadingRes).each(function() {
@@ -417,12 +417,10 @@ $(function() {
 	document.addEventListener("scroll", setVisibleState);
 	
 	if (
-		typeof historyInit == 'function' && typeof discussPollCancel == 'function' && 
+		! (typeof historyInit == 'function' && typeof discussPollCancel == 'function' && 
 		typeof discussPollStart == 'function' && typeof recaptchaInit == 'function' &&
-		typeof recaptchaExecute == 'function' && typeof recaptchaOnLoad == 'function'
+		typeof recaptchaExecute == 'function' && typeof recaptchaOnLoad == 'function')
 	) {
-		console.log("theseed.js이 감지되었읍니다. 자체 방식 토론 스크립트가 비활성화됩니다.");
-	} else {
 		function fetchComments(tnum) {
 			setVisibleState();
 			
@@ -647,6 +645,7 @@ $(function() {
 		}
 	});
 	
+/*
 	if(location.pathname == '/RecentChanges') {
 		var timer = setInterval(function() {
 			$.ajax({
@@ -666,6 +665,7 @@ $(function() {
 			});
 		}, 3000);
 	}
+*/
 	
 	$('#previewLink').click(function() {
 		const frm = location.pathname.startsWith('/edit/') ? $('#editForm') : $('#new-thread-form');
@@ -790,6 +790,18 @@ $(function() {
 	});
 	
 	bdb();
+	
+	$('ul.nav li.nav-item a.nav-link').click(function() {
+		const tab = $(this);
+		const tl  = tab.parent().parent();
+		const tc  = tl.next();
+		
+		tl.find('> li.nav-item > a.nav-link.active').removeClass('active');
+		tab.addClass('active');
+		
+		tc.find('> div.tab-pane.active').hide();
+		tc.find('> div.tab-pane' + tab.attr('href')).show();
+	});
 	
 	$('form.login-form[data-nohttps="true"], form.signup-form[data-nohttps="true"]').submit(function() {
 		const frm = $(this);

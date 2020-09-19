@@ -198,7 +198,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 									<label><input type=checkbox name=enable_opennamu_skins ${config.getString('enable_opennamu_skins', '1') == '1' ? 'checked' : ''}> openNAMU용으로 만들어진 스킨 지원</label><br>
 								</div>
 								
-								<p>웹에서 다른 스킨을 <a target=_blank href="https://www.google.com/search?q=site:github.com+banana|opennamu|theseed+skin">다운로드</a>할 수 있습니다.
+								<p>웹에서 다른 스킨을 다운로드할 수 있습니다.
 							</div>
 							
 							<div class=tab-page id=features>

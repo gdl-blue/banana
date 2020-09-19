@@ -1,11 +1,12 @@
 const versionInfo = {
 	major:        12,
-	minor:        6,
+	minor:        7,
 	revision:     0,
 	channel:      'alpha',
 	channelDesc:  '알파',
 	patch:        'B',
-	tag:          '4.6.0a'
+	tag:          '4.7.0',
+	vcode:        '1'
 };
 
 const advCount = 27;
@@ -217,7 +218,7 @@ if(!process.env.PORT) TCVreader('chick', '_starting');
 var perms = [
 	'admin', "suspend_account", 'developer', 'update_thread_document', "ipacl",
 	'update_thread_status', 'update_thread_topic', "hide_thread_comment", 'grant',
-	"login_history", 'delete_thread', 'acl',
+	"login_history", 'delete_thread', 'acl', 'close_edit_request',
 	'ban_users', 'tribune', 'arbiter', 'highspeed', "nsacl", 'head_admin', 'edit_board_post',
 	'delete_board_post', 'edit_board_comment', 'delete_board_comment', 'bot', 
 	'edit_namespace_acl', 'view_login_history', 'blind_thread_comment', 'fake_admin'
@@ -251,8 +252,48 @@ var permnames = {
 	'view_login_history': '로그인 내역 조회', 
 	'blind_thread_comment': '토론 댓글 숨김',
 	'highspeed': '하이 스피드',
-	'fake_admin': '페이크 어드민'
+	'fake_admin': '페이크 어드민',
+	'close_edit_request': '편집 요청 거절',
+	
 };
+
+/*
+(
+	a => b => c => d => e => f => g => h => 
+	i => j => k => l => m => n => o => p => 
+	q => r => s => t => u => w => x => y => 
+	z => 가 => 나 => 다 => 라 => 마 => 바 =>
+	사 => 아 => 자 => 차 => 카 => 타 => 파 =>
+	하 => ㅏ => ㅑ => ㅓ => ㅕ => ㅗ => ㅛ =>
+	ㅜ => ㅠ => ㅡ => ㅣ => ㅙ => ㅞ => ㅚ =>
+	ㅟ => ㅒ => ㅖ => ㅐ => ㅔ => ㅘ => ㅝ =>
+	1234
+)
+
+()()()()
+()()()()
+()()()()
+()()()()
+
+   ()
+  ()()
+ ()()()
+()()()()
+
+   ()()
+ ()()()()
+()()()()()
+ ()()()()
+   ()()
+
+   ()
+  ()()
+ ()()()
+()()()()
+ ()()()
+  ()()
+   ()
+*/
 
 var _perms = perms;
 
@@ -540,7 +581,7 @@ try {
 			'stars': ['title', 'username', 'lastedit', 'category'],
 			'star_categories': ['name', 'username'],
 			'perms': ['perm', 'username', 'expiration'],
-			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system', 'ncontent', 'ocontent', 'baserev', 'num'],
+			'threads': ['title', 'topic', 'status', 'time', 'tnum', 'deleted', 'type', 'system', 'ncontent', 'ocontent', 'baserev', 'num', 'acceptor'],
 			'res': ['id', 'content', 'username', 'time', 'hidden', 'hider', 'status', 'tnum', 'ismember', 'isadmin', 'stype'],
 			'useragents': ['username', 'string'],
 			'login_history': ['username', 'ip'],
@@ -999,10 +1040,8 @@ async function isBanned(req, ismember = 'ip', username = '', checkBlockview = fa
 	for(item of dbdata) {
 		if(ipRangeCheck(ip, item['username'])) {
 			if(ismember == 'ip') return 1;
-			else {
-				if(item.al) alb = 1;
-				else ipBlocked = 1;
-			}
+			else if(item.al) alb = 1;
+			else ipBlocked = 1;
 		}
 	}
 	
@@ -1085,7 +1124,9 @@ function compatMode(req) {
 				if(navigatorVersion < 11) {
 					return true;
 				}
-			break; case 'navigator':
+			break; 
+			case 'navigator':
+			case 'netscape':
 				return true;
 			break; case 'mozilla':
 				return true;
@@ -1183,7 +1224,7 @@ function loadLang(kor, eng) {
 }
 
 if(config.getString('enable_opennamu_skins', '1') != '0') {
-	// 오픈나무(터보위키) 스킨 호환용
+	// 호환용
 	nunjucks.addFilter('cut_100', function filter_slice100Chars(input) {
 		return input.slice(0, 100);
 	});
@@ -1398,14 +1439,16 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		<script src="/js/jquery-ui${req.cookies['bioking'] ? '' : '.min'}.js"></script>
 		<script type="text/javascript" src="https://theseed.io/js/dateformatter.js?508d6dd4"></script>
 		<script type="text/javascript" src="/js/banana.js"></script>
-		<link rel="stylesheet" href="/css/banana.css">
-		<link rel="stylesheet" href="/css/diffview.css">
+		<link rel="stylesheet" href="/css/banana.css" />
+		<link rel="stylesheet" href="/css/diffview.css" />
 		<script src="/js/diffview.js"></script>
 		<script src="/js/difflib.js"></script>
+		<link rel="shortcut icon" href="/images/favicon.png" />
+		<link rel=icon href="/images/favicon.png" />
 	`;
 	
 	if(config.getString('enable_opennamu_skins', '1') == '1') {
-		// 오픈나무 스킨 호환용
+		// 호환용
 		if(skinconfig.type && skinconfig.type.toLowerCase() == 'opennamu-seed') {
 			nunvars['None'] = null;
 			
@@ -1564,30 +1607,6 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 			case 'opennamu-seed':
 				var tmplt = await readFile('./skins/' + getSkin(req) + '/index.html');
 				
-				/*
-				try {
-					for(ifstatement of tmplt.match(/[{][%]\s{0,}if(.+)\s{0,}[%][}]/g)) {
-						tmplt = tmplt.replace(ifstatement, ifstatement.replace(/None/g, 'null').replace(/\snot\s/g, ' !'));
-						
-						/ *
-						const _0x3af4e6 = ifstatement.match(/(+)\sin\s(.+)/);
-						if(!_0x3af4e6) continue;
-						
-						const find = _0x3af4e6[1];
-						const seed = _0x3af4e6[2];
-						
-						print(find, seed)
-						
-						if(isArray(templateVariables[seed])) {
-							tmplt = tmplt.replace(ifstatement, `${seed}.includes(${find})`);
-						}
-						* /
-					}
-				} catch(e){}
-				
-				tmplt = tmplt.replace(/[{][%]\s{0,}elif\s/g, '{% elseif ');
-				*/
-				
 				return new Promise((resolve, reject) => {
 					nunjucks.renderString(tmplt, nunvars, (e, r) => {
 						if(e) return reject(e);
@@ -1631,9 +1650,9 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 				var header = '<html><head>';
 				header += `
 					<title>${title}${subtitle} - ${config.getString('site_name', random.choice(['바나나', '사과', '포도', '오렌지', '배', '망고', '참외', '수박', '둘리', '도우너']))}</title>
-					<meta charset=utf-8>
-					<meta name=generator content=banana>
-					<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+					<meta charset=utf-8 />
+					<meta name=generator content=banana />
+					<meta name=viewport content="width=device-width, initial-scale=1, maximum-scale=1" />
 				` + cssjshead;
 				
 				for(var i=0; i<skinconfig["auto_css_targets"]['*'].length; i++) {
@@ -1678,7 +1697,9 @@ function fetchErrorString(code, tag = null) {
 		'user_not_found': '사용자를 찾을 수 없습니다.',
 		'document_not_found': '문서를 찾을 수 없습니다.',
 		'syntax_error': '구문오류',
-		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.'
+		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.',
+		'rev_not_found': '지정한 리비젼을 찾을 수 없습니다.',
+		'nothing_changed': '변경사항이 없습니다.'
 	};
 	
 	var cr = 0;
@@ -2152,12 +2173,6 @@ wiki.get(/^\/views\/((?:(?!\/).)+)\/(.+)/, async function sendOpennamuSkinFile(r
 	res.sendFile(fn, { root: rootp.replace('/' + fn, '') });
 });
 
-function dropSourceCode(req, res) {
-	// res.sendFile('index.js', { root: "./" });
-}
-
-// wiki.get('/index.js', dropSourceCode);
-
 wiki.get('/js/:filepath', async function dropJS(req, res) {
 	const filepath = req.params['filepath'];
 	
@@ -2239,36 +2254,6 @@ function generateCaptcha(req, cnt = 3) {
 			<img class=captcha-image src="data:image/png;base64,${Buffer.from(img, 'base64').toString('base64')}" />
 		`;
 	}
-	
-	/*
-	const num1 = parseInt(Math.random()*9000+1000);
-	const num2 = parseInt(Math.random()*9000+1000);
-	const num3 = parseInt(Math.random()*9000+1000);
-	
-	req.session.captcha = fullnum;
-	
-	const capt1 = new captchapng(160, 45, num1);
-	const capt2 = new captchapng(160, 45, num2);
-	const capt3 = new captchapng(160, 45, num3);
-	
-	capt1.color(120, 200, 255, 255);
-	capt1.color(255, 255, 255, 255);
-
-	capt2.color(46, 84, 84, 255);
-	capt2.color(52, 235, 195, 255);
-	
-	capt3.color(44, 56, 222, 255);
-	capt3.color(227, 43, 52, 255);
-
-	var img_1 = capt1.getBase64();
-	var imgbase64_1 = new Buffer(img_1, 'base64').toString('base64');
-
-	var img_2 = capt2.getBase64();
-	var imgbase64_2 = new Buffer(img_2, 'base64').toString('base64');
-
-	var img_3 = capt3.getBase64();
-	var imgbase64_3 = new Buffer(img_3, 'base64').toString('base64');
-	*/
 	
 	return `
 		<div class=captcha-frame>
@@ -2365,7 +2350,7 @@ wiki.get('/register', function redirectK(req, res) {
 	res.redirect('/member/signup');
 });
 
-wiki.get('/mc', async (r, s) => {s.send(await render(r, 'test', `
+wiki.get('/m', async (r, s) => {s.send(await render(r, 'test', `
 	<div class=mc-transition-container>
 		<div class=mc-transition id=1 main>
 			<div class=mc-inner-wrapper>
@@ -2483,8 +2468,8 @@ wiki.get('/mc', async (r, s) => {s.send(await render(r, 'test', `
 	</div>
 `));});
 
-wiki.get('/d', (r, s) => s.send('<link rel="stylesheet" href="/css/diffview.css"><form method=post><button>S</button><textarea name=a></textarea><textarea name=b></textarea></form>'));
-wiki.post('/d', (r, s) => s.send(difflib.diff(r.body.a, r.body.b, '1', '2')));
+// wiki.get('/d', (r, s) => s.send('<link rel="stylesheet" href="/css/diffview.css"><form method=post><button>S</button><textarea name=a></textarea><textarea name=b></textarea></form>'));
+// wiki.post('/d', (r, s) => s.send(difflib.diff(r.body.a, r.body.b, '1', '2')));
 
 // wiki.get('/c', (r, s) => console.log(r.cookies));
 
@@ -2659,7 +2644,7 @@ wiki.post('/member/checkpw', function checkPW(req, res) {
 		});
 		res.redirect('/');
 	} else {
-		res.send('<meta charset=utf-8><h2>비밀번호가 틀립니다.');
+		res.send('<meta charset=utf-8 /><h2>비밀번호가 틀립니다.');
 	}
 });
 
@@ -2742,7 +2727,7 @@ if(firstrun) {
 			telnet.on('connection', async function telnetHome(client) {
 				client.setEncoding('utf8');
 				
-				var doctitle = await readline('문서 이름: ', client.stdin, client.stdout);
+				var doctitle = await readline('문서 이름: ', client, client);
 				client.write('\n');
 				
 				var dbdata = await curs.execute("select content from documents where title = ?", [doctitle]);

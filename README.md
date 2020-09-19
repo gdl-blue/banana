@@ -143,3 +143,5 @@ Windows 7(Node.js 7.6 이상)
 
 ## 기타 라이선스
 - 스킨 호환 관련: [the seed](https://theseed.io/License), [openNAMU](https://github.com/2du/openNAMU#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4)
+
+- 대한민국 기준 프로그램코드역분석 법률에 따라 그 엔진을 모방하거나 이 엔진을 상업적으로 쓰면 안된다.
