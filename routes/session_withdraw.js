@@ -32,13 +32,13 @@ wiki.get('/member/withdraw', async (req, res) => {
 			</div>
 			
 			<div class=form-group>
-				<label>비밀번호 확인:</label><br />
-				<input type=password class=form-control name=password id=passwordInput />
+				<label>사용자 이름 입력(<strong>${ip_check(req)}</strong>):</label><br />
+				<input type=text class=form-control name=confirmation />
 			</div>
 			
 			<div class=form-group>
-				<label>위 내용을 확인했으면 '동의'라고 입력합니다:</label><br />
-				<input type=text class=form-control name=confirmation />
+				<label>비밀번호 확인:</label><br />
+				<input type=password class=form-control name=password id=passwordInput />
 			</div>
 			
 			<div class=btns>
@@ -58,7 +58,7 @@ wiki.post('/member/withdraw', async (req, res) => {
 	
 	const username = ip_check(req);
 	
-	if(req.body['confirmation'] !== '동의') return res.send(await showError(req, 'invalid_request_body'));
+	if(req.body['confirmation'] !== ip_check(req)) return res.send(await showError(req, 'invalid_request_body'));
 	const pwhash  = sha3(req.body['password']);
 	const pwmatch = (await curs.execute("select password from users where username = ? and password = ?", [username, pwhash])).length;
 	if(!pwmatch) return res.send(await showError(req, 'password_not_matching'));
