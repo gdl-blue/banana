@@ -1,12 +1,12 @@
 const versionInfo = {
 	major:        12,
 	minor:        7,
-	revision:     0,
+	revision:     1,
 	channel:      'alpha',
 	channelDesc:  '알파',
-	patch:        'B',
-	tag:          '4.7.0',
-	vcode:        '1'
+	patch:        'A',
+	tag:          '4.7.1',
+	vcode:        1
 };
 
 const advCount = 27;
@@ -269,23 +269,19 @@ var permnames = {
 	ㅟ => ㅒ => ㅖ => ㅐ => ㅔ => ㅘ => ㅝ =>
 	1234
 )
-
 ()()()()
 ()()()()
 ()()()()
 ()()()()
-
    ()
   ()()
  ()()()
 ()()()()
-
    ()()
  ()()()()
 ()()()()()
  ()()()()
    ()()
-
    ()
   ()()
  ()()()
@@ -1638,14 +1634,14 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	
 	return new Promise((resolve, reject) => {
 		swig.compileFile(templatefn, {}, (e, r) => {
+			if(e) reject(e);
+			
 			try {
 				output = r(templateVariables);
 			} catch(e) {
 				reject(e);
 			}
 			
-			if(e) reject(e);
-		
 			if(skintype == 'the seed') {
 				var header = '<html><head>';
 				header += `
@@ -2063,6 +2059,17 @@ for(pi of getPlugins('all')) {
 		curs.execute(sql, [], true);
 	}
 }
+
+wiki.post('/member/checkpw', function checkPW(req, res) {
+	if(req.body.password == hostconfig['authpw']) {
+		res.cookie('authd', hostconfig['authpw'], {
+			maxAge: 1000 * 3600 * 24 * 365
+		});
+		res.redirect('/');
+	} else {
+		res.send('<meta charset=utf-8 /><h2>비밀번호가 틀립니다.');
+	}
+});
 
 wiki.all('*', async (req, res, next) => {
 	if(await ban_check(req, _, _, 1) || (hostconfig['blockip'] && hostconfig['blockip'].includes(ip_check(req, 1)))) {
@@ -2634,17 +2641,6 @@ wiki.get(/\/file\/(.*)/, async function redirectM(req, res) {
 		res.redirect('/images/' + sha224(filename) + extension);
 	} catch(e) {
 		res.send(await showError(req, 'invalid'));
-	}
-});
-
-wiki.post('/member/checkpw', function checkPW(req, res) {
-	if(req.body.password == hostconfig['authpw']) {
-		res.cookie('authd', hostconfig['authpw'], {
-			maxAge: 1000 * 3600 * 24 * 365
-		});
-		res.redirect('/');
-	} else {
-		res.send('<meta charset=utf-8 /><h2>비밀번호가 틀립니다.');
 	}
 });
 
