@@ -1,0 +1,145 @@
+<head>
+	<title>{{ imp[0] }}{% if imp[3][0] != 0 %}{{ imp[3][0] }}{% endif %} - {{ imp[1][0] }}</title>
+	
+	<meta charset=utf-8>
+	
+	<style>
+		body {
+			margin: 0;
+			background: rgb(128, 128, 128);
+		}
+		
+		.navbar {
+			background: rgb(192, 192, 192);
+		}
+		
+		.navbar .nav-link {
+			margin: 0 10px 0 10px;
+			color: #000;
+			text-decoration: none;
+		}
+		
+		.pull-right {
+			float: right;
+		}
+		
+		.navbar .nav-link:hover {
+			color: white;
+			background: black;
+		}
+		
+		button {
+			padding: 0 10px 0 10px;
+			background: #fff;
+			border: none;
+			box-shadow: 5px 5px 0 rgb(0, 0, 0);
+		}
+		
+		button:active {
+			box-shadow: none;
+		}
+		
+		.xp-taskgroup .p-taskgroup-tasks {
+			display: block;
+		}
+		.xp-taskgroup.folded .p-taskgroup-tasks {
+			display: none;
+		}
+
+		.xp-taskgroup .xp-taskgroup-title {
+			padding: 5px;
+			color: #000;
+			background: #fff;
+			font-weight: bold;
+		}
+		
+		.xp-taskgroup .xp-taskgroup-tasks {
+			border-radius: 0 0;
+			padding: 5px;
+			background: rgb(192, 192, 192);
+			margin: 0;
+		}
+
+		.xp-taskgroup .xp-taskgroup-tasks a {
+			color: #000;
+			text-decoration: none;
+		}
+		
+		.xp-taskgroup.main-task .xp-taskgroup-title {
+			font-weight: bold;
+			color: #fff;
+			background: #008080;
+		}
+	</style>
+	
+	{{ imp[3][3]|safe }}
+	{{ imp[1][5]|safe }}
+	{{ imp[2][3]|safe }}
+</head>
+
+<body>
+	<div class=navbar>
+		<a accesskey=h href=/ class=nav-link>H/{{ imp[1][4] }}</a>
+		<a accesskey=c href=/recent_changes class=nav-link>C/최근 변경</a>
+		<a accesskey=d href=/recent_discuss class=nav-link>D/최근 토론</a>
+		
+		<span class=pull-right>
+			<a accesskey=s href=/other class=nav-link>S/특수 기능</a>
+			<a accesskey=u href=/user class=nav-link>U/{{ imp[2][5] }}</a>
+		</span>
+	</div>
+	
+	<table class=transparent id=pageContent>
+		<colgroup>
+			<col style="width: 200px;">
+			<col>
+		</colgroup>
+		
+		<tr>
+			<td id=commonTasks style="vertical-align: top;">
+				<div id=commonTasksDiv>
+					<dl class="xp-taskgroup main-task">
+						<dt class=xp-taskgroup-title>
+							작업
+						</dt>
+
+						<dd class=xp-taskgroup-tasks style="display: block;">
+							{% for submenu in menu %}
+								<li href="/{{ submenu[0] }}">{{ submenu[1] }}</li>
+							{% endfor %}
+						</dd>
+					</dl>
+					
+					<dl class="xp-taskgroup">
+						<dt class=xp-taskgroup-title>
+							자세히
+						</dt>
+
+						<dd class=xp-taskgroup-tasks style="display: block;">
+							<strong>{{ imp[0] }}</strong><br>
+							{% if imp[3][1] != 0 %}<br>{{ imp[3][1] }}{% endif %}
+							{% if imp[3][4] == 2 %}<br>주시중인 문서{% endif %}
+						</dd>
+					</dl>
+				</div>
+			</td>
+			
+			<td style="background: rgb(0, 0, 128); color: #fff; vertical-align: top;">
+				<h1>{{ imp[0] }}{% if imp[3][0] != 0 %}{{ imp[3][0] }}{% endif %} - {{ imp[1][0] }}</h1>
+				{{ data|safe }}
+				
+				<button>단추</button>
+			</td>
+		</tr>
+		
+		<tr>
+			<td></td>
+			
+			<td>
+				<div class=liceinfo>
+					{{ imp[1][1]|safe }}
+				</div>
+			</td>
+		</tr>
+	</table>
+</body>

@@ -1,0 +1,94 @@
+<title>스큐어모피즘 메탈릭 제어판</title>
+<meta charset=euc-kr />
+
+<style>
+	.control-panel {
+		border-radius: 10px;
+		padding: 9px;
+		border: 5px outset rgb(52, 113, 157);
+		background: linear-gradient(rgb(52, 113, 157) 70%, rgb(107, 170, 203));
+		color: #fff;
+	}
+
+	.control-panel button {
+		background-image: linear-gradient(rgb(0, 45, 110), rgb(44, 85, 150));
+		padding: 4px 8px 4px 8px;
+		border: 3px solid rgba(255, 255, 255, .5);
+		border-radius: 10px;
+		color: #fff;
+		position: relative;
+	}
+	
+	.control-panel button:before {
+		content: "";
+		background-image: linear-gradient(rgba(255, 255, 255, .8) 0%, rgba(255, 255, 255, .4) 100%);
+		position: absolute;
+		height: 50%;
+		width: calc(100% - 2px);
+		top: 0;
+		left: 1px;
+		border-radius: 7px 7px 3px 3px;
+	}
+	
+	.control-panel button:hover {
+		background-image: linear-gradient(rgb(40, 85, 150), rgb(84, 165, 190));
+		padding: 4px 8px 4px 8px;
+		border: 3px solid rgba(255, 255, 255, .5);
+		border-radius: 10px;
+		color: #fff;
+		position: relative;
+	}
+	
+	.control-panel button:active {
+		background-image: linear-gradient(rgb(0, 5, 80), rgb(4, 45, 110));
+		padding: 4px 8px 4px 8px;
+		border: 3px solid rgba(255, 255, 255, .5);
+		border-radius: 10px;
+		color: #fff;
+		position: relative;
+	}
+	
+	/* https://www.w3schools.com/howto/howto_css_custom_checkbox.asp */
+	.control-panel input[type="radio"], .control-panel input[type="checkbox"] {
+		position: absolute;
+		opacity: 0;
+		cursor: pointer;
+		width: 22px;
+		height: 22px;
+		margin: 8px 0 0 0;
+	}
+	
+	.control-panel .checkbox {
+		padding: 0px 8px 0px 8px;
+		border: 3px solid rgb(148, 169, 201);
+		border-radius: 123px;
+		margin: 0 5px 0 0;
+		background: linear-gradient(rgb(192, 204, 220) 0%, rgb(124, 148, 184) 51%, rgb(24, 67, 132) 50%, rgb(41, 82, 147) 100%);
+	}
+	
+	.control-panel input[type="radio"]:checked + .checkbox, .control-panel input[type="checkbox"]:checked + .checkbox {
+		box-shadow: 0 0 4px 3px #579CC8;
+		background: linear-gradient(rgb(209, 219, 232) 0%, rgb(143, 178, 205) 51%, rgb(63, 127, 171) 50%, rgb(83, 163, 189) 100%);
+	}
+</style>
+
+<div class=control-panel>
+	<div class=settings-section>
+		<button>버튼</button>
+		
+		<label>
+			<input type=checkbox />
+			<span class=checkbox></span>
+			테스트
+		</label>
+		
+		<input type=radio name=a />
+		<span class=checkbox></span>
+		<input type=radio name=a />
+		<span class=checkbox></span>
+		<input type=radio name=a />
+		<span class=checkbox></span>
+		<input type=radio name=a />
+		<span class=checkbox></span>
+	</div>
+</div>

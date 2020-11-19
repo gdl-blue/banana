@@ -1,0 +1,751 @@
+<head>
+	<meta charset="utf-8">
+	<link rel="stylesheet" type="text/css" href="/skins/royale/agent/build/clippy.css" media="all">
+	<meta name="theme-color" content="#E6F0FA">
+	<title>{{imp[0]}}{% if imp[3][0] != 0 %}{{imp[3][0]}}{% endif %} - {{imp[1][0]}}</title>
+    {{imp[1][5]|safe}}
+    {{imp[2][3]|safe}}
+    <script src="/skins/royale/agent/build/clippy.min.js"></script>
+    <script>
+        $(function() {
+            $('.winxp-tasklist').children('dt').click(function() {
+                $(this).parent().children('dd').slideToggle();
+            });
+        });
+    </script>
+
+    <script type="text/javascript" src="/skins/main_css/js/do_preview.js"></script>
+    <script type="text/javascript" src="/skins/main_css/js/insert_data.js"></script>
+    <script>
+        $(document).on('click', '.modal-dialog button[data-dismiss="modal"]', function() {
+            $(this).parent().parent().parent().parent().parent().hide();
+        });
+        $(document).on('click', 'span[data-toggle="modal"] input[type=button]', function() {
+            $($(this).parent().attr('data-target')).show();
+        });
+    </script>
+
+    <!-- <link rel="stylesheet" href="https://namu.wiki/skins/senkawa/css/lib/ionicons.min.css?2d4234e8"> -->
+    <link defer="" rel="stylesheet" href="https://thewiki.kr/namuwiki/css/ionicons.min.css">
+    <link rel="stylesheet" id="{{ imp[2][19] }}StyleSheet" href="/skins/royale/css/{{ imp[2][19] }}.css">
+    <link rel="stylesheet" href="/skins/royale/css/ionicons.css">
+    <script src="/skins/royale/js/settings.js"></script>
+    <style id=commonStyleSheet>
+        .table {
+            width: 100%;
+        }
+        #commonTasksList {
+            border-radius: 0;
+        }
+        .tab-content.bordered {
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        label[disabled], p[disabled] {
+            color: #aaa !important;
+        }
+        .wiki-article .tab-content > .tab-pane {
+          display: none;
+        }
+
+        .wiki-article .tab-content > .active {
+          display: block;
+        }
+        textarea#textInput, iframe#previewFrame {
+            height: 500px;
+            width: 100%;
+        }
+        input.form-control, textarea.form-control {
+            width: 100%;
+        }
+        .settings-section {
+            overflow: hidden
+        }
+
+        .settings-section h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem
+        }
+
+        .settings-section h3:first-of-type {
+            margin-top: 0
+        }
+
+        .settings-section .form-group .checkbox {
+            padding-left: 1rem
+        }
+
+        .settings-section .form-group select {
+            margin-left: 1rem;
+            max-width: 16rem
+        }
+
+        .settings-section .form-group input[type=text] {
+            margin-left: 1rem;
+            max-width: 22rem
+        }
+
+        @media screen and (max-width: 768px) {
+            .settings-section .form-group input[type=text] {
+                width:calc(100% - 2rem)
+            }
+        }
+
+        .settings-section .form-group button {
+            margin-left: 1rem
+        }
+
+        .settings-section small {
+            font-size: 80%!important
+        }
+        .wiki-category ul {
+            margin-top: 0;
+        }
+        .tab-content.bordered {
+            border: 1px solid #aaa;
+            width: 100%;
+            background: #fff;
+        }
+        .wiki-article-box {
+            height: calc(100vh - 259px);
+        }
+        .navbar-links {
+            margin-top: -3px;
+        }
+        #commonTasksList {
+            height: calc(100vh - 226px) !important;
+        }
+
+        #commonTasksList code {
+            user-select: initial !important;
+            -moz-user-select: initial !important;
+            -webkit-user-select: initial !important;
+        }
+    </style>
+    <script>
+        $(document).on('click', '.nav-link', function() {
+            $('.nav-link').attr('class', 'nav-link');
+            $(this).attr('class', 'nav-link active');
+        });
+    </script>
+
+    <script>
+        $(function() {
+            $.get('/htmldata/recentchanges', function(response) {
+                document.querySelector('#recentChangesTable').innerHTML = response + '<a class=moreRecentLink href=/RecentChanges>[더보기...]</a>';
+            });
+            $.get('/htmldata/recentchanges?discuss=1', function(response) {
+                document.querySelector('#recentDiscussTable').innerHTML = response + '<a class=moreRecentLink href=/RecentDiscuss>[더보기...]</a>';
+            });
+        });
+    </script>
+</head>
+
+<body class="{{ imp[2][19] }}">
+    {% if imp[2][19] == 'xmas' %}
+        <style>
+        /* customizable snowflake styling */
+        .snowflake {
+          color: #fff;
+          font-size: 1em;
+          font-family: Arial, sans-serif;
+          text-shadow: 0 0 5px #000;
+        }
+
+        @-webkit-keyframes snowflakes-fall{0%{top:-10%}100%{top:100%}}@-webkit-keyframes snowflakes-shake{0%,100%{-webkit-transform:translateX(0);transform:translateX(0)}50%{-webkit-transform:translateX(80px);transform:translateX(80px)}}@keyframes snowflakes-fall{0%{top:-10%}100%{top:100%}}@keyframes snowflakes-shake{0%,100%{transform:translateX(0)}50%{transform:translateX(80px)}}.snowflake{position:fixed;top:-10%;z-index:9999;-webkit-user-select:none;-moz-user-select:none;-ms-user-select:none;user-select:none;cursor:default;-webkit-animation-name:snowflakes-fall,snowflakes-shake;-webkit-animation-duration:10s,3s;-webkit-animation-timing-function:linear,ease-in-out;-webkit-animation-iteration-count:infinite,infinite;-webkit-animation-play-state:running,running;animation-name:snowflakes-fall,snowflakes-shake;animation-duration:10s,3s;animation-timing-function:linear,ease-in-out;animation-iteration-count:infinite,infinite;animation-play-state:running,running}.snowflake:nth-of-type(0){left:1%;-webkit-animation-delay:0s,0s;animation-delay:0s,0s}.snowflake:nth-of-type(1){left:10%;-webkit-animation-delay:1s,1s;animation-delay:1s,1s}.snowflake:nth-of-type(2){left:20%;-webkit-animation-delay:6s,.5s;animation-delay:6s,.5s}.snowflake:nth-of-type(3){left:30%;-webkit-animation-delay:4s,2s;animation-delay:4s,2s}.snowflake:nth-of-type(4){left:40%;-webkit-animation-delay:2s,2s;animation-delay:2s,2s}.snowflake:nth-of-type(5){left:50%;-webkit-animation-delay:8s,3s;animation-delay:8s,3s}.snowflake:nth-of-type(6){left:60%;-webkit-animation-delay:6s,2s;animation-delay:6s,2s}.snowflake:nth-of-type(7){left:70%;-webkit-animation-delay:2.5s,1s;animation-delay:2.5s,1s}.snowflake:nth-of-type(8){left:80%;-webkit-animation-delay:1s,0s;animation-delay:1s,0s}.snowflake:nth-of-type(9){left:90%;-webkit-animation-delay:3s,1.5s;animation-delay:3s,1.5s}.snowflake:nth-of-type(10){left:25%;-webkit-animation-delay:2s,0s;animation-delay:2s,0s}.snowflake:nth-of-type(11){left:65%;-webkit-animation-delay:4s,2.5s;animation-delay:4s,2.5s}
+        </style>
+        <div class="snowflakes" aria-hidden="true">
+          <div class="snowflake">
+          ●
+          </div>
+          <div class="snowflake">
+          ●
+          </div>
+          <div class="snowflake">
+          ●
+          </div>
+          <div class="snowflake">
+          ●
+          </div>
+          <div class="snowflake">
+          ●
+          </div>
+          <div class="snowflake">
+          ●
+          </div>
+          <div class="snowflake">
+          ●
+          </div>
+          <div class="snowflake">
+           ●
+          </div>
+          <div class="snowflake">
+           ●
+          </div>
+          <div class="snowflake">
+           ●
+          </div>
+          <div class="snowflake">
+           ●
+          </div>
+          <div class="snowflake">
+           ●
+          </div>
+        </div>
+    {% endif %}
+	<div class="navbar-tabs" id="tabList">
+		<a class="tab-brand" href="/">{{imp[1][0]}}</a>
+		<a class="tab{% if rc == 1 %}-active{% endif %}" href="/RecentChanges">최근 변경</a>
+		<a class="tab{% if rd == 1 %}-active{% endif %}" href="/RecentDiscuss">최근 토론</a>
+		{% if st == 0 or st == 1 or st == 2 or st == 3 or st == 4 or st == 5 or st == 6 or st == 7 or st == 8 or st == 9 %}
+			{% if st == 0 %}
+				<a class="tab-active">
+				    {% if imp[3][0] != 0 %}
+				        {% if imp[3][0] == ' (비교)' %}
+				            편집 비교
+				        {% elif imp[3][0] == ' (편집 요청)' %}
+				            편집 요청
+				        {% else %}
+				            문서 작업
+				        {% endif %}
+				    {% else %}
+				        문서 작업
+				    {% endif %}
+				</a>
+			{% endif %}
+			<a class="tab{% if st == 1 %}-active{% endif %}" href="/w/{{imp[0] | url_pas}}">
+				읽기
+			</a>
+			<a class="tab{% if st == 2 %}-active{% endif %}" href="/edit/{{imp[0] | url_pas}}">
+				편집
+			</a>
+			<a class="tab{% if st == 3 %}-active{% endif %}" href="/discuss/{{imp[0] | url_pas}}">
+				토론
+			</a>
+			{% if st == 2 or st == 4 or st == 5 %}
+				<a class="tab{% if st == 4 %}-active{% endif %}" href="/move/{{imp[0] | url_pas}}">
+					이동
+				</a>
+				<a class="tab{% if st == 5 %}-active{% endif %}" href="/delete/{{imp[0] | url_pas}}">
+					삭제
+				</a>
+			{% endif %}
+			<a class="tab{% if st == 6 %}-active{% endif %}" href="/xref/{{imp[0] | url_pas}}">
+				역링크
+			</a>
+			<a class="tab{% if st == 7 %}-active{% endif %}" href="/history/{{imp[0] | url_pas}}">
+				문서 역사
+			</a>
+			<a class="tab{% if st == 8 %}-active{% endif %}" href="/acl/{{imp[0] | url_pas}}">
+				{% if imp[2][10] == 1 %}문서 보호{% else %}ACL{% endif %}
+			</a>
+			<a class="tab{% if st == 9 %}-active{% endif %}" href="/down/{{imp[0] | url_pas}}">
+				하위
+			</a>
+		{% else %}
+		    {% if rd == 1 or rc == 1 %}{% else %}
+			    <a class="tab-active">작업 화면</a>
+			{% endif %}
+		{% endif %}
+	</div>
+	<div class="navbar-links" id="navLinks">
+		{% if st == 1 %}
+			{% if strd == 1 %}
+				<a class="nl-link" href="/member/unstar/{{imp[0] | url_pas}}">
+					주시해제 ({{strc}})
+				</a>
+			{% else %}
+				<a class="nl-link" href="/member/star/{{imp[0] | url_pas}}">
+					주시하기 ({{strc}})
+				</a>
+			{% endif %}
+		{% endif %}
+		<a class="nl-link" href="/member/starred_documents">
+			주시 목록
+		</a>
+		{% if imp[2][5] == '사용자' %}
+			<a class="nl-link" href="/member/login?redirect={{request.base_url | url_pas}}">
+				로그인
+			</a>
+			<a class="nl-link" href="/contribution/ip/{{imp[2][6]}}/document">
+				기여내역
+			</a>
+		{% else %}
+			<a class="nl-link" href="/member/logout?redirect={{request.base_url | url_pas}}" onclick="return confirm('로그아웃하시겠읍니까?');">
+				로그아웃
+			</a>
+			<img class="profile-img" src="//secure.gravatar.com/avatar/{{ imp[2][4] | md5_replace }}?d=retro">
+			<a class="nl-link" href="/w/사용자:{{imp[2][5]}}">
+    			{{imp[2][6]}}
+			</a>
+			<span style="color: #fff">|</span>
+			<a class="nl-link" href="/member/mypage">
+				내 정보
+			</a>
+			<span style="color: #fff">|</span>
+			<a class="nl-link" href="/discuss/사용자:{{imp[2][5]}}">
+				토론 {% if imp[2][14] == 1 %}[!]{% endif %}
+			</a>
+			<span style="color: #fff">|</span>
+			<a class="nl-link" href="/contribution/author/{{imp[2][5]}}/document">
+				기여내역
+			</a>
+		{% endif %}
+		<a class="nl-link" href="/settings">
+			스킨 설정
+		</a>
+		<div class="pull-right" style="margin-right: 10px;" id="searchSection">
+			<form style="display: inline-block;" method="post" action="/go" id="searchform" role="search">
+                <input style="padding:0; width:140px" class="input is-primary ui-autocomplete-input form-control" name="search" placeholder="검색" id="searchInput" autocomplete="off" type="text">
+            </form>
+			<div style="display: inline-block; margin-left: 20px">　</div>
+		</div>
+	</div>
+
+	<h1 style="border: 0; margin-left: 15px; margin-bottom: 0px; "></h1>
+	<div class="wiki-article-box" id="commonTasksList" style="display: inline-block;vertical-align: top;width:220px">
+        {% if st == 1 and us != 1 %}
+        <dl class="winxp-tasklist main-task">
+	        <dt>문서 작업 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: {% if imp[0] == imp[1][0] + ':대문' and imp[2][10] != 1 %}none{% else %}block{% endif %};">
+                <li>
+                    <a href="/edit/{{ imp[0] | url_pas }}">내용 편집하기</a>
+                </li>
+                <li>
+                    <a href="/history/{{ imp[0] | url_pas }}">편집 기록 보기</a>
+                </li>
+                <li>
+                    <a href="/move/{{ imp[0] | url_pas }}">제목 변경하기</a>
+                </li>
+                <li>
+                    <a href="/delete/{{ imp[0] | url_pas }}">이 문서 삭제하기</a>
+                </li>
+                <li>
+                    <a href="/raw/{{ imp[0] | url_pas }}">문서 원본</a>
+                </li>
+                <li>
+                    <a href="/down/{{ imp[0] | url_pas }}">하위 문서 목록</a>
+                </li>
+                {% if imp[2][10] == 1 %}
+                    <li>
+                        <a href="/acl/{{ imp[0] | url_pas }}">이 문서 보호하기</a>
+                    </li>
+                {% endif %}
+            </dd>
+        </dl>
+        {% elif imp[3][0] == '' and st == 0 and err == 1 %}
+        <dl class="winxp-tasklist main-task">
+	        <dt>문서 작업 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: block;">
+                <li>
+                    <a href="/edit/{{ imp[0] | url_pas }}">이 문서 만들기</a>
+                </li>
+                <li>
+                    <a href="/discuss/{{ imp[0] | url_pas }}">토론하기</a>
+                </li>
+                <li>
+                    <a href="/xref/{{ imp[0] | url_pas }}">여기로 링크된 문서</a>
+                </li>
+                {% if imp[2][10] == 1 %}
+                    <li>
+                        <a href="/acl/{{ imp[0] | url_pas }}">이 문서 보호하기</a>
+                    </li>
+                {% endif %}
+            </dd>
+        </dl>
+        {% elif (st == 1 and us == 1) or cont == 1 %}
+        <dl class="winxp-tasklist main-task">
+	        <dt>사용자 도구 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: block;">
+	            {% if imp[2][7] == 1 and (us == 1 or contm == 1) %}
+                    <li>
+                        <a href="/admin/suspend_account/{{ un | url_pas }}">이 사용자 차단/해제</a>
+                    </li>
+                {% endif %}
+                {% if imp[2][15] == 1 and contm != 1 and us != 1 %}
+                    <li>
+                        <a href="/admin/ipacl?cidr={{ un | url_pas }}">이 아이피 차단</a>
+                    </li>
+                {% endif %}
+                {% if (imp[2][12] == 1 and st == 1) or (imp[2][12] == 1 and cont == 1 and contm == 1) %}
+                    <li>
+                        <a href="/admin/grant?username={{ un | url_pas }}">이 사용자 권한 부여/해제</a>
+                    </li>
+                {% endif %}
+                <li>
+                    <a href="/contribution/author/{{ un | url_pas }}/document">{% if cont == 1 %}문서 기여 내역{% else %}이 사용자의 기여내역{% endif %}</a>
+                </li>
+                <li>
+                    <a href="/contribution/author/{{ un | url_pas }}/discuss">토론 참여 내역</a>
+                </li>
+                {% if contm == 1 or (st == 1) %}
+                    <li>
+                        <a href="/discuss/사용자:{{ un }}">이 사용자 호출</a>
+                    </li>
+                {% endif %}
+                {% if cont == 1 and contm == 1 %}
+                    <li>
+                        <a href="/w/사용자:{{ un }}">사용자 문서 보기</a>
+                    </li>
+                {% endif %}
+                {% if imp[2][10] == 1 and (st == 1 and us == 1) %}
+                    <li>
+                        <a href="/acl/{{ imp[0] | url_pas }}">이 문서 보호하기</a>
+                    </li>
+                {% endif %}
+            </dd>
+        </dl>
+        {% if un == imp[2][5] and imp[2][5] != '사용자' and not cont %}
+        <dl class="winxp-tasklist">
+	        <dt>문서 작업 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: block;">
+	            {% if imp[2][10] == 1 or un == imp[2][5] %}
+                    <li>
+                        <a href="/edit/사용자:{{ un | url_pas }}">편집하기</a>
+                    </li>
+                {% endif %}
+            </dd>
+        </dl>
+        {% endif %}
+        {% elif st == 2 %}
+        <dl class="winxp-tasklist main-task">
+	        <dt>편집 작업 및 기능 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: block;">
+                <li>
+                    <a href="/admin/edit_filters">편집 필터 목록</a>
+                </li>
+                <li>
+                    <a href="/history/{{ imp[0] | url_pas }}">편집 기록 보기</a>
+                </li>
+                <li>
+                    <a href="/move/{{ imp[0] | url_pas }}">제목 변경하기</a>
+                </li>
+                <li>
+                    <a href="/delete/{{ imp[0] | url_pas }}">이 문서 삭제하기</a>
+                </li>
+                <li>
+                    <a href="/discuss/{{ imp[0] | url_pas }}">분쟁 해결 (토론)</a>
+                </li>
+                <li>
+                    <a href="/Upload">파일 올리기</a>
+                </li>
+                <li>
+                    <a href="/w/{{ imp[0] | url_pas }}">돌아가기</a>
+                </li>
+            </dd>
+        </dl>
+        {% elif st == 3 %}
+        <dl class="winxp-tasklist main-task">
+	        <dt>관련 항목 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: block;">
+	            <li>
+                    <a href="/discuss/{{ imp[0] | url_pas }}">토론 목록</a>
+                </li>
+                <li>
+                    <a href="/edit/{{ imp[0] | url_pas }}">내용 편집하기</a>
+                </li>
+                <li>
+                    <a href="/history/{{ imp[0] | url_pas }}">편집 기록 보기</a>
+                </li>
+                <li>
+                    <a href="/w/{{ imp[0] | url_pas }}">돌아가기</a>
+                </li>
+            </dd>
+        </dl>
+        {% elif st == 5 %}
+        <dl class="winxp-tasklist main-task">
+	        <dt>관련 항목 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: block;">
+                <li>
+                    <a href="/move/{{ imp[0] | url_pas }}">제목 변경 기능</a>
+                </li>
+            </dd>
+        </dl>
+        {% elif st == 7 %}
+        <dl class="winxp-tasklist main-task">
+	        <dt>관련 항목 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: block;">
+                <li>
+                    <a href="/edit/{{ imp[0] | url_pas }}">내용 편집하기</a>
+                </li>
+                <li>
+                    <a href="/w/{{ imp[0] | url_pas }}">돌아가기</a>
+                </li>
+            </dd>
+        </dl>
+        {% endif %}
+        <dl class="winxp-tasklist{% if not st and not cont %} main-task{% endif %}" id="explorerWikiTasks">
+	        <dt>위키 탐색하기 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: {% if not st or (st and st == 1 and imp[0] == imp[1][0] + ':대문') %}block{% else %}none{% endif %};">
+                <li>
+                    <a href="/manager/10">문서 검색</a>
+                </li>
+                <li>
+                    <a href="/RecentChanges">최근 변경내역</a>
+                </li>
+                {% if imp[2][5] == '사용자' %}
+                <li>
+                    <a href="/member/login">로그인 또는 가입</a>
+                </li>
+                {% endif %}
+                {% if st == 1 %}
+                <li>
+                    <a href="/edit/{{ imp[0] | url_pas }}">이 문서 편집</a>
+                </li>
+                {% endif %}
+                <li>
+                    <a href="/random">아무 문서 보기</a>
+                </li>
+                <li>
+                    <a href="/RandomPage">임의 문서 목록 <sup><a title="아무 문서 20개를 보여주어, 관심이 있는 문서를 읽어보거나 편집합니다.">[?]</a></sup></a>
+                </li>
+            </dd>
+        </dl>
+	    <dl class="winxp-tasklist" id="specialFunctionList">
+	        <dt>특수 기능 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: none;">
+                <li>
+                <a href="/NeededPages">작성이 필요한 문서</a>
+                </li>
+                <li>
+                <a href="/OrphanedPages">고립된 문서</a>
+                </li>
+                <li>
+                <a href="/UncategorizedPages">분류가 없는 문서</a>
+                </li>
+                <li>
+                <a href="/LongestPages">내용이 긴 문서</a>
+                </li>
+                <li>
+                <a href="/ShortestPages">내용이 짧은 문서</a>
+                </li>
+                <li>
+                <a href="/OldPages">오래된 문서</a>
+                </li>
+                <li>
+                <a href="/UserList">사용자 목록</a>
+                </li>
+                <li>
+                <a href="/TitleIndex">모든 문서 목록</a>
+                </li>
+                <li>
+                <a href="/BlockHistory">차단 내역</a>
+                </li>
+                <li>
+                <a href="/random">임의문서</a>
+                </li>
+                <li>
+                <a href="/RandomPage">RandomPage</a>
+                </li>
+                <li>
+                <a href="/License">라이선스</a>
+                </li>
+                <li>
+                <a href="/Upload">파일 올리기</a>
+                </li>
+            </dd>
+        </dl>
+        {% if imp[2][7] == 1 or imp[2][12] == 1 or imp[2][13] == 1 or imp[2][15] == 1 or imp[2][18] == 1 %}
+            <dl class="winxp-tasklist">
+                <dt>관리자 도구 <btn class="fold-btn">↕</btn></dt>
+                <dd style="display: none;">
+        {% if imp[2][15] == 1 %}
+            <li>
+                <a href="/admin/ipacl">IPACL</a>
+            </li>
+        {% endif %}
+        {% if imp[2][7] == 1 %}
+            <li>
+                <a href="/admin/suspend_account">사용자 차단</a>
+            </li>
+        {% endif %}
+        {% if imp[2][12] == 1 %}
+            <li>
+                <a href="/admin/grant">권한 부여</a>
+            </li>
+        {% endif %}
+        {% if imp[2][18] == 1 %}
+            <li>
+                <a href="/admin/create_vote">새 투표 추가</a>
+            </li>
+        {% endif %}
+        {% if imp[2][13] == 1 %}
+         <li>
+             <a href="/admin/config">위키 설정</a>
+         </li>
+        {% endif %}
+                </dd>
+            </dl>
+        {% endif %}
+        {% if menu != 0 %}
+            {% if st == 0 or st == 1 or st == 2 or st == 3 or st == 4 or st == 5 or st == 6 or st == 7 or st == 8 or st == 9 %}
+            {% else %}
+                <dl class="winxp-tasklist">
+                    <dt>참고 항목 <btn class="fold-btn">↕</btn></dt>
+                    <dd style="display: block;">
+                {% for sub_d in menu %}
+                    {% if sub_d[1] == '뒤로' or sub_d[1] == '기타' %}
+                    <li>
+					<a href="/other">특수 기능</a>
+					</li>
+					{% elif sub_d[1] == '관리자' %}
+					<li>
+					<a href="/manager">관리자 도구</a>
+					</li>
+					{% elif sub_d[1] == '사용자' %}
+					<li>
+					<a href="/user">사용자 정보</a>
+					</li>
+                    {% else %}
+                    <li>
+					<a href="/{{sub_d[0]}}">{{sub_d[1]}}</a>
+					</li>
+					{% endif %}
+				{% endfor %}
+				</dd>
+				</dl>
+            {% endif %}
+        {% endif %}
+        {% if imp[0] == '최근 변경내역' %}
+            <dl class="winxp-tasklist">
+    	        <dt>관련 위치 <btn class="fold-btn">↕</btn></dt>
+    	        <dd style="display: block;">
+                    <li>
+                        <a href="/RecentDiscuss">최근 토론 목록</a>
+                    </li>
+                </dd>
+            </dl>
+        {% elif imp[0] == '최근 토론' %}
+            <dl class="winxp-tasklist">
+    	        <dt>관련 위치 <btn class="fold-btn">↕</btn></dt>
+    	        <dd style="display: block;">
+                    <li>
+                        <a href="/RecentChanges">최근 변경내역</a>
+                    </li>
+                </dd>
+            </dl>
+        {% elif st == 7 %}
+            <dl class="winxp-tasklist">
+    	        <dt>관련 위치 <btn class="fold-btn">↕</btn></dt>
+    	        <dd style="display: block;">
+                    <li>
+                        <a href="/RecentChanges">최근 변경내역</a>
+                    </li>
+                </dd>
+            </dl>
+        {% endif %}
+        <dl class="winxp-tasklist">
+	        <dt>최근 변경 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: none;" class="alist" id=recentChangesTable>
+	            갱신중...
+            </dd>
+        </dl>
+        <dl class="winxp-tasklist">
+	        <dt>최근 토론 <btn class="fold-btn">↕</btn></dt>
+	        <dd style="display: none;" class="alist" id=recentDiscussTable>
+	            갱신중...
+            </dd>
+        </dl>
+        {% if st == 1 %}
+            <dl class="winxp-tasklist">
+    	        <dt>자세히 <btn class="fold-btn">↕</btn></dt>
+    	        <dd style="display: {% if us == 1 %}none{% else %}block{% endif %};">
+                    <strong>{{ dn }}</strong><br>
+                    {% if us != 1 %}{% if ns == imp[1][0] %}공식 문서{% else %}{% if ns == '' %}일반 문서{% else %}{{ ns }}{% endif %}{% endif %}{% else %}사용자 문서{% endif %}
+                    <br><br>
+                    최근 수정: {{ edt | to_date('Y년 m월 d일') | safe }}{% if discuss_ongoing == 1 %}
+                    <br><br>이 문서에서 <a href="/discuss/{{ imp[0] | url_pas }}" style="color: #00f !important; text-decoration: underline; ">토론</a>이 진행 중입니다.
+                    {% endif %}
+                    {% if ns == '파일' %}
+                    <br><br>해당 그림을 문서에 삽입하려면 문서 편집 창에 &quot;<code>[[파일:{{ dn }}]]</code>&quot;를 입력하십시오.
+                    {% endif %}
+                </dd>
+            </dl>
+        {% elif not st %}
+            <dl class="winxp-tasklist">
+    	        <dt>자세히 <btn class="fold-btn">↕</btn></dt>
+    	        <dd style="display: block;">
+                    <strong>{% if imp[0] == '문제가 발생했습니다!' %}오류{% elif imp[3][0] != 0 and imp[3][0] == ' (검색)' or imp[3][0] != 0 and imp[3][0] == ' 검색 결과' %}검색{% elif cont %}기여 목록 열람기{% else %}{{ imp[0] }}{% endif %}</strong><br>
+                    {% if imp[0] != '문제가 발생했습니다!' and imp[0] != '정보 입력' and imp[3][0] != ' (검색)' and imp[3][0] != ' (투표)' %}위키 기능<br>{% endif %}
+                    {% if imp[0] == '최근 변경내역' %}
+                        <br>최근에 수정된 문서들을 보여줍니다.
+                    {% elif imp[0] == '최근 토론' %}
+                        <br>최근 진행중일 토론들을 보여줍니다.
+                    {% elif is_mypage %}
+                        <br>계정 설정을 변경하고 사용자 지정합니다.
+                    {% elif imp[0] == '고급 화면 배색' %}
+                        <br>사이트 화면의 모양새를 세세하게 조절합니다.
+                    {% elif imp[0] == '내 문서함' %}
+                        <br>주시하는 문서의 목록입니다.
+                    {% elif imp[0] == '사용자 차단' %}
+                        <br>문제되는 사용자를 차단합니다.
+                    {% elif imp[0] == '권한 부여' %}
+                        <br>사용자에게 권한을 부여합니다.
+                    {% elif imp[0] == '위키 구성 설정' %}
+                        <br>위키를 설정합니다.
+                    {% elif imp[0] == 'RandomPage' %}
+                        <br>관심있는 문서가 있읍니까? 기여해 보십시오.
+                    {% elif imp[0] == '파일 올리기' %}
+                        <br>문서 읽기에 이해가 될 수 있는 그림이나 사진을 올립니다.
+                    {% elif imp[0] == '모든 문서 목록' %}
+                        <br>이 위키에 무슨 문서가 있는지 확인합니다.
+                    {% elif imp[0] == '차단 내역' %}
+                        <br>사용자 차단, 권한 부여, 관리자 임명, 다중 계정 검사 내역을 확인합니다.
+                    {% elif imp[0] == '정보 입력' %}
+                        <br>계속하기 위해 필요한 정보를 입력해 주세요.
+                    {% elif imp[0] == '편집 필터' %}
+                        <br>편집 필터로 반달들을 더 쉽게 막습니다.
+                    {% elif imp[0] == '문제가 발생했습니다!' %}
+                        <br>다시 시도해 주세요.
+                    {% elif imp[0] == '로그인' %}
+                        <br>로그인하면 아이피가 노출되지 않습니다. 계정을 만드려면 <a href="/member/signup" class="link98">여기</a>를 누르십시오.
+                    {% elif imp[0] == '계정 만들기' %}
+                        <br>계정을 만들면 아이피가 노출되지 않습니다. 계정이 있어 로그인하려면 <a href="/member/login" class="link98">여기</a>를 누르십시오.
+                    {% elif imp[3][0] != 0 and imp[3][0] == ' (검색)' or imp[3][0] != 0 and imp[3][0] == ' 검색 결과' %}
+                        <br><code>{{ imp[0] }}</code> 검색 결과 목록입니다. 없는 문서는 <a class="link98" href="/edit/{{ imp[0] }}">새로 만드실</a> 수 있읍니다.<br><br>
+                        원하시는 결과가 없나요? <a href="/manager/10">[새로 검색]</a>
+                    {% elif cont %}
+                        <br>지정한 사용자(<code>{{ un }}</code>)의 기여 목록을 열람합니다. <a href="/contribution/document">[다른 사용자 열람]</a>
+                    {% elif imp[3][0] != 0 and imp[3][0] == ' (투표)' %}
+                        투표<br><br>나열된 항목을 투표합니다. 한 표씩 가능합니다.
+                    {% elif imp[0] == '스킨 설정' %}
+                        <br>사이트를 사용자 지정합니다.
+                    {% endif %}
+                </dd>
+            </dl>
+        {% endif %}
+	</div>
+	<div class="wiki-article wiki-article-box content" id="articleContent" style="display: inline-block;width:calc(100% - 330px)">
+		<div id="top"></div>
+		<h1 id="pageTitle">
+    	    {{imp[0]}}<sub>{% if imp[3][0] != 0 %}{% if smsub %}{{ smsub }}{% else %}{{imp[3][0]}}{% endif %}{% endif %}</sub>
+    	</h1>
+    	{% if imp[1][6] != '' %}
+    	    <div class="alert alert-warning">
+    	        <strong>[공지]</strong> {{ imp[1][6] | safe }}
+    	    </div>
+    	{% endif %}
+		{{data | safe}}
+		<br>
+		<hr>
+		{{imp[1][1] | safe}}
+		<div id="bottom"></div>
+	</div>
+	<footer class="play-control">
+    	<span class="info-box" style="width: calc(100% - 190px); ">
+    	    {% if err == 1 %}
+    	        오류가 발생했읍니다. 다시 시도하시거나 충분한 권한이 있는지, 아니면 빠뜨린 것은 없는지 확인하시기 바랍니다.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+    	    {% endif %}
+    	    {% if imp[2][14] == 1 %}
+    	        [알림!] 현재 진행중인 <a href="/discuss/사용자:{{imp[2][5]}}" style="color: currentcolor; text-decoration: underline; ">사용자 토론</a>이 있읍니다. 확인해 주시기 바랍니다. 사용자 토론이 닫힌다면 이 메시지가 더 이상 표시되지 않습니다.<span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
+            {% endif %}
+    	    {% if st == 1 and err != 1 %}이 문서는 {{ edt | to_date('Y-m-d H:i:sO') | safe }}에 마지막으로 수정됐습니다.{% endif %}&nbsp;
+    	</span>
+    	<span>
+        	<a href="#top" class="btn-glossy">↑</a>
+        	<a href="#bottom" class="btn-glossy">↓</a>
+    	</span>
+	</footer>
+</body>
+
+

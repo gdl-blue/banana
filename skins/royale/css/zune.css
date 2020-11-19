@@ -1,0 +1,1283 @@
+.skin-settings-page {
+    background: #444 !important;
+    color: #fff !important;
+}
+
+.modal {
+    background: rgba(0,0,0,0.7);
+}
+.wiki-heading {
+    border-bottom: 1px solid #ccc;
+}
+.nohov, th {
+    text-align: center;
+    height: 30px;
+}
+
+select[size]:focus {
+    background: #000;
+    color: #fff;
+}
+
+button {
+    cursor: pointer;
+}
+a.btn, .btn a {
+    cursor: pointer;
+}
+.r-hidden-body .line {
+    border-top: 1px solid #fff;
+}
+ol.breadcrumb.link-nav {
+    list-style: none;
+    border-radius: 12px;
+    padding: 12px;
+    background: #444;
+    display: table;
+}
+ol.breadcrumb.link-nav li {
+    display: inline-block;
+}
+.new-admin-box {
+    display: none !important;
+}
+.old-admin-box {
+    display: block !important;
+}
+/* 출처 A: senkawa CSS들 */
+.wiki-article .res-wrapper:last-of-type {
+    padding-bottom: 40px;
+    border-bottom: 2px dashed gray;
+}
+ol.breadcrumb.link-nav li+li:before {
+    padding-right: .3rem;
+    padding-left: .3rem;
+    content: "| ";
+}
+/* 출처 A 끝 */
+.alist a {
+    -webkit-user-select: initial !important;
+
+    display: block;
+    border-bottom: 1px solid #99c;
+    padding: 5px;
+
+    /* 출처 B: https://stackoverflow.com/questions/3695435/crop-text-too-long-inside-div */
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /* 출처 B 끝 */
+}
+.wiki-article .wiki-folding dt {
+    font-weight: bold;
+}
+.time {
+    -webkit-user-select: none !important;
+    color: #006;
+    float: right;
+}
+.moreRecentLink {
+    border: 0 !important;
+    text-align: right;
+}
+.zune * {
+    font-family: "돋움";
+}
+.error-desc {
+    color: red;
+}
+.res-wrapper {
+  display: block;
+  margin: 30px 0px;
+}
+@-webkit-keyframes head-loading {
+  from {
+    background-color: #747474;
+  }
+  to {
+    background-color: #cacaca;
+  }
+}
+@-webkit-keyframes body-loading {
+  from {
+    background-color: #e2d7d7;
+  }
+  to {
+    background-color: #f3f3f3;
+  }
+}
+input[type=text]:focus, input[type=password]:focus, select:focus, textarea:focus {
+color: #464a4c;
+background-color: #fff;
+border-color: #5cb3fd;
+outline: none;
+}
+.profile-img {
+    height: 20px;
+    width: 20px;
+    margin-right: -15px;
+    margin-bottom: -5px;
+    border: 1px solid #fff;
+    border-radius: 5678px;
+}
+.topic-discuss a.more-box {
+  padding: 10px;
+  margin-left: 20px;
+  border: 1px solid black;
+}
+input[type=text]:focus, input[type=password]:focus, select:focus, textarea:focus {
+color: #464a4c;
+background-color: #fff;
+border-color: #5cb3fd;
+outline: none;
+}
+.res .r-head {
+  padding: 10px 12px 5px 15px;
+  background-color: #777;
+  border-radius: 6px 6px 0px 0px;
+}
+.res .r-head.pinned {
+    background: #883333;
+}
+.res .r-head.first-author {
+  background-color: #383;
+}
+.res .r-head .pull-right {
+  float: right;
+}
+.res .r-body {
+  padding: 5px 10px 10px 15px;
+  background: #444;
+  border-radius: 0px 0px 6px 6px;
+  min-width: 550px;
+  max-height: 500px;
+}
+input[type=text]:focus, input[type=password]:focus, select:focus, textarea:focus {
+color: #464a4c;
+background-color: #fff;
+border-color: #5cb3fd;
+outline: none;
+}
+.res .r-body.r-hidden-body {
+  background-image: linear-gradient(to bottom, #444, #000);
+  color: white;
+}
+.res .r-body.r-hidden-body .hidden-content {
+  display: none;
+}
+.res .combo.admin-menu {
+  padding: 5px;
+}
+.res.res-type-status {
+    display: table;
+}
+.res.res-type-normal {
+    display: table;
+}
+.wiki-article .btn-danger {
+  color: #fff;
+  background-color: #d9534f;
+  border-color: #d9534f;
+}
+.wiki-article .btn-danger:hover {
+  color: #fff;
+  background-color: #c9302c;
+  border-color: #c12e2a;
+}
+.wiki-article .btn-danger:focus, .wiki-article .btn-danger.focus {
+  box-shadow: 0 0 0 2px rgba(217, 83, 79, 0.5);
+}
+
+.wiki-article .btn-danger.disabled, .wiki-article .btn-danger:disabled {
+  background-color: #d9534f;
+  border-color: #d9534f;
+}
+
+.wiki-article .btn-danger:active, .wiki-article .btn-danger.active,
+.show > .wiki-article .btn-danger.dropdown-toggle {
+  color: #fff;
+  background-color: #c9302c;
+  background-image: none;
+  border-color: #c12e2a;
+}
+.wiki-article .btn-sm, .wiki-article .btn-group-sm > .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+.res.res-type-status .r-body {
+  background-image: linear-gradient(to bottom, #f0ad4e, #ec971f);
+}
+.zune {
+	margin: 0;
+	background: rgb(44, 44, 44);
+	color: #fff;
+	overflow: hidden;
+}
+a {
+    color: #fff;
+    text-decoration: underline;
+}
+.btn-glossy {
+    background-image: url('/views/royale/glos.png');
+    color: rgb(37,71,115);
+    text-shadow: 2px 2px 8px rgb(94,124,164);
+    width: 28px !important;
+    height: 29px !important;
+    line-height: 29px;
+    text-align: center;
+    display: inline-block;
+    margin-left: 10px;
+	cursor: default;
+	margin-top: -25px;
+}
+.btn-glossy:hover {
+    background-image: url('/views/royale/gloshox.png');
+    color: rgb(37,71,115);
+    text-shadow: 2px 2px 8px rgb(94,124,164);
+    width: 28px !important;
+    height: 29px !important;
+    line-height: 29px;
+    text-align: center;
+    display: inline-block;
+	cursor: default;
+}
+.btn-glossy:active {
+    background-image: url('/views/royale/glosprs.png');
+    color: rgb(37,71,115);
+    text-shadow: 2px 2px 8px rgb(94,124,164);
+    width: 28px !important;
+    height: 29px !important;
+    line-height: 29px;
+    text-align: center;
+    display: inline-block;
+	cursor: default;
+}
+.navbar-tabs {
+    user-select: none;
+    -webkit-user-select: none;
+	background-image: linear-gradient(to bottom, #888, #333 50%, #444 49%, #666 100%);
+	height: 40px;
+	width: 100%;
+	line-height: 40px;
+	padding-left: 15px;
+	padding-right: 15px;
+	vertical-align: middle;
+	display: table;
+	margin: 0;
+}
+.navbar-links {
+    user-select: none;
+    -webkit-user-select: none;
+	height: 35px;
+	width: 100%;
+	line-height: 40px;
+	padding-left: 15px;
+	padding-right: 15px;
+	vertical-align: middle;
+	margin: 0;
+	background-color: #666;
+}
+.link98 {
+    color: #00f !important;
+    text-decoration: underline !important;
+}
+.tab {
+	border: 1px solid rgb(99, 99, 123);
+	border-top-right-radius: 7px;
+	border-top-left-radius: 7px;
+	height: 35px;
+	margin-top: 5px;
+	line-height: 35px;
+	padding-left: 15px;
+	padding-right: 15px;
+	width: auto;
+	display: inline-block;
+	text-align: center;
+	margin-right: 3px;
+	color: rgb(9, 46, 93);
+	text-decoration: none;
+	margin-bottom: -1px;
+	border-bottom: 0;
+	cursor: default;
+	background-image: linear-gradient(to bottom, #fff, rgb(165,165,189));
+	border: 1px solid rgb(99, 99, 123);
+}
+.tab:hover {
+	border-top: 2.5px solid orange;
+	cursor: default;
+	border-bottom: 0px !important;
+}
+.tab-active {
+    border-top: 5px solid orange !important;
+	border-top-right-radius: 7px;
+	border-top-left-radius: 7px;
+	color: #000 !important;
+	border: 1px solid rgb(99, 99, 123);
+	background-image: linear-gradient(to bottom, white 90%, #666 100%);
+	border-bottom: 0px !important;
+	height: 30px;
+	margin-top: 5px;
+	line-height: 35px;
+	padding-left: 15px;
+	padding-right: 15px;
+	width: auto;
+	display: inline-block;
+	text-align: center;
+	margin-right:10px;
+	text-decoration: none;
+	margin-bottom: -1px;
+	border-bottom: 0;
+	cursor: default;
+}
+.tab-brand {
+    border-radius: 7px;
+	color: #fff !important;
+	border: 1px solid rgb(90, 134, 206);
+	background-image: linear-gradient(to bottom, rgb(166,192,229), rgb(105, 144, 196) 40%, rgb(80, 124, 181) 39%, rgb(66, 112, 172) 100%);
+	height: 30px;
+	line-height: 30px;
+	padding-left: 15px;
+	padding-right: 15px;
+	width: auto;
+	display: inline-block;
+	text-align: center;
+	margin-right:10px;
+	text-decoration: none;
+}
+.tab-brand:hover {
+    border-radius: 7px;
+	color: #fff !important;
+	border: 1px solid rgb(161,181,211);
+	background-image: linear-gradient(to bottom, rgb(233,242,253), rgb(181, 211, 250) 40%, rgb(150, 192, 249) 39%, rgb(188, 215, 251) 100%);
+	height: 30px;
+	line-height: 30px;
+	padding-left: 15px;
+	padding-right: 15px;
+	width: auto;
+	display: inline-block;
+	text-align: center;
+	margin-right:10px;
+	text-decoration: none;
+}
+.tab-brand:active {
+    border-radius: 7px;
+	color: #fff !important;
+	border: 1px solid rgb(90, 134, 206);
+	background-image: linear-gradient(to bottom, rgb(66, 112, 172), rgb(80, 124, 181) 40%, rgb(105, 144, 196) 39%, rgb(166,192,229) 100%);
+	height: 30px;
+	line-height: 30px;
+	padding-left: 15px;
+	padding-right: 15px;
+	width: auto;
+	display: inline-block;
+	text-align: center;
+	margin-right:10px;
+	text-decoration: none;
+}
+.close {
+    display: none;
+}
+.nl-link {
+	border-radius: 7px;
+	border: 1px solid transparent;
+	text-decoration: none;
+	color: #fff;
+	padding-left: 15px;
+	padding-right: 15px;
+	cursor: default;
+}
+.nl-link:hover {
+	border-radius: 7px;
+	border: 1px solid #fff;
+	text-decoration: none;
+	color: #000;
+	padding-left: 15px;
+	padding-right: 15px;
+	box-shadow: 3px 3px 10px #000;
+	background: #f0f0f0;
+}
+.nl-link:active {
+	border-radius: 7px;
+	border: 1px solid #fff;
+	text-decoration: none;
+	color: #fff;
+	padding-left: 15px;
+	padding-right: 15px;
+	box-shadow:inset 1px 3px 5px #000;
+	background-image: linear-gradient(to bottom, #E6F0FA, #C2D5EC 50%, #96B4DC 49%, #6E96C3 100%);
+}
+.wiki-article-box {
+    box-shadow: 3px 3px 10px #B3B3B3;
+    background: #fff;
+	padding: 15px;
+	margin: 15px;
+	border: 1px solid rgb(4, 4, 4);
+	border-radius: 7px;
+	background: #060606;
+	height: auto;
+	display: inline-block;
+	height: calc(100% - 259px);
+    overflow: auto;
+}
+.alert-info {
+    padding:0.5rem 0.8rem;color:#31708f;background-color:#d9edf7;border-color:#bcdff1;padding-right: 30px;padding:10px;margin-bottom:1rem;border:1px solid #bcdff1;border-radius:.25rem;
+}
+#commonTasksList {
+    padding: 0 !important;
+    background: none !important;
+    border: none !important;
+    margin-bottom: 0px !important;
+    box-shadow: none !important;
+    padding-right: 5px !important;
+    height: calc(100% - 226px) !important;
+}
+
+
+input, textarea, select {
+    background: #000;
+    color: #fff;
+}
+
+input[disabled], select[disabled], textarea[disabled], input[readonly], select[readonly], textarea[readonly] {
+    background: #555 !important;
+    color: #eceeef;
+}
+.winxp-tasklist {
+    margin-top: 0px !important;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.winxp-tasklist dt {
+    padding: 5px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background-image: linear-gradient(to bottom, #888, #333 50%, #444 49%, #666 100%);;
+    color: #fff;
+    cursor: pointer;
+    padding-left: 15px;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+.winxp-tasklist.main-task dt {
+    padding: 5px;
+    border-top-left-radius: 6px;
+    border-top-right-radius: 6px;
+    background-image: linear-gradient(to bottom, #888, #333 50%, #444 49%, #666 100%);;
+    color: #fff;
+    cursor: pointer;
+    padding-left: 15px;
+    font-weight: bolder;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+.winxp-tasklist dt .fold-btn {
+    padding: 5px;
+    float: right;
+    border-radius: 54321px;
+    border: 1px solid white;
+    background-color: rgb(66, 112, 172);
+    font-size: 9pt;
+    width: 9px;
+    height: 9px;
+    color: #fff;
+    font-weight: normal;
+}
+.winxp-tasklist dd {
+    padding:5px;
+    margin-left: 0px;
+    border-bottom-left-radius: 6px;
+    border-bottom-right-radius: 6px;
+    background-color: rgb(73, 73, 73);
+    padding-left: 12px;
+    cursor: default;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+.winxp-tasklist dd a {
+    color: #fff;
+    text-decoration: underline;
+}
+.winxp-tasklist dd code {
+    color: #eef;
+    -webkit-user-select: initial !important;
+    user-select: initial !important;
+    cursor: text; /* i-beam 아니네 */
+}
+tr {
+  background-color: #222;
+}
+tr:nth-child(even) {
+  background-color: #444;
+}
+input, textarea {
+	width: 100%;
+	padding: 5px;
+	border-radius: 5px;
+}
+textarea {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+    border: 1px solid #ccc;
+}
+li {
+    line-height: 30px;
+}
+.play-control {
+    border-top: 1px solid rgb(98,137,186);
+    background-image: linear-gradient(to bottom, #666, rgb(0,0,0));
+    height: 60px;
+    width: 100%;
+    margin-top: -10px;
+}
+#toc {
+    padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    display: inline-block;
+    width: auto;
+}
+.not-exist {
+    color: red;
+}
+.not-exist:hover {
+    color: red;
+}
+.wiki-link-external {
+    color: green;
+}
+.wiki-link-external:hover {
+    color: green;
+}
+.wiki-link-external::before {
+    padding: 2px;
+    background: green;
+    color: white;
+    content: "外";
+}
+textarea:focus, input:focus {
+    color: #000 !important;
+}
+input[type=button], input[type=submit], .btn, button {
+    padding-left: 11px !important;
+    padding-right: 11px !important;
+
+    border: 1px solid rgb(0, 57, 115);
+    border-radius: 3px;
+
+    background-image: linear-gradient(to bottom, #777, #444) !important;
+
+    padding-top: 8px !important;
+    padding-bottom: 8px !important;
+
+    color: #fff;
+}
+
+.btn-primary, #save {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+
+    border: 2px solid rgb(52, 111, 172);
+    border-radius: 3px;
+
+    background-image: linear-gradient(to bottom, #777, #444);
+
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+}
+
+input[type=button]:hover, input[type=submit]:hover, .btn:hover, button:hover {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+
+    border: 2px solid orange !important;
+    border-radius: 3px;
+
+    background-image: linear-gradient(to bottom, #777, #444);
+
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+}
+
+input[type=button]:active, input[type=submit]:active, .btn:active, button:active {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+
+    border: 1px solid rgb(0, 57, 115);
+    border-radius: 3px;
+
+    background-image: linear-gradient(to bottom, #444, #777) !important;
+
+    padding-top: 7px !important;
+    padding-bottom: 7px !important;
+}
+
+button[disabled], input[type=button][disabled], input[type=submit][disabled], .btn.disabled {
+    background: #eee !important;
+    border: 1px solid #ccc !important;
+}
+
+pre {
+    padding: 7px;
+    background-color: #444 !important;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+    overflow-x: auto;
+}
+tr:hover {
+    background-color: #666;
+}
+td {
+    padding: 7px;
+    margin: 0;
+}
+input[type=checkbox], input[type=radio] {
+    width: 20px !important;
+    box-shadow: none !important;
+}
+.pull-right {
+	float: right;
+}
+.info-box {
+    border-radius: 4px;
+    margin: 10px;
+    padding: 10px;
+    border: 1px solid rgb(187,203,227);
+    background-image: linear-gradient(to bottom, #000, #666 100%);
+    text-align: center;
+    display: inline-block;
+}
+
+select[size] {
+    border: 1px solid #eceeef !important;
+}
+
+/* 출처: 오픈나무 plus.css, opennamu-skin-buma-layout.css */
+.sr-only {
+    display: none;
+}
+#cate {
+    border: 1px solid #ccc;
+    padding: 3px;
+    padding-left: 5px;
+    margin-bottom: 1em;
+    border-radius: 4px;
+}
+
+#topic_top_title {
+    margin-bottom: 10px;
+}
+
+#toron {
+    width: 100%;
+}
+
+#toron_color_green {
+    background: #70cc93; border: 1px solid #70cc93; padding:10px 12px 5px 15px;
+    border-radius: 6px 6px 0 0; box-sizing:inherit; display:block; box-sizing:inherit; box-sizing:inherit; color:#4a4a4a; font-size:1rem; font-weight:400;
+}
+
+#toron_color_blue {
+    background:skyblue; border: 1px solid skyblue; padding:10px 12px 5px 15px; border-radius:6px 6px 0 0; box-sizing:inherit; display:block; box-sizing:inherit; box-sizing:inherit; color:#4a4a4a; font-size:1rem; font-weight:400;
+}
+
+#toron_color_red {
+    background:#f3c2c2; border: 1px solid #f3c2c2; padding:10px 12px 5px 15px; border-radius:6px 6px 0 0; box-sizing:inherit; display:block; box-sizing:inherit; box-sizing:inherit; color:#4a4a4a; font-size:1rem; font-weight:400;
+}
+
+#toron_color {
+    background:#aaa; border: 1px solid #aaa; padding:10px 12px 5px 15px; border-radius:6px 6px 0 0; box-sizing:inherit; display:block; box-sizing:inherit; box-sizing:inherit; color:#4a4a4a; font-size:1rem; font-weight:400;
+}
+
+/* 출처 C: buma bootstrap-custom.css */
+.wiki-article .modal-open {
+  overflow: hidden;
+}
+
+.wiki-article .modal {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1050;
+  display: none;
+  overflow: hidden;
+  outline: 0;
+}
+
+.wiki-article .modal.fade .modal-dialog {
+  transition: transform 0.3s ease-out;
+  transform: translate(0, -25%);
+}
+
+.wiki-article .modal.show .modal-dialog {
+  transform: translate(0, 0);
+}
+
+.wiki-article .modal-open .modal {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.wiki-article .modal-dialog {
+  position: relative;
+  width: auto;
+  margin: 10px;
+}
+
+.wiki-article .modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.3rem;
+  outline: 0;
+}
+
+.wiki-article .modal-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1040;
+  background-color: #000;
+}
+
+.wiki-article .modal-backdrop.fade {
+  opacity: 0;
+}
+
+.wiki-article .modal-backdrop.show {
+  opacity: 0.5;
+}
+
+.wiki-article .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 15px;
+  border-bottom: 1px solid #eceeef;
+}
+
+.wiki-article .modal-title {
+  margin-bottom: 0;
+  line-height: 1.5;
+}
+
+.wiki-article .modal-body {
+  position: relative;
+  flex: 1 1 auto;
+  padding: 15px;
+}
+
+.wiki-article .modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 15px;
+  border-top: 1px solid #eceeef;
+}
+
+.wiki-article .modal-footer > :not(:first-child) {
+  margin-left: .25rem;
+}
+
+.wiki-article .modal-footer > :not(:last-child) {
+  margin-right: .25rem;
+}
+
+.wiki-article .modal-scrollbar-measure {
+  position: absolute;
+  top: -9999px;
+  width: 50px;
+  height: 50px;
+  overflow: scroll;
+}
+
+@media (min-width: 576px) {
+  .wiki-article .modal-dialog {
+    max-width: 500px;
+    margin: 30px auto;
+  }
+  .wiki-article .modal-sm {
+    max-width: 300px;
+  }
+}
+
+@media (min-width: 992px) {
+  .wiki-article .modal-lg {
+    max-width: 800px;
+  }
+}
+
+.wiki-article .tooltip {
+  position: absolute;
+  z-index: 1070;
+  display: block;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  letter-spacing: normal;
+  line-break: auto;
+  line-height: 1.5;
+  text-align: left;
+  text-align: start;
+  text-decoration: none;
+  text-shadow: none;
+  text-transform: none;
+  white-space: normal;
+  word-break: normal;
+  word-spacing: normal;
+  font-size: 0.875rem;
+  word-wrap: break-word;
+  opacity: 0;
+}
+
+.wiki-article .tooltip.show {
+  opacity: 0.9;
+}
+
+.wiki-article .tooltip.tooltip-top, .wiki-article .tooltip.bs-tether-element-attached-bottom {
+  padding: 5px 0;
+  margin-top: -3px;
+}
+
+.wiki-article .tooltip.tooltip-top .tooltip-inner::before, .wiki-article .tooltip.bs-tether-element-attached-bottom .tooltip-inner::before {
+  bottom: 0;
+  left: 50%;
+  margin-left: -5px;
+  content: "";
+  border-width: 5px 5px 0;
+  border-top-color: #000;
+}
+
+.wiki-article .tooltip.tooltip-right, .wiki-article .tooltip.bs-tether-element-attached-left {
+  padding: 0 5px;
+  margin-left: 3px;
+}
+
+.wiki-article .tooltip.tooltip-right .tooltip-inner::before, .wiki-article .tooltip.bs-tether-element-attached-left .tooltip-inner::before {
+  top: 50%;
+  left: 0;
+  margin-top: -5px;
+  content: "";
+  border-width: 5px 5px 5px 0;
+  border-right-color: #000;
+}
+
+.wiki-article .tooltip.tooltip-bottom, .wiki-article .tooltip.bs-tether-element-attached-top {
+  padding: 5px 0;
+  margin-top: 3px;
+}
+
+.wiki-article .tooltip.tooltip-bottom .tooltip-inner::before, .wiki-article .tooltip.bs-tether-element-attached-top .tooltip-inner::before {
+  top: 0;
+  left: 50%;
+  margin-left: -5px;
+  content: "";
+  border-width: 0 5px 5px;
+  border-bottom-color: #000;
+}
+
+.wiki-article .tooltip.tooltip-left, .wiki-article .tooltip.bs-tether-element-attached-right {
+  padding: 0 5px;
+  margin-left: -3px;
+}
+
+.wiki-article .tooltip.tooltip-left .tooltip-inner::before, .wiki-article .tooltip.bs-tether-element-attached-right .tooltip-inner::before {
+  top: 50%;
+  right: 0;
+  margin-top: -5px;
+  content: "";
+  border-width: 5px 0 5px 5px;
+  border-left-color: #000;
+}
+
+.wiki-article .tooltip-inner {
+  max-width: 200px;
+  padding: 3px 8px;
+  color: #fff;
+  text-align: center;
+  background-color: #000;
+  border-radius: 0.25rem;
+}
+
+.wiki-article .tooltip-inner::before {
+  position: absolute;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.wiki-article .popover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1060;
+  display: block;
+  max-width: 276px;
+  padding: 1px;
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-style: normal;
+  font-weight: normal;
+  letter-spacing: normal;
+  line-break: auto;
+  line-height: 1.5;
+  text-align: left;
+  text-align: start;
+  text-decoration: none;
+  text-shadow: none;
+  text-transform: none;
+  white-space: normal;
+  word-break: normal;
+  word-spacing: normal;
+  font-size: 0.875rem;
+  word-wrap: break-word;
+  background-color: #fff;
+  background-clip: padding-box;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 0.3rem;
+}
+
+.wiki-article .popover.popover-top, .wiki-article .popover.bs-tether-element-attached-bottom {
+  margin-top: -10px;
+}
+
+.wiki-article .popover.popover-top::before, .wiki-article .popover.popover-top::after, .wiki-article .popover.bs-tether-element-attached-bottom::before, .wiki-article .popover.bs-tether-element-attached-bottom::after {
+  left: 50%;
+  border-bottom-width: 0;
+}
+
+.wiki-article .popover.popover-top::before, .wiki-article .popover.bs-tether-element-attached-bottom::before {
+  bottom: -11px;
+  margin-left: -11px;
+  border-top-color: rgba(0, 0, 0, 0.25);
+}
+
+.wiki-article .popover.popover-top::after, .wiki-article .popover.bs-tether-element-attached-bottom::after {
+  bottom: -10px;
+  margin-left: -10px;
+  border-top-color: #fff;
+}
+
+.wiki-article .popover.popover-right, .wiki-article .popover.bs-tether-element-attached-left {
+  margin-left: 10px;
+}
+
+.wiki-article .popover.popover-right::before, .wiki-article .popover.popover-right::after, .wiki-article .popover.bs-tether-element-attached-left::before, .wiki-article .popover.bs-tether-element-attached-left::after {
+  top: 50%;
+  border-left-width: 0;
+}
+
+.wiki-article .popover.popover-right::before, .wiki-article .popover.bs-tether-element-attached-left::before {
+  left: -11px;
+  margin-top: -11px;
+  border-right-color: rgba(0, 0, 0, 0.25);
+}
+
+.wiki-article .popover.popover-right::after, .wiki-article .popover.bs-tether-element-attached-left::after {
+  left: -10px;
+  margin-top: -10px;
+  border-right-color: #fff;
+}
+
+.wiki-article .popover.popover-bottom, .wiki-article .popover.bs-tether-element-attached-top {
+  margin-top: 10px;
+}
+
+.wiki-article .popover.popover-bottom::before, .wiki-article .popover.popover-bottom::after, .wiki-article .popover.bs-tether-element-attached-top::before, .wiki-article .popover.bs-tether-element-attached-top::after {
+  left: 50%;
+  border-top-width: 0;
+}
+
+.wiki-article .popover.popover-bottom::before, .wiki-article .popover.bs-tether-element-attached-top::before {
+  top: -11px;
+  margin-left: -11px;
+  border-bottom-color: rgba(0, 0, 0, 0.25);
+}
+
+.wiki-article .popover.popover-bottom::after, .wiki-article .popover.bs-tether-element-attached-top::after {
+  top: -10px;
+  margin-left: -10px;
+  border-bottom-color: #f7f7f7;
+}
+
+.wiki-article .popover.popover-bottom .popover-title::before, .wiki-article .popover.bs-tether-element-attached-top .popover-title::before {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  display: block;
+  width: 20px;
+  margin-left: -10px;
+  content: "";
+  border-bottom: 1px solid #f7f7f7;
+}
+
+.wiki-article .popover.popover-left, .wiki-article .popover.bs-tether-element-attached-right {
+  margin-left: -10px;
+}
+
+.wiki-article .popover.popover-left::before, .wiki-article .popover.popover-left::after, .wiki-article .popover.bs-tether-element-attached-right::before, .wiki-article .popover.bs-tether-element-attached-right::after {
+  top: 50%;
+  border-right-width: 0;
+}
+
+.wiki-article .popover.popover-left::before, .wiki-article .popover.bs-tether-element-attached-right::before {
+  right: -11px;
+  margin-top: -11px;
+  border-left-color: rgba(0, 0, 0, 0.25);
+}
+
+.wiki-article .popover.popover-left::after, .wiki-article .popover.bs-tether-element-attached-right::after {
+  right: -10px;
+  margin-top: -10px;
+  border-left-color: #fff;
+}
+
+.wiki-article .popover-title {
+  padding: 8px 14px;
+  margin-bottom: 0;
+  font-size: 1rem;
+  background-color: #f7f7f7;
+  border-bottom: 1px solid #ebebeb;
+  border-top-right-radius: calc(0.3rem - 1px);
+  border-top-left-radius: calc(0.3rem - 1px);
+}
+
+.wiki-article .popover-title:empty {
+  display: none;
+}
+
+.wiki-article .popover-content {
+  padding: 9px 14px;
+}
+
+.wiki-article .popover::before,
+.wiki-article .popover::after {
+  position: absolute;
+  display: block;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+}
+
+.wiki-article .popover::before {
+  content: "";
+  border-width: 11px;
+}
+
+.wiki-article .popover::after {
+  content: "";
+  border-width: 10px;
+}
+/* 출처 C 끝 */
+
+.wiki-article .nav-tabs {
+  border-bottom: 6px solid #aaa !important;
+  margin-bottom: -5px !important;
+}
+
+input[type=button], input[type=submit] {
+    cursor: pointer;
+}
+
+h1.modal-title, h2.modal-title, h3.modal-title, h4.modal-title, h5.modal-title, h6.modal-title {
+    margin: 0px;
+}
+.modal-content {
+    border: 1px solid rgb(99,99,123) !important;
+    border-radius: 0 !important;
+    border-top-right-radius: 6px !important;
+    border-top-left-radius: 6px !important;
+}
+
+.modal-header {
+    border-top: 1px solid white !important;
+    border-left: 1px solid white !important;
+    border-right: 1px solid white !important;
+    border-top-right-radius: 6px !important;
+    border-top-left-radius: 6px !important;
+    padding-top: 5px !important;
+    padding-bottom: 5px !important;
+    background: linear-gradient(to bottom, rgb(165,165,189), #ffffff 90%, rgb(99,99,123) 100%) !important;
+}
+
+.modal-body {
+    border-left: 1px solid white !important;
+    border-right: 1px solid white !important;
+    background: rgb(222,222,231) !important;
+}
+
+.modal-footer {
+    border-bottom: 1px solid white !important;
+    border-left: 1px solid white !important;
+    border-right: 1px solid white !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: rgb(222,222,231) !important;
+    border-top: 0 !important;
+}
+
+.modal-footer button, .modal-footer input[type=button], .modal-footer input[type=submit] {
+    width: 100px !important;
+}
+
+.nav-tabs * {
+    cursor: default !important;
+}
+
+.wiki-article .nav-tabs .nav-item {
+  margin-bottom: -1px;
+}
+
+.wiki-article .nav-tabs .nav-link {
+  color: currentcolor;
+  font-size: 11pt;
+  height: 20px !important;
+  margin-top: 7px !important;
+  border: 1px solid #aaa;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+  background-image: linear-gradient(to bottom, rgb(240, 243, 248) 0%, rgb(231,236,246) 31%, rgb(206, 215, 234) 30%, rgb(232, 235, 249) 100%);
+}
+
+.wiki-article .nav-tabs .nav-link:hover {
+    background-image: linear-gradient(to bottom, rgb(240, 243, 248) 0%, rgb(176, 214, 248) 31%, rgb(151, 191, 235) 30%, rgb(205, 216, 241) 100%);
+}
+
+.wiki-article .nav-tabs .nav-link.disabled {
+  color: #636c72;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.wiki-article .nav-tabs .nav-link.active,
+.wiki-article .nav-tabs .nav-item.show .nav-link {
+  height: 30px !important;
+  margin-top: 0px !important;
+  color: #464a4c;
+  padding-left: 19px;
+  padding-right: 19px;
+  background-image: linear-gradient(to bottom, #fff 0%, rgb(233,246,251) 31%, rgb(206, 231, 250) 30%, rgb(185, 209, 250) 100%);
+  border-color: #aaa #aaa #fff;
+}
+
+.wiki-article .nav-tabs .dropdown-menu {
+  margin-top: -1px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.nav {
+  display: flex;
+  padding-left: 0;
+  margin-bottom: 0;
+  list-style: none;
+}
+
+.nav-link {
+  display: block;
+  padding: 0.5em 1em;
+}
+
+.nav-link:focus, .wiki-article .nav-link:hover {
+  text-decoration: none;
+}
+
+.nav-link.disabled {
+  color: #636c72;
+  cursor: not-allowed;
+}
+
+.nav-tabs {
+  border-bottom: 1px solid #ddd;
+}
+
+.nav-tabs .nav-item {
+  margin-bottom: -1px;
+}
+
+.nav-tabs .nav-link {
+  border: 1px solid transparent;
+  border-top-right-radius: 8px;
+  border-top-left-radius: 8px;
+}
+
+.nav-tabs .nav-link.disabled {
+  color: #636c72;
+  background-color: transparent;
+  border-color: transparent;
+}
+
+.nav-tabs .nav-link.active,
+.nav-tabs .nav-item.show .nav-link {
+  color: #464a4c;
+  background-color: #fff;
+  border-color: #ddd #ddd #fff;
+}
+
+.nav-tabs .dropdown-menu {
+  margin-top: -1px;
+  border-top-right-radius: 0;
+  border-top-left-radius: 0;
+}
+
+.box {
+    border: 1px solid #333;
+    border-radius: 6px;
+    background: #fff;
+    padding: 10px;
+}
+#see_preview {
+    border: 1px solid #ccc !important;
+    border-top-left-radius: 0px !important;
+    border-top-right-radius: 0px !important;
+    background-color: #111;
+}
+.nav-tabs {
+    margin-bottom: 3px !important;
+    border-bottom: none !important;
+}
+.wiki-article .alert {
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1rem;
+  border: 1px solid transparent;
+  border-radius: 0.25rem;
+}
+.wiki-article .alert-warning {
+  background-color: #fcf8e3;
+  border-color: #faf2cc;
+  color: #8a6d3b;
+}
+
+.wiki-article .alert-warning hr {
+  border-top-color: #f7ecb5;
+}
+
+.wiki-article .alert-warning .alert-link {
+  color: #66512c;
+}
+.wiki-article .alert-danger {
+  background-color: #f2dede;
+  border-color: #ebcccc;
+  color: #a94442;
+}
+
+.wiki-article .alert-danger hr {
+  border-top-color: #e4b9b9;
+}
+
+.wiki-article .alert-danger .alert-link {
+  color: #843534;
+}
+
+code {
+    color: #b00;
+}

@@ -1,0 +1,145 @@
+<!-- 스택 오버플로우 방식 분류 -->
+
+<meta charset=euc-kr />
+<script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+
+<script>
+	$(function() {
+		var bksp = 0;
+		var insertCategory;
+		
+		function bdb() {
+			$('div#tags span.tag a.delete').click(function() {
+				$(this).parent().remove();
+			});
+		}
+		
+		function setEdit() {
+			$('div#tags span.tag').click(function (e) { 
+				if(e.target == this) {
+					$('input#tagInput').val($(this).find('> input').val()).focus();
+					$(this).remove();
+				}
+			});
+		}
+		
+		function insertTag(tag) {
+			const tagspan = $('<span class="tag" title="편집하려면 누르십시오."></span>');
+			tagspan.text(tag).html(tagspan.html() + '<a class="delete" title="분류 해제">×</a>' + '<input name="categories" />').find('> input').attr('value', tag);
+			$('div#tags input#tagInput').before(tagspan);
+			bdb();
+			
+			setEdit();
+		}
+	
+		$('#tagInput').on('keyup', insertCategory = function(e) {
+			switch(e.keyCode || e.charCode) {
+				case 59:
+					if($(this).val().replace(/\s/g, '') == '') break;
+					const tag = $(this).val().replace(/([;]+)$/g, '');
+					if(!tag) break;
+					
+					insertTag(tag);
+					
+					$(this).val('');
+					bdb();
+				break; case 8: case 46:
+					if($(this).val() != '') break;
+					
+					const lasttag = $('div#tags span.tag').last().find('> input').val();
+					
+					$('div#tags span.tag').last().remove();
+					$('#tagInput').val(lasttag);
+					bksp = 0;
+			}
+			
+			$('div#tagSearch').html('');
+			
+			/* 실제로는 AJAX `/complete/분류:` + 쿼리(URI 인코딩) */
+			const data = ['abc', 'def', 'ghi'];
+			const query = $(this).val();
+			
+			for(i in data) {
+				const item = data[i];
+				if(!item.startsWith(query) || !query) continue;
+				
+				const card = $('<span class="card"><span class="title"></span><span class="description"></span></span>');
+				card.find('> .title').text(item);
+				
+				$('div#tagSearch').append(card);
+			}
+			
+			$('div#tagSearch span.card').click(function() {
+				insertTag($(this).find('> .title').text());
+				$('#tagInput').val('').focus();
+				$(this).parent().html('');
+			});
+		});
+		
+		$('div#tags').click(function (e) { 
+			if(e.target == this) $('input#tagInput').focus();
+		});
+		
+		bdb();
+		setEdit();
+	});
+</script>
+
+<style>
+	div#tags {
+		border: 1px solid #ddd;
+		border-radius: 5px;
+		padding: 8px;
+		cursor: text;
+		overflow-wrap: break-word;
+	}
+	
+	div#tags input#tagInput {
+		border: none;
+		padding: 0;
+		background-color: transparent;
+	}
+	
+	div#tags span.tag {
+		border-radius: 5px;
+		background: pink;
+		padding: 4px;
+		margin-right: 5px;
+		color: rgb(128, 0, 64);
+		cursor: pointer;
+	}
+	
+	div#tags span.tag input {
+		display: none;
+	}
+	
+	div#tags span.tag a.delete {
+		font-weight: bold;
+		margin-left: 5px;
+		cursor: pointer;
+		color: rgb(128, 0, 64);
+	}
+	
+	div#tagSearch {
+		padding: 8px;
+	}
+	
+	div#tagSearch span.card {
+		border-radius: 5px;
+		background: pink;
+		padding: 8px;
+		margin-right: 5px;
+		color: rgb(128, 0, 64);
+	}
+</style>
+
+<div class=form-group>
+	<label>분류(세미콜론으로 구분): </label>
+	<div id=tags class=form-control>
+		<input id=tagInput />
+	</div>
+	
+	<div id=tagSearch>
+	
+	</div>
+</div>
