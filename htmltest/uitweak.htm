@@ -1,0 +1,94 @@
+<title>UI 트윅</title>
+<meta charset=euc-kr />
+
+<style>
+	.form-control {
+		border: 1px solid #ddd;
+		border-radius: 6px;
+		padding: 10px;
+		width: 100%;
+	}
+
+	textarea[pre] {
+		font-family: monospace;
+	}
+</style>
+
+<div>
+	<h4>파일 올리기</h4>
+	
+	<div class=form-group>
+		<label>페이지 제목: </label><br />
+		<input type=text name=upload-title class=form-control value="파일 올리기" />
+	</div>
+	
+	<div class=form-group>
+		<label>메인 UI: </label><br />
+		<textarea type=text name=upload-title class=form-control pre rows=20>
+&lt;form method=post enctype=&quot;multipart/form-data&quot;&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;화일 선택: &lt;/label&gt;&lt;br /&gt;
+		&lt;input class=form-control type=file name=file /&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;사용할 화일 이름: &lt;/label&gt;&lt;br /&gt;
+		&lt;input class=form-control type=text name=document /&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;출처: &lt;/label&gt;&lt;br /&gt;
+		&lt;textarea name=prop1 class=form-control rows=3&gt;&lt;/textarea&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;저작자: &lt;/label&gt;&lt;br /&gt;
+		&lt;textarea name=prop2 class=form-control rows=3&gt;&lt;/textarea&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;만든 이: &lt;/label&gt;&lt;br /&gt;
+		&lt;textarea name=prop3 class=form-control rows=3&gt;&lt;/textarea&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;날짜: &lt;/label&gt;&lt;br /&gt;
+		&lt;textarea name=prop4 class=form-control rows=3&gt;&lt;/textarea&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;메모: &lt;/label&gt;&lt;br /&gt;
+		&lt;textarea name=prop5 class=form-control rows=3&gt;&lt;/textarea&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;분류: &lt;/label&gt;&lt;br /&gt;
+		&lt;select name=category id=categorySelect class=&quot;form-control input-examples&quot; size=8 placeholder=&quot;직접 입력&quot;&gt;
+			$CATEGORY_OPTIONS
+		&lt;/select&gt;
+	&lt;/div&gt;
+	&lt;div class=form-group&gt;
+		&lt;label&gt;저작권: &lt;/label&gt;&lt;br /&gt;
+		&lt;select name=license id=licenseSelect class=&quot;form-control input-examples&quot; size=8 placeholder=&quot;직접 입력&quot;&gt;
+			$LICENCE_OPTIONS
+			&lt;option&gt;제한적 이용&lt;/option&gt;
+		&lt;/select&gt;
+	&lt;/div&gt;
+	&lt;div class=btns&gt;
+		&lt;button type=submit class=&quot;btn btn-primary&quot; style=&quot;width: 100px;&quot;&gt;올리기&lt;/button&gt;
+	&lt;/div&gt;
+&lt;/form&gt;
+		</textarea>
+	</div>
+	
+	<div class=form-group>
+		<label>라이선스 옵션 HTML: </label><br />
+		<textarea type=text name=upload-title class=form-control pre>
+<option name="$LICENCE_DOCTITLE">$LICENCE_STRING</option>
+		</textarea>
+	</div>
+	
+	<div class=form-group>
+		<label>분류 옵션 HTML: </label><br />
+		<textarea type=text name=upload-title class=form-control pre>
+<option name="$CATEGORY_DOCTITLE">$CATEGORY_STRING</option>
+		</textarea>
+	</div>
+</div>
+
+<div class=btns>
+	<button type=submit class="btn btn-primary" style="width: 100px;">저장</button>
+</div>
