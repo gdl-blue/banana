@@ -1,27 +1,11 @@
-﻿## 개요
-바나나는 병아리 엔진 기반의 많은 편리한 기능 탑재를 목표로 하는 나무픽스 호환 엔진이다.  
+## 개요
+바나나는 병아리 엔진 기반의 많은 편리한 기능 탑재를 목표로 하는 나무픽스 호환 엔진입니다.  
 banana is a wiki engine that supports many convinient features. (English is not supported yet)
 
-버전은 기존 엔진 버전 번호를 이어서 9부터 시작한다. *(참고로 기존 엔진은 더 이상 본인도 가지고 있지 않다. 삭제 후 이중 덮어쓰기하였다.)*
-
-실제 가동 사이트는 알파위키 *사문*에 주소를 남겼다.
+버전은 기존 엔진 버전 번호를 이어서 9부터 시작합니다. *(참고로 기존 새위키 엔진은 더 이상 본인도 가지고 있지 않다. 영구 삭제 후 영상 파일로 여러 번 덮어쓰기했습니다.)*
 
 ## 요구 환경
 Windows 7(Node.js 7.6 이상)
-
-### Windows XP에서 호스팅하기
-테스트해보지 않음, 본인 책임하에 사용, 시스템 복원 지점 생성
-
-최신 프로그램을 XP에서 돌아가게 하는 패치들:
-- https://msfn.org/board/topic/176757-cancelled-by-the-author-extended-kernel-for-xp-extendedxp/
-- https://www.betaarchive.com/forum/viewtopic.php?t=36763
-
-### Windows Vista에서 호스팅하기
-#### 32비트
-아직은 없다.
-
-#### 64비트
-[여기](https://www.youtube.com/watch?v=cJI6utFsFr4) 참조.
 
 ## 기능
 굵게 표시한 것을 모두 만들면 베타로 전환.
@@ -54,6 +38,7 @@ Windows 7(Node.js 7.6 이상)
 - [ ] 다국어 지원(진행 중)
 - [ ] 로그인 내역
 - [ ] 일관 편집, 생성, 및 삭제
+- [ ] 완전한 UI 트윅 기능
 
 ## 삭제된 릴리즈
 ### \[4.5.9] 12.5.9 (알파)
@@ -143,6 +128,8 @@ Windows 7(Node.js 7.6 이상)
 (C)저작권자 cemerick 2007~2011 [[깃허브]](https://github.com/cemerick/jsdifflib)
 
 ## 기타 라이선스
+- 아직 라이선스는 미정이나 아파치, MIT, ISC 중 하나가 될 가능성이 높으며, 엔진에 있는 각 기능의 저작권은 그 기능을 만든 사람에게 있습니다.
+
 - 스킨 호환 관련: [the seed](https://theseed.io/License), [openNAMU](https://github.com/2du/openNAMU#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4)
 
-- 대한민국 기준 프로그램코드역분석 법률에 따라 그 엔진을 모방하거나 이 엔진을 상업적으로 쓰면 안된다.
+- 대한민국 기준 프로그램코드역분석 법률에 따라 코드 수정을 통해 the seed 엔진을 모방하거나 이 엔진을 상업적으로 쓰지 않는 것을 강력히 권장합니다.
