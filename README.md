@@ -82,9 +82,6 @@ Windows 7(Node.js 7.6 이상)
     - 사용자 기여 목록(수정, 토론)
 
 ## 사용하는 외부 라이브러리
-### path
-[[라이선스]](https://github.com/jinder/path/blob/master/LICENSE)
-
 ### captchapng
 [[NPM]](npmjs.com/package/captchapng) \[라이선스: BSD] \[저작권자: George Chan]
 
