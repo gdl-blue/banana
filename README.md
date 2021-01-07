@@ -4,6 +4,8 @@ banana is a wiki engine that supports many convinient features. (English is not 
 
 버전은 기존 엔진 버전 번호를 이어서 9부터 시작합니다. *(참고로 기존 새위키 엔진은 더 이상 본인도 가지고 있지 않다. 영구 삭제 후 영상 파일로 여러 번 덮어쓰기했습니다.)*
 
+사용자마다 UI의 HTML을 직접 편집하여 자신만의 UI로 이용할 수 있는 기능을 탑재할 예정입니다.
+
 ## 요구 환경
 Windows 7(Node.js 7.6 이상)
 
