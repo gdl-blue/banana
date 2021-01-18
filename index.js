@@ -2,11 +2,8 @@ const versionInfo = {
 	major:        13,
 	minor:        0,
 	revision:     0,
-	channel:      'alpha',
-	channelDesc:  '알파',
-	patch:        'A',
 	tag:          '5.0.0',
-	vcode:        3
+	codename:     '에메랄드'
 };
 
 const advCount = 27;
@@ -274,7 +271,7 @@ var permnames = {
 var _perms = perms;
 
 const print = console.log;
-const prt   = x => process.stdout.write(String(x));
+const prt   = process.stdout.write;
 
 function beep(cnt = 1) {
 	// for(i=1; i<=cnt; i++)
@@ -384,7 +381,7 @@ conn.exec = function (sql, params) {
 	});
 };
 
-// 파이선 SQLite 모방
+// 파이선의 SQLite 모방
 conn.commit = function() {};
 conn.sd = [];
 
@@ -499,8 +496,10 @@ swig.setFilter('to_date', toDate);
 generateTime.safe = true;
 swig.setFilter('localdate', generateTime);
 
-var bodyParser = require('body-parser');
+const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
+const speakeasy = require('speakeasy');
+const QRCode = require('qrcode');
 
 const fs = require('fs');
 
@@ -583,8 +582,8 @@ try {
 			'account_creation': ['key', 'email', 'time'],
 			'files': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category'],
 			'filehistory': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category', 'username', 'rev'],
-			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al', 'blockview', 'fake', 'note', 'subwikiid'],
-			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'isip', 'blockview', 'fake', 'note', 'subwikiid'],
+			'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al', 'blockview', 'fake', 'note', 'subwikiid', 'section'],
+			'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'isip', 'blockview', 'fake', 'note', 'subwikiid', 'section'],
 			'filelicenses': ['license', 'creator'],
 			'filecategories': ['category', 'creator'],
 			'tokens': ['username', 'token'],
@@ -602,6 +601,8 @@ try {
 			'old_edit_requests': ['name', 'num', 'send', 'leng', 'data', 'user', 'state', 'time', 'closer', 'pan', 'why', 'ap'],
 			'subwikis': ['name', 'id', 'creator', 'created_timestamp', 'archived'],
 			'subwiki_config': ['key', 'value', 'subwikiid'],
+      'user_block_types': ['name', 'subwikiid'],
+      'otpkeys': ['username', 'key'],
 			
 			// 마지막에 쉼표 들으가도 됨
 		};
@@ -673,22 +674,28 @@ wiki.use(bodyParser.urlencoded({
 wiki.use(express.static('public'));
 
 wiki.use(cookieParser());
-
+  
 const FileStore = require('session-file-store')(session);
-
-wiki.use(session({
-	store: new FileStore({
-		ttl: 3600 * 24 * 365,
-		retries: 15
-	}),
+  
+const sopt = {
 	key: 'doornot',
 	secret: hostconfig['secret'],
 	cookie: {
-		expires: false
+		expires: false,
+    httpOnly: true
 	},
 	resave: false,
 	saveUninitialized: true
-}));
+};  
+
+if(hostconfig['enable_file_session']) {
+	sopt['store'] = new FileStore({
+		ttl: 3600 * 24 * 1.5,
+		retries: 15
+	});
+}
+
+wiki.use(session(sopt));
 
 class stack {
 	constructor() {
@@ -1538,18 +1545,24 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	templateVariables['user_document_discuss'] = user_document_discuss;
 	
 	const cssjshead = `
-		<script>const compatMode = ${compatMode(req) ? '1' : '0'};</script>
-		<script>const compatMode2 = ${compatMode2(req) ? '1' : '0'};</script>
+		<script>var compatMode = ${compatMode(req) ? '1' : '0'};</script>
+		<script>var compatMode2 = ${compatMode2(req) ? '1' : '0'};</script>
 		<!--[if !IE]><!--> <script type="text/javascript" src="/js/jquery-2.1.4${req.cookies['bioking'] ? '' : '.min'}.js"></script> <!--<![endif]-->
-		<!--[if IE]> <script src="/js/jquery-1.8.0${req.cookies['bioking'] ? '' : '.min'}.js"></script> <![endif]-->
+		<!--[if IE]> <script src="/js/jquery-1.7.2${req.cookies['bioking'] ? '' : '.min'}.js"></script> <![endif]-->
 		<script src="/js/jquery-ui${req.cookies['bioking'] ? '' : '.min'}.js"></script>
 		<script type="text/javascript" src="/js/banana.js"></script>
+		<script type="text/javascript" src="/js/dateformatter.js"></script>
 		<link rel="stylesheet" href="/css/banana.css" />
 		<link rel="stylesheet" href="/css/diffview.css" />
 		<script src="/js/diffview.js"></script>
 		<script src="/js/difflib.js"></script>
 		<link rel="shortcut icon" href="/images/favicon.png" />
 		<link rel=icon href="/images/favicon.png" />
+    <style id=wallpaper-css>
+      body {
+        background: ${getUserset(ip_check(req), 'wallpaper-css')} !important;
+      }
+    </style>
 	`;
 	
 	if(config.getString('enable_opennamu_skins', '1') == '1') {
@@ -1604,7 +1617,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 					getperm(req, 'admin'),  // 호민관 권한인데 admin으로 통합
 					getperm(req, 'create_vote'),  // 투표추가 권한 유무(데프리케잇; imp[1][8] 사용)
 					mycolor,  // 스킨 색 구성표
-					'12345678'  // 지원 PIN인데 미구현
+					islogin(req) ? getUserset(ip_check(req), 'spin', rndval('0123456789', 8)) : undefined  // 지원 PIN인데 미구현
 				], 
 				[  // 기타 정보 (imp[3][x])
 					subtitle == '' ? 0 : subtitle,  // 페이지 부제목
@@ -1720,7 +1733,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 				});
 			break; case 'the seed':
 				if(varlist['__isSkinSettingsPage'] && !fs.existsSync('./skins/' + getSkin(req) + '/views/settings.html')) {
-					templateVariables['content'] = '<h2>이 스킨은 스킨 설정 기능을 지원하지 않거나 동작 방식이 맞지 않습니다.</h2>';
+					templateVariables['content'] = '이 스킨은 스킨 설정 기능을 지원하지 않거나 동작 방식이 맞지 않습니다.';
 					templatefn = './skins/' + getSkin(req) + '/views/default.html';
 				}
 				else if(varlist['__isSkinSettingsPage']) {
@@ -1789,13 +1802,13 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 
 function fetchError(req, code, tag = null) {
 	const codes = {
-		'invalid_captcha_number': '보안문자 값이 올바르지 않습니다. 참고로 1처럼 생겼는데 약간 두껍고 오른쪽으로 살짝 기울어져있는 숫자는 7입니다.',
+		'invalid_captcha_number': '보안문자의 값이 올바르지 않습니다. (1처럼 생겼는데 약간 두껍고 오른쪽으로 살짝 기울어져있는 숫자는 7입니다)',
 		'disabled_feature': '이 기능이 사용하도록 설정되지 않았습니다.',
 		'invalid_signup_key': '이 인증은 만료되었거나 올바르지 않습니다.',
 		'invalid_vote_type': '투표 방식이 올바르지 않습니다.',
-		'insufficient_privileges': '접근 권한이 없습니다.',
-		'insufficient_privileges_edit': '편집 권한이 없습니다.',
-		'insufficient_privileges_read': '읽을 권한이 없습니다.',
+		'insufficient_privileges': '이 기능에 들어갈 수 있는 권한이 없습니다.',
+		'insufficient_privileges_edit': '문서에 쓸 수 있는 권한이 없습니다.',
+		'insufficient_privileges_read': '문서를 읽을 수 있는 권한이 없습니다.',
 		'invalid_value': '전송한 값 중 하나가 정해진 형식을 위반했습니다.',
 		'invalid_request_body': '필요한 값 중 일부가 빠져서 처리가 불가능합니다.',
 		'thread_not_found': '토론을 찾을 수 없습니다.',
@@ -1804,8 +1817,9 @@ function fetchError(req, code, tag = null) {
 		'syntax_error': '구문오류',
 		'h_time_expired': '올린 지 3분이 지나지 않은 댓글만 직접 숨기거나 표시할 수 있습니다.',
 		'rev_not_found': '지정한 리비젼을 찾을 수 없습니다.',
-		'nothing_changed': '변경사항이 없습니다.',
-		'invalid': '요청이 유효하지 않습니다.'
+		'nothing_changed': '바뀐 내용이 없습니다.',
+		'invalid': '요청이 유효하지 않습니다.',
+    'uncreated_feature': '해당 기능이 정의되어있지 않습니다.'
 	};
 	
 	var cr = 0;
@@ -1851,7 +1865,7 @@ function ip_pas(req, ip = '', ismember = '', isadmin = null) {
 	
 	if(ismember == 'author') {
 		if(getperm(req, 'developer', ip)) {
-			color = 'color: red;' + glowstyle;
+			color = 'color: rgb(37, 192, 89);' + glowstyle;
 		}
 		else if(getperm(req, 'head_admin', ip) || getperm(req, 'grant', ip)) {
 			color = 'color: rgb(251, 196, 4);' + glowstyle;
@@ -2090,9 +2104,24 @@ const html = {
 		return content;
 	}
 };
+  
+function jQuery(html) {
+	const jsdom = require('jsdon');
+	const { JSDOM } = jsdom;
+	const { window } = new JSDOM();
+	const { document } = (new JSDOM(html || '')).window;
+	const $ = require('jquery')(window);
+	
+	return {
+		$: $,
+		document: document,
+		window: window
+	};
+}
+
 
 // global에 함수가 안 들어가있다
-module.exports = { getTime: getTime, alertBalloon: alertBalloon, fetchNamespaces: fetchNamespaces, generateCaptcha: generateCaptcha, validateCaptcha: validateCaptcha, timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
+module.exports = { jQuery: jQuery, getTime: getTime, alertBalloon: alertBalloon, fetchNamespaces: fetchNamespaces, generateCaptcha: generateCaptcha, validateCaptcha: validateCaptcha, timeout: timeout, stringInFormat: stringInFormat, islogin: islogin, toDate: toDate, generateTime: generateTime, timeFormat: timeFormat, showError: showError, getperm: getperm, render: render, curs: curs, conn: conn, ip_check: getUsername, ip_pas: ip_pas, html: html, ban_check: ban_check, config: config };
 
 var skinList = [];
 var skindisp = {};
@@ -2147,6 +2176,8 @@ function mmmmmmmmmmmmmmn() { return 0; }
 for(pi of getPlugins()) {
 	const picfg = require('./plugins/' + pi + '/config.json');
 	const picod = require('./plugins/' + pi + '/index.js');
+	print(pi);
+	print(picod);
 	
 	for(var u=0; u<picod['urls'].length; u++) {
 		if(picfg['enabled'] != true) continue;
@@ -2333,6 +2364,10 @@ wiki.get('/css/:filepath', async function dropCSS(req, res) {
 	if(filepath.includes('../') || filepath.includes('....')) {
 		return res.send(await showError(req, 'malicious_activity_detected'));
 	}
+  
+  if(filepath.toLowerCase() == 'wiki.css') {
+    return res.redirect('/css/banana.css');
+  }
 	
 	res.sendFile(filepath, { root: "./css" });
 });
@@ -2356,8 +2391,8 @@ function generateCaptcha(req, cnt = 3) {
 	var caps = [];
 	var retHTML = '';
 	
-	fullnum += itoa(fst);
-	caps.push(new captchapng(60, 45, fst));
+	// fullnum += itoa(fst);
+	// caps.push(new captchapng(60, 45, fst));
 	
 	for(i of range(cnt)) {
 		numbers.push(parseInt(Math.random()*9000+1000));
@@ -2406,7 +2441,7 @@ function generateCaptcha(req, cnt = 3) {
 			</div>
 			
 			<div class=captcha-input>
-				<label>${lang(req, cnt * 4 + 1 + '자리 숫자 입력', 'Write ' + cnt * 4 + 1 + '-digit captcha')}: </label><br>
+				<label>${lang(req, cnt * 4 + '자리 숫자 입력', 'Write ' + cnt * 4 + 1 + '-digit captcha')}: </label><br>
 				<input type=text class=form-control name=captcha placeholder="${lang(req, '공백 구분 안함', 'Spaces ignored')}">
 			</div>
 		</div>
@@ -2453,7 +2488,14 @@ wiki.get('/other', redirectD);
 wiki.get('/Special', redirectD);
 
 async function redirectE(req, res) {
-	res.send(await render(req, '사용자 도구', '<p>최상단의 아바타 혹은 이름을 누르면 사용자 도구를 볼 수 있습니다.</p>'));
+	res.send(await render(req, '사용자 도구', `
+<ul class=wiki-list>
+  <li><a href="/member/mypage">내 정보</a></li>
+  <li><a href="/member/login">로그인</a></li>
+  <li><a href="/member/logout">로그아웃</a></li>
+  
+</ul>
+  `));
 }
 
 wiki.get('/member', redirectE);
@@ -2651,7 +2693,7 @@ wiki.get('/', async function welcome(req, res) {
 
 function mmmmmmmmmmmmmm() { return 0; }
 
-async function getThreadData(req, tnum, tid = '-1') {
+async function getThreadData(req, tnum, tid = '-1', theseed) {
 	var dbdata = await curs.execute("select id from res where tnum = ? and ((subwikiid = ? and not subwikiid = 'global') or subwikiid = 'global')", [tnum, subwiki(req)]);
 	
 	const rescount = dbdata.length;
@@ -2692,6 +2734,24 @@ async function getThreadData(req, tnum, tid = '-1') {
 		}
 		
 		// ${rs['status'] == '1' && !(rs['hidden'] == '1' || rs['hidden'] == 'O') ? 'style="display: none !important; width: 0 !important; height: 0 !important;" description="호환용 레스 오브젝트"' : ''}
+		const headbar = theseed ? (
+			`
+				${ip_pas(req, rs['username'], rs['ismember'], rs['isadmin'])} ${hbtn}
+				<span style="float: right;">
+					${generateTime(toDate(rs['time']), "Y-m-d H:i:s")}
+				</span>
+			`
+		) : (
+			`
+				${generateTime(toDate(rs['time']), "b")}에
+				${ip_pas(req, rs['username'], rs['ismember'], rs['isadmin'])}가 남긴 댓글 ${hbtn}
+				<span style="float: right;">
+					${rs['ismember'] == 'author' && (getperm(req, 'admin', rs.username)) ? '[관리자]' : ''}
+					${await ban_check(req, rs['ismember'], rs.username) ? '&nbsp;[차단된 사용자]' : ''}
+				</span>
+			`
+		);
+		
 		content += `
 			<div class=res-wrapper data-id="${rs['id']}" data-hidden="${rs['hidden'] == '1' || rs['hidden'] == 'O' ? 'true' : 'false'}">
 				<div class="res res-type-${rs['status'] == '1' ? 'status' : 'normal'}">
@@ -2700,12 +2760,8 @@ async function getThreadData(req, tnum, tid = '-1') {
 							<a id="${rs['id']}" description="나무픽스 호환" style="display: none;">#${rs['id']}</a>
 							#${rs['id']}&nbsp;
 						</span>
-						${generateTime(toDate(rs['time']), "b")}에
-						${ip_pas(req, rs['username'], rs['ismember'], rs['isadmin'])}가 남긴 댓글 ${hbtn}
-						<span style="float: right;">
-							${rs['ismember'] == 'author' && (getperm(req, 'admin', rs.username)) ? '[관리자]' : ''}
-							${await ban_check(req, rs['ismember'], rs.username) ? '&nbsp;[차단된 사용자]' : ''}
-						</span>
+						
+						${headbar}
 					</div>
 					
 					<div class="r-body${rs['hidden'] == '1' || rs['hidden'] == 'O' || rs.spam == '1' ? ' r-hidden-body' : ''}">
@@ -2713,19 +2769,19 @@ async function getThreadData(req, tnum, tid = '-1') {
 							rs['hidden'] == '1' || rs['hidden'] == 'O'
 							? (
 								((getperm(req, 'hide_thread_comment', ip_check(req))) || (rs['username'] == ip_check(req) && rs['ismember'] == (islogin(req) ? 'author' : 'ip') && atoi(getTime()) - atoi(rs['time']) <= 180000))
-								? '[' + (!rs['hider'] ? '운영자' : rs['hider']) + '가 숨긴 댓글입니다.]<br>' + markdown(rs['content'], 1)
+								? '[' + (!rs['hider'] ? '운영자' : rs['hider']) + '가 숨긴 댓글입니다.]<br><br>' + markdown(rs['content'], 1)
 								: '[' + (!rs['hider'] ? '운영자' : rs['hider']) + '가 숨긴 댓글입니다. 관리자에게 문의하십시오.]'
 							  )
 							: (
 								rs['spam'] == '1' ? (
-									'[이 댓글은 ' + rs['hider'] + '에 의해 스팸으로 간주되었습니다. 부적절한 내용 혹은 욕설 등이 포함되어있을 수 있습니다.]' + 
+									'[이 댓글은 ' + rs['hider'] + '에 의해 스팸으로 표시되었습니다. 토론과 관계없는 내용, 도배 혹은 장난성 내용, 홍보성 내용, 부적절한 내용 혹은 욕설 등이 포함되어있을 수 있습니다.]' + 
 									
 									'<div style="margin: 10px -10px -10px -10px;" class=text-line-break>' +
 										'<a ' + 
 											'class="text show-hidden-content" ' + 
 											'style="color: currentcolor; width: 100%;"' + 
 										'>' + 
-											'[댓글 내용 표시]' + 
+											'[내용 표시]' + 
 										'</a>' +
 										
 										/* div를 <div class=line />로 못 쓰네.. */
@@ -2739,11 +2795,12 @@ async function getThreadData(req, tnum, tid = '-1') {
 									rs['status'] == 1
 									? (
 										rs['stype'] == 'status'
-										? '토론을 <strong>' + (({
+										? '토론을 <strong>' + ((({
 											'close': '종결',
 											'pause': '동결',
-											'normal': '진행 중'
-										})[html.escape(rs['content'].toLowerCase())] || rs['content']) + '</strong> 상태로 표시'
+											'normal': '진행 중',
+                      'agree': '합의됨'
+										})[rs['content'].toLowerCase()]) || rs['content']) + '</strong> 상태로 표시'
 										: (
 											rs['stype'] == 'document'
 											? '토론을 <strong>' + html.escape(rs['content']) + '</strong> 문서로 이동'
@@ -2982,6 +3039,7 @@ wiki.post('/WikiSwitcher', async(req, res) => {
 	res.redirect('/subwiki/' + req.body['wikiid'] + '/w/');
 });
 
+  /*
 // UI X
 wiki.get('/DownloadDatabase', async(req, res) => {
 	res.send(`
@@ -3013,6 +3071,7 @@ wiki.post('/DownloadDatabase', async(req, res) => {
 		print(e.stack);
 	}
 });
+  */
 
 for(src of fs.readdirSync('./routes', { withFileTypes: true }).filter(dirent => !dirent.isDirectory()).map(dirent => dirent.name)) {
 	// require로 하면 여기서 정의한 함수도 바로 사용이 안 되고 module.exports로 다 다시 해야 함
@@ -3088,6 +3147,14 @@ if(firstrun) {
 			print(String(hostconfig['host']) + ":" + String(hostconfig['port']) + "에 실행 중. . .");
 			
 			sound('500,100 750,150');
+		}
+    
+		if(hostconfig['si_time']) {
+		  var si = setInterval(function() {
+			for(ev of (hostconfig.si_eval || [])) {
+			  eval(ev);
+			}
+		  }, hostconfig.si_time);
 		}
 		
 		var server;

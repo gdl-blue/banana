@@ -155,25 +155,96 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 					<div class=form-group id=editRequestForm style="display: none;">
 						<input type=hidden name=baserev value="${rawContent.length ? rawContent[0]['rev'] : ''}" />
 						
-						<ul class="nav nav-tabs" style="height: 38px;">
-							<li class=nav-item>
-								<a class="nav-link active" href="#edit">편집기</a>
-							</li>
-							
-							<li class=nav-item>
-								<a id=previewLink class=nav-link data-editrequest href="#preview">미리보기</a>
-							</li>
-						</ul>
-						
-						<div class="tab-content bordered">
-							<div id=edit class="tab-pane active">
-								<textarea name=raw class=form-control rows=20>${rawContent.length ? html.escape(rawContent[0].content) : ''}</textarea>
-							</div>
-							
-							<div id=preview class=tab-pane>
-								<iframe id=previewFrame name=previewFrame></iframe>
-							</div>
-						</div>
+						<tabpage>
+              <titlebar>편집 요청 내용</titlebar>
+
+              <tabframe>
+                <tabbar id=editor centered>
+                  <tools>
+                    <a 
+                      title="굵게"
+                      data-default-value="내용"
+                      class=insert-markup
+
+                      data-start="'''"
+                      data-end="'''"
+                    ><strong>B</strong></a>
+
+                    <a 
+                      title="기울임"
+                      data-default-value="내용"
+                      class=insert-markup
+
+                      data-start="''"
+                      data-end="''"
+                    ><i>I</i></a>
+
+                    <a 
+                      title="밑줄"
+                      data-default-value="내용"
+                      class=insert-markup
+
+                      data-start="__"
+                      data-end="__"
+                    ><u>U</u></a>
+
+                    <a 
+                      title="취소선"
+                      data-default-value="내용"
+                      class=insert-markup
+
+                      data-start="--"
+                      data-end="--"
+                    ><strike>S</strike></a>
+
+                    <a 
+                      title="글자 색"
+                      data-default-value="내용"
+                      class=insert-markup
+
+                      data-start="{{{#색이름 "
+                      data-end="}}}"
+                    ><font color=red>C</font></a>
+
+                    <a 
+                      title="글자 크기"
+                      data-default-value="내용"
+                      class=insert-markup
+
+                      data-start="{{{+수치 "
+                      data-end="}}}"
+                    ><font size=3>A+</font></a>
+
+                    <a 
+                      title="링크"
+                      data-default-value="문서명"
+                      class=insert-markup
+
+                      data-start="[["
+                      data-end="]]"
+                    ><u><font color=blue>∞</font></u></a>
+                  </tools>
+
+                  <tabs>
+                    <tab active page=edit><t>편집기</t></tab
+                    ><tab page=preview id=previewLink><t>미리보기</t></tab
+                    ><tab page=diff id=diffLink><t>비교</t></tab
+                    ><tab newtab nomobile text="메모" content='&lt;textarea style="width: 100%;" rows=19&gt;&lt;/textarea&gt;' '=""><t>+</t></tab
+                  ></tabs>
+                </tabbar>
+
+                <tabcontent tab=editor>
+                  <page id=edit active>
+                    <textarea id=textInput name=raw style="width: 100%;" rows=19>${rawContent.length ? html.escape(rawContent[0].content) : ''}</textarea>
+                    <textarea id=originalContent style="display: none;">${rawContent.length ? html.escape(rawContent[0].content) : ''}</textarea>
+                  </page>
+                  <page id=preview>
+                    <iframe id=previewFrame name=previewFrame style="width: 100%; height: 400px;">렌더링 중...</iframe>
+                  </page>
+                  <page id=diff>비교 표를 그리는 중...</page>
+                </tabcontent>
+              </tabframe>
+            </tabpage>
 					</div>
 					
 					<div class=form-group>
@@ -188,7 +259,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 			`;
 			
 			if(!islogin(req)) {
-				content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 토론 댓글에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
+				content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 토론 댓글에 IP 주소를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
 			}
 			
 			subtitle = ' (토론 목록)';

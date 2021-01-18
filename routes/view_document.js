@@ -23,9 +23,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 		if(!await getacl(req, title, 'read')) {
 			httpstat = 403;
 			error = true;
-			res.status(403).send(await showError(req, 'insufficient_privileges_read'));
-			
-			return;
+			content = `<h2>이 문서를 읽을 수 있는 권한이 없습니다. 관리자에게 문의하십시오.</h2>`;
 		} else {
 			if(req.query['rev']) {
 				rev = req.query['rev'];
@@ -66,6 +64,9 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			
 			if(title.startsWith("사용자:")) {
 				try {
+					// 이 기능은 그냥 없어도 될 듯
+					throw 1;
+					
 					const trb = await curs.execute("select tribe from users where username = ?", [title.replace(/^사용자[:]/, '')]);
 					const tdp = (await curs.execute("select alias from tribes where id = ?", [trb[0]['tribe']]))[0]['alias'];
 					

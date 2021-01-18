@@ -29,6 +29,79 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 	}
 	
 	var content = `
+    <div class=control-panel>
+      <div class=settings-section>
+        <table>
+          <tr>
+            <td style="vertical-align: top;">
+              <h4 style="margin: 0; color: white;">실시간 갱신</h4>
+
+              <table>
+                <tr>
+                  <td colspan=2>
+                    <label>갱신 주기 (초):</label><br />
+                    <input type=text id=intervalInput value=3 />
+                  </td>
+                </tr>
+
+                <tr>
+                  <td>
+                    <button id=refreshNow>지금 갱신</button>
+                  </td>
+
+                  <td>
+                    <label style="margin: 0 0 0 5px;">
+                      <input type=checkbox id=refreshing />
+                      <span class=checkbox></span>
+                      자동 갱신
+                    </label>
+                  </td>
+                </tr>
+              </table>
+            </td>
+
+            <td style="vertical-align: top;">
+              <h4 style="margin: 0; color: white;">필터 [미구현]</h4>
+
+              <form method=get>
+                <table>
+                  <colgroup>
+                    <col style="width: 150px;">
+                    <col>
+                  </colgroup>
+
+                  <tr style="width: auto;">
+                    <td style="padding: 0;">
+                      <select style="width: 100%;" name=target>
+                        <option value=username>사용자</option>
+                        <option value=date hidden>날짜</option>
+                        <option value=beforedate hidden>날짜 이전</option>
+                        <option value=afterdate hidden>날짜 이후</option>
+                        <option value=count>글자 변경점</option>
+                        <option value=biggercount>변경점 초과</option>
+                        <option value=smallercount>변경점 미만</option>
+                        <option value=editrequest>편집요청</option>
+                        <option value=log>요약</option>
+                        <option value=logmatch>요약 완전일치</option>
+                      </select>
+                    </td>
+
+                    <td>
+                      <input style="width: 100%;" type=text name=query />
+                    </td>
+                  </tr>
+                </table>
+
+                <div>
+                  <button type=submit style="float: right;">이동</button>
+                </div>
+              </form>
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
 		<ol class="breadcrumb link-nav">
 			<li><a href="?logtype=all">[전체 내역]</a></li>
 			<li><a href="?logtype=modify">[일반 편집]</a></li>
@@ -112,5 +185,5 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 	
 	if(req.query['tableonly'] == '1') return res.send(tabledata);
 	
-	res.send(await render(req, '최근 변경', content + tabledata, {}, _, _, 'recent'));
+	res.send(await render(req, '최근 문서 편집', content + tabledata, {}, _, _, 'recent'));
 });

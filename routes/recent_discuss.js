@@ -11,6 +11,7 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 		<ol class="breadcrumb link-nav">
 			<li><a href="?logtype=normal_thread">[최근 토론]</a></li>
 			<li><a href="?logtype=old_thread">[오래된 토론]</a></li>
+			<li><a href="?logtype=paused_thread">[동결된 토론]</a></li>
 			<li><a href="?logtype=closed_thread">[닫힌 토론]</a></li>
 		</ol>
 		
@@ -38,6 +39,8 @@ wiki.get('/RecentDiscuss', async function recentDicsuss(req, res) {
 			await curs.execute("select title, topic, time, tnum from threads where status = 'normal' order by cast(time as integer) asc limit 120");
 		break;case 'closed_thread':
 			await curs.execute("select title, topic, time, tnum from threads where status = 'close' order by cast(time as integer) desc limit 120");
+		break;case 'paused_thread':
+			await curs.execute("select title, topic, time, tnum from threads where status = 'pause' order by cast(time as integer) desc limit 120");
 		break;default:
 			await curs.execute("select title, topic, time, tnum from threads where status = 'normal' order by cast(time as integer) desc limit 120");
 	}

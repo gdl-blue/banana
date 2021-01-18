@@ -114,6 +114,7 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 		
 		<!------------------------------------------------------------>
 		
+<!--
 		<div class=mc-transition-container style="display: none;">
 			<div class=mc-transition id=main-menu main>
 				<div class=mc-inner-wrapper>
@@ -194,7 +195,7 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 					</div>
 				</div>
 			</div>
-		</div>
+		</div> -->
 	`;
 	
 	res.send(await render(req, lang(req, '사용자 지정', 'Tweaks'), content, {}, _, _, 'customization'));

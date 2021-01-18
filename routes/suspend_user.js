@@ -39,6 +39,13 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			</div>
 			
 			<div class=form-group>
+				<label>차단 유형:</label><br />
+				<select name=blocktype class=form-control>
+          <option>일반</option>
+        </select>
+			</div>
+			
+			<div class=form-group>
 				<label>차단 만료일:</label><br>
 				
 				<label><input type=radio name=permanant value=true /> 무기한</label><br />
@@ -85,8 +92,9 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 			</div>
 			
 			<div class=form-group>
-				<label><input ${req.query['blockview'] == '1' ? 'checked' : ''} type=checkbox name=blockview /> 접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[!]</a></sup></label><br>
-				<label><input ${req.query['al'] == '1' ? 'checked' : ''} type=checkbox name=al /> 로그인 시 차단하지 않음<sup><a title="IP 주소를 차단할 때에만 유효한 설정입니다. 로그인하면 편집할 수 있습니다.">[?]</a></sup></label><br>
+				<label><input ${req.query['blockview'] == '1' ? 'checked' : ''} type=checkbox name=blockview /> 접속 완전 차단<sup><a title="계정은 로그아웃, IP는 데이타 네트워크 등으로 쉽게 우회할 수 있습니다.">[!]</a></sup></label><br />
+				<label><input ${req.query['al'] == '1' ? 'checked' : ''} type=checkbox name=al /> 로그인 시 차단하지 않음<sup><a title="IP 주소를 차단할 때에만 유효한 설정입니다. 로그인하면 편집할 수 있습니다.">[?]</a></sup></label><br />
+				<label><input type=checkbox name=warning /> 경고성 차단</label><br />
 			</div>
 			
 			<div class=btns>
@@ -107,21 +115,21 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 		</form>
 		
 		<form method=get style="display: inline-block; float: right; width: 49%;">
-			<label>검색:</label><br />
+			<label>점프:</label><br />
 			<div class="input-group btn-group">
 				<input type=text name=from class=form-control />
 				<button type=submit class="btn btn-info">이동</button>
 			</div>
 		</form>
 		
-		<table class="table table-hover">
+		<table class=table>
 			<colgroup>
 				<col style="width: 210px;">
 				<col>
 				<col style="width: 170px;">
-				<col style="width: 60px;">
-				<col style="width: 60px;">
-				<col style="width: 80px;">
+				<col style="width: 140px;">
+				<col style="width: 100px;">
+				<col style="width: 100px;">
 				<col style="width: 60px;">
 			</colgroup>
 			
@@ -133,11 +141,46 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 					<td><strong>유형</strong></td>
 					<td><strong>접속</strong></td>
 					<td><strong>로그인</strong></td>
-					<td><strong>해제</strong></td>
+					<td><strong>작업</strong></td>
 				</tr>
 			</thead>
 			
 			<tbody id>
+        <tr class=form-tr>
+          <td>
+            <input name=s-name class=form-control type=text />
+          </td>
+
+          <td>
+            <input name=s-note class=form-control type=text />
+          </td>
+
+          <td> </td>
+
+          <td>
+            <select name=s-type class=form-control>
+              <option>일반</option>
+            </select>
+          </td>
+
+          <td>
+            <select name=s-blockview class=form-control>
+              <option>Y</option>
+              <option>N</option>
+            </select>
+          </td>
+
+          <td>
+            <select name=s-al class=form-control>
+              <option>N</option>
+              <option>Y</option>
+            </select>
+          </td>
+
+          <td>
+            <button type=submit class="btn btn-primary btn-sm">검색</button>
+          </td>
+        </tr>
 	`;
 	
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
@@ -173,10 +216,10 @@ wiki.get('/admin/ban_users', async function blockControlPanel(req, res) {
 		
 		var data = `
 			<tr>
-				<td>${html.escape(row['username'])}</td>
+				<td><strong>${row['ismember'] == 'ip' ? 'IP' : '계정'}</strong> ${html.escape(row['username'])}</td>
 				<td>${html.escape(row['note'])}</td>
 				<td>${row['endingdate'] != '0' ? generateTime(toDate(row['endingdate']), timeFormat) : '영구'}</td>
-				<td>${row['ismember'] == 'ip' ? 'IP' : '계정'}</td>
+				<td>${row['section'] || '일반'}</td>
 				<td>${row['blockview'] == '1' ? '불가' : '가능'}</td>
 				<td>${row['al'] == '1' ? '가능' : (row['ismember'] == 'ip' ? '불가' : '-')}</td>
 				<td>
@@ -217,6 +260,7 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	var   username         = req.body['username'];
 	const usertype         = req.body['usertype'];
 	const blockview        = req.body['blockview'];
+	const blocktype        = req.body['blocktype'] || '일반';
 	const al               = req.body['al'] ? '1' : '0';
 	const isPermanant      = req.body['permanant'];
 	const expirationDate   = req.body['expiration-date'];
@@ -272,14 +316,14 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 	// 'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al']
 	// 'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'blockview']
 	
-	curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake, note) \
-					values (?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0', note
+	curs.execute("insert into banned_users (username, blocker, startingdate, endingdate, ismember, al, blockview, fake, note, section) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0', note, blocktype
 					]);
 	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
-					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl_add' : 'suspend', ip_check(req), username, '', startTime, expiration, al, fake == 'on' ? '1' : '0', note
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note, section) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl_add' : 'suspend', ip_check(req), username, '', startTime, expiration, al, fake == 'on' ? '1' : '0', note, blocktype
 					]);
 	
 	res.redirect('/admin/ban_users');
@@ -288,6 +332,7 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 wiki.post('/admin/unban_user', async function unban(req, res) {
 	const username = req.body['username'];
 	const usertype = req.body['usertype'];
+	const blocktyp = req.body['usertype'] || '일반';
 	
 	if(!getperm(req, 'ban_users', ip_check(req))) {
 		res.send(await showError(req, 'insufficient_privileges'));
@@ -304,11 +349,11 @@ wiki.post('/admin/unban_user', async function unban(req, res) {
 		return;
 	}
 	
-	curs.execute("delete from banned_users where username = ? and ismember = ?", [username, usertype]);
+	curs.execute("delete from banned_users where username = ? and ismember = ? and section = ?", [username, usertype, blocktyp]);
 	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
-					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl_remove' : 'unsuspend', ip_check(req), username, '', getTime(), '-1', '0', '0', '(차단 해제)'
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note, section) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl_remove' : 'unsuspend', ip_check(req), username, '', getTime(), '-1', '0', '0', '(차단 해제)', blocktyp
 					]);
 					
 	res.redirect('/admin/ban_users');

@@ -4,7 +4,7 @@ wiki.get('/member/login', async function loginScreen(req, res) {
 	
 	if(islogin(req)) { res.redirect(desturl); return; }
 	
-	const captcha = generateCaptcha(req, 2);
+	const captcha = generateCaptcha(req, 1);
 	
 	res.send(await render(req, '로그인', `
 		<form class=login-form method=post>
@@ -46,7 +46,7 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	if(!validateCaptcha(req)){ res.send(await showError(req, 'invalid_captcha_number'));return; }
 	
-	const captcha = generateCaptcha(req, 2);
+	const captcha = generateCaptcha(req, 1);
 	
 	if(!id.length) {
 		res.send(await showError(req, 'username_not_specified'));

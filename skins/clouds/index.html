@@ -541,12 +541,14 @@
 
             .wiki-article div.container {
                 overflow-y: auto;
+                width: calc(100vw - 220px);
                 max-height: calc(100vh - 115px);
             }
 
             #commonTasksDiv {
                 overflow-y: auto;
                 max-height: calc(100vh - 115px);
+                width: 200px;
             }
 
             .alert {
@@ -656,7 +658,7 @@
     <div id=topNavbar>
         <span class=pull-right>
             <grp class=fullBar>
-                <a href=/member >{% if imp[2][10] == 1 %}§ {% endif %}{{ imp[2][6] }}</a>&nbsp;|&nbsp;
+                <a href=/member >{% if imp[2][10] == 1 %}§ {% endif %}{{ imp[2][5] }}</a>&nbsp;|&nbsp;
                 {% if imp[2][5] != '사용자' %}
                     <a href="/member/logout?redirect={{ request.base_url | url_pas }}">로그아웃</a>
                 {% else %}
@@ -700,7 +702,7 @@
 
     <table class=transparent id=pageContent>
         <colgroup>
-            <col style="width: 200px;">
+            <col>
             <col>
         </colgroup>
         <tr>

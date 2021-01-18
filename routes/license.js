@@ -1,5 +1,6 @@
 wiki.get('/License', async function(req, res) {
 	var sl = '';
+	var m, p;
 	try {
 		sl = await readFile('./skins/' + getSkin(req) + '/license.html');
 	} catch(e) {
@@ -7,9 +8,10 @@ wiki.get('/License', async function(req, res) {
 	}
 
 	res.send(await render(req, '바나나 정보', `
-		<h2>바나나 ${versionInfo.major}.${versionInfo.minor}.${versionInfo.revision} ${versionInfo.patch > 'A' ? versionInfo.patch : ''}</h2>
-		<p>임시적으로 GNU 일반 공중 사용 허가서 버전 3을 사용합니다.</p>
-		
+		<h2>
+			${versionInfo.codename} ${(m = versionInfo.minor) > 0 ? m + 1 : ''} 
+			<small>${(p = versionInfo.revision) > 0 ? ('(수정 ' + p + ')') : ''}</small>
+		</h2>
 		<p>자세한 내용은 <a href="https://github.com/turbo-whistler/banana">여기</a>를 참조하십시오.
 		
 		${sl}

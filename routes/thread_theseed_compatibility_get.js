@@ -34,7 +34,7 @@ wiki.get('/thread/:tnum/:id', async function dropThreadData(req, res) {
 	
 	content = ``;
 	
-	content = await getThreadData(req, tnum, tid);
+	content = await getThreadData(req, tnum, tid, req.query['theseed-style'] == '1');
 	
 	res.send(content);
 });

@@ -1,0 +1,8 @@
+node_modules/
+skins/buma/
+skins/royale/
+skins/Material/
+images/
+!images/dummyfile.txt
+wikidata.db
+config.json

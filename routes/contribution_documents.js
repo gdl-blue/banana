@@ -16,13 +16,13 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 	
 	switch(req.query['logtype']) {
 		case 'create':
-			flag = " and (advance = '(새 문서)' or advance = '(문서 생성)')";
+			flag = " and (advance = '(새 문서)' or advance = '<i>(새 문서)</i>' or advance = '(문서 생성)')";
 		break; case 'revert':
-			flag = " and advance = '(%되돌림)'";
+			flag = " and (advance = '(%되돌림)' or advance = '<i>(%되돌림)</i>')";
 	}
 	
 	var dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-				where ismember = ? and username = ? " + flag + " and ((title like '사용자:%') or (subwikiid = ? and not title like '사용자:%')) order by cast(time as integer) desc limit 1500", [
+				where ismember = ? and username = ? " + flag + " and ((title like '사용자:%') or (subwikiid = ? and not title like '사용자:%')) order by cast(time as integer) desc limit 2400", [
 					ismember, username, subwiki(req)
 				]);
 	
@@ -30,6 +30,8 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 //			<li><a href="/contribution/${ismember}/${username}/discuss">[토론]</a></li>
 	
 	var content = `
+    <p>최근 2,400개의 기여 목록입니다.
+
 		<div>
 			<ol class="breadcrumb link-nav blue">
 				<li><strong>[문서 편집]</strong></li>
@@ -45,7 +47,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		
 		<table class="table table-hover">
 			<colgroup>
-				<col style="width: 100px;">
+				<col style="width: 240px;">
 				<col style="width: 25%;">
 				<col>
 			</colgroup>
@@ -65,7 +67,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function document
 		content += `
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>
-						${generateTime(toDate(row['time']), 'H시 i분')}
+						${generateTime(toDate(row['time']), 'Y-m-d H시 i분')}
 					</td>
 					
 					<td>

@@ -109,12 +109,16 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	}
 	
 	content += `
-		<form id=new-thread-form method=post>
+		<form id=new-thread-form method=post data-nologin=${!islogin(req)} data-ip="${html.escape(ip_check(req))}">
 			<div class="res-wrapper res-loading" data-id="-1" data-locked=true data-visible=false>
 				<div class="res res-type-normal">
 					<div class="r-head">
-						<strong>내 의견</strong>
-						<button type=submit style="width: 120px; float: right;">전송!</button>
+						<strong>나의 댓글</strong>
+						<button class=mc-light type=submit style="width: 120px; float: right;">
+              <span class=light></span>
+		          <span class=light2></span>
+              전송!
+            </button>
 					</div>
 					
 					<div class="r-body">
@@ -123,7 +127,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	content += `
 						<script>$(function() { discussPollStart("${tnum}"); });</script>
 					
-						<textarea style="border: none; background: transparent; width: 100%;" placeholder="의견 입력" rows=3 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '[동결된 토론입니다.]' : (status == 'close' ? '[닫힌 토론입니다.]' : '')}</textarea>
+						<textarea style="border: none; background: transparent; width: 100%;" placeholder="댓글 입력" rows=3 name=text ${['close', 'pause'].includes(status) ? 'disabled' : ''}>${status == 'pause' ? '[동결된 토론입니다.]' : (status == 'close' ? '[닫힌 토론입니다.]' : '')}</textarea>
 					</div>
 				</div>
 			</div>
@@ -191,7 +195,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 		<div class="res-wrapper res-loading" data-id="-2" data-locked=true data-visible=false>
 			<div class="res res-type-normal">
 				<div class="r-head">
-					<strong>${type == 'edit_request' ? '편집 요청' : '토론'} 설정</strong>&nbsp;</span>
+					<strong>${type == 'edit_request' ? '편집 요청' : '토론'} 옵션</strong>&nbsp;</span>
 				</div>
 				
 				<div class="r-body">
@@ -310,7 +314,7 @@ wiki.get('/thread/:tnum', async function viewThread(req, res) {
 	`;
 			
 	if(!islogin(req)) {
-		content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 토론 댓글에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
+		content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 토론 댓글에 IP 주소를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
 	}
 	
 	if(!req.query.nojs) {

@@ -36,46 +36,155 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 	if(!await getacl(req, title, 'edit')) {
 		error = true;
 		content = `
-			${alertBalloon('[권한 부족]', '편집할 권한이 없습니다. 토론에서 편집할 내용을 올리십시오.', 'danger', true)}
+			${alertBalloon('[권한 부족]', '문서에 내용을 쓸 권한이 없습니다. 토론에 편집할 내용을 올리십시오.', 'danger', true)}
 		
-			<textarea id="textInput" name="text" wrap="soft" class="form-control" readonly=readonly>${html.escape(rawContent)}</textarea>
+			<textarea name=text class=form-control readonly>${html.escape(rawContent)}</textarea>
 		`;
 	} else {
 		content = `
+			<!-- 나무픽스 비교 기능 오류 수정 -->
+			<h1 class=title style="display: none;">
+				<a>${html.escape(title)}</a>
+			</h1>
+		
 			<ul class="nav nav-pills">
-				<li class="nav-item">
-					<a class="nav-link active" href="#edit">편집기</a>
+				<li class=nav-item>
+					<a class="nav-link active" href="#editpage">내용 쓰기</a>
 				</li>
 				
-				<li class="nav-item">
-					<a id=previewLink class=nav-link href="#preview">미리보기</a>
+				<li class=nav-item>
+					<a class=nav-link href="#delete">문서 지우기</a>
 				</li>
 				
-				<li class="nav-item">
-					<a id=diffLink class=nav-link href="#diff">비교</a>
-				</li>
-				
-				<li class="nav-item">
-					<a class=nav-link href="#delete">삭제</a>
-				</li>
-				
-				<li class="nav-item">
-					<a class=nav-link href="#move">이동</a>
+				<li class=nav-item>
+					<a class=nav-link href="#move">제목 바꾸기</a>
 				</li>
 			</ul>
 			
-			<div class="tab-content bordered">
-				<div class="tab-pane active" id=edit>
+			<div class=tab-content>
+				<div class="tab-pane active" id=editpage>
 					<form method=post id=editForm data-title="${html.escape(title)}">
+						<input type=hidden name=token value="나무픽스 호환용">
 						<input type=hidden name=baserev value="${baserev}">
+
+            <div id=quick-markup>
+              <button 
+                type=button
+                data-default-value="내용"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="'''"
+                data-end="'''"
+              >굵게</button>
+
+              <button 
+                type=button
+                data-default-value="내용"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="''"
+                data-end="''"
+              >기울게</button>
+
+              <button 
+                type=button
+                data-default-value="내용"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="__"
+                data-end="__"
+              >밑줄</button>
+
+              <button 
+                type=button
+                data-default-value="내용"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="--"
+                data-end="--"
+              >취소선</button>
+
+              <button 
+                type=button
+                data-default-value="내용"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="{{{#색이름 "
+                data-end="}}}"
+              >글자색</button>
+
+              <button 
+                type=button
+                data-default-value="내용"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="{{{+수치 "
+                data-end="}}}"
+              >큰글자</button>
+
+              <button 
+                type=button
+                data-default-value="내용"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="{{{-수치 "
+                data-end="}}}"
+              >작은글자</button>
+
+              <button 
+                type=button
+                data-default-value="틀이름"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="[include(틀:"
+                data-end=")]"
+              >틀</button>
+
+              <button 
+                type=button
+                data-default-value="문서명"
+                class="btn btn-secondary btn-sm insert-markup"
+
+                data-start="[["
+                data-end="]]"
+              >링크</button>
+            </div>
 						
-						<textarea id=originalContent style="display: none;">${html.escape(rawContent)}</textarea>
-						<textarea name=text rows=25 class=form-control>${html.escape(rawContent)}</textarea>
+						<ul class="nav nav-tabs" style="height: 38px;">
+							<li class=nav-item>
+								<a class="nav-link active" href="#edit">편집기</a>
+							</li>
+							
+							<li class=nav-item>
+								<a id=previewLink class=nav-link href="#preview">미리보기</a>
+							</li>
+							
+							<li class=nav-item>
+								<a id=diffLink class=nav-link href="#diff">비교</a>
+							</li>
+						</ul>
+						
+						<div class="tab-content bordered">
+							<div class="tab-pane active" id=edit>
+								<textarea name=text rows=25 class=form-control id=textInput>${html.escape(rawContent)}</textarea>
+								<textarea id=originalContent style="display: none;">${html.escape(rawContent)}</textarea>
+							</div>
+							
+							<div class=tab-pane id=preview>
+								<iframe id=previewFrame name=previewFrame></iframe>
+							</div>
+				
+							<div class=tab-pane id=diff>
+							
+							</div>
+						</div>
 
 						<div class=form-group>
 							<label>편집 메모:</label>
 							<input type=text class=form-control id=logInput name=log />
 						</div>
+
+            <input type=checkbox checked id=agreeCheckbox description="theseed.js를 사용 중일 때 저장이 되지 않는 문제 수정용" style="display: none;" />
 						
 						<div class=form-group>
 							${captcha}
@@ -89,14 +198,6 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 							<button id=editBtn class="btn btn-primary" style="width: 100px;">저장</button>
 						</div>
 					</form>
-				</div>
-				
-				<div class=tab-pane id=preview>
-					<iframe id=previewFrame name=previewFrame></iframe>
-				</div>
-				
-				<div class=tab-pane id=diff>
-				
 				</div>
 				
 				<div class=tab-pane id=delete>
@@ -144,7 +245,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 	}
 	
 	if(!islogin(req)) {
-		content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 역사에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
+		content += `<p style="font-weight: bold; color: red;">로그인하지 않았습니다. 문서 역사에 IP(${ip_check(req)})를 영구히 기록하는 것에 동의하는 것으로 간주합니다.</p>`;
 	}
 
 	var httpstat = 200;
@@ -159,7 +260,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 			error: error
 		},
 		st: 2
-	}, ' (편집)', error, 'edit'));
+	}, ' (쓰기)', error, 'edit'));
 });
 
 wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
@@ -242,7 +343,7 @@ wiki.post(/^\/edit\/(.*)/, async function saveDocument(req, res) {
 
 wiki.post(/\/preview\/(.*)/, async (req, res) => {
 	try {
-		res.send(await JSnamumark(req.params[0], req.body['text']));
+		res.send(await JSnamumark(req.params[0], req.body['text'] || req.body['raw']));
 	} catch(e) {
 		res.send(await showError('invalid_request_body'));
 	}

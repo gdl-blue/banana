@@ -1,6 +1,6 @@
 {
   "name": "banana",
-  "version": "2.0.0",
+  "version": "5.0.0",
   "description": "위키 엔진",
   "main": "index.js",
   "directories": {
@@ -28,9 +28,11 @@
     "path": "^0.12.7",
     "proxy-addr": "^2.0.6",
     "pug": "^3.0.0",
+    "qrcode": "^1.4.4",
     "session-file-store": "^1.4.0",
     "sha224": "^1.0.0",
     "sha3": "^2.1.2",
+    "speakeasy": "^2.0.0",
     "sqlite3": "^4.2.0",
     "swig": "^1.4.2",
     "telnet": "^0.0.1",
@@ -51,7 +53,7 @@
     "wiki-engine"
   ],
   "author": "",
-  "license": "AGPL-3.0",
+  "license": "",
   "bugs": {
     "url": "https://github.com/gdl-888/banana/issues"
   },
