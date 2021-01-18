@@ -624,6 +624,8 @@ $(function() {
     }
 
     $('.rolling-selector').each(function() {
+		if(compatMode2) return;
+		
         var selector = $(this);
         var selectorID = selector.attr('id');
         var leftBtn = selector.find('button#toLeftBtn');
@@ -635,13 +637,40 @@ $(function() {
         var valueInput = selector.find('input.value-input');
 
         selector.show();
+		
+		selector.find('input[name^="rolling-selector"]').val('1');
 
         var currentOption = datalist.find('option[value="' + indicator.text() + '"]').text();
 
         function onChange() {
             switch (selectorID) {
-            case 'skinRoller':
-                selector.next().find('> img').attr('src', '/skins/' + indicator.text() + '/preview.bmp');
+				case 'skinRoller':
+					$('iframe').attr('src', '/w/사용자:' + $('#usernameValue').val() + '?override-skin=' + indicator.text());
+					$.ajax({
+						url: '/skins/' + indicator.text() + '/colors.scl',
+						success: function(ret) {
+							$.ajax({
+								url: '/skins/' + indicator.text() + '/dfltcolr.scl',
+								success: function(dc) {
+									var opt = '';
+									var spl = ret.split(';');
+									for(_clrset in spl) {
+										var clrset = spl[_clrset];
+										opt += '<option value="' + clrset.split(',')[0] + '" ' + (clrset.split(',')[0] == dc ? 'selected' : '') + '>' + clrset.split(',')[1] + '</option>';
+									}
+									$('#schemeSelect').html(opt);
+								},
+								error: function() {
+									$('#schemeSelect').html('<option value=default selected>기본값</option>');
+								}
+							});
+						},
+						error: function() {
+							$('#schemeSelect').html('<option value=default selected>기본값</option>');
+						}
+					});
+					
+					/* selector.next().find('> img').attr('src', '/skins/' + indicator.text() + '/preview.bmp'); */
             }
         }
 
@@ -670,6 +699,12 @@ $(function() {
             onChange();
         });
     });
+	
+	$('#schemeSelect').change(function() {
+		if(compatMode2) return;
+		
+		$('iframe').attr('src', '/w/사용자:' + $('#usernameValue').val() + '?override-skin=' + $('#skinSelectLabel').text() + '&override-color=' + $(this).val());
+	});
 
     function bdb() {
         $('form#grant-form table#perm-list tr td button.delete-permission-btn').click(function() {
@@ -1277,4 +1312,97 @@ $(function() {
     });
 
     $('.mc-light').on('mouseout', sa);
+});
+
+$(function() {
+	/*
+	 * micro-js / hsl-to-rgb ( https://github.com/micro-js/hsl-to-rgb )
+	 * Committer: ashaffer
+	 * License: MIT
+	 */
+	function hslToRgb(h, s, l) {
+		/* for CSS */
+		s /= 100, l /= 100;
+	
+		if(s == 0) return [l, l, l];
+		h /= 360;
+
+		var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+		var p = 2 * l - q;
+
+		return [
+			Math.round(hueToRgb(p, q, h + 1/3) * 255),
+			Math.round(hueToRgb(p, q, h) * 255),
+			Math.round(hueToRgb(p, q, h - 1/3) * 255)
+		];
+	}
+
+	function hueToRgb(p, q, t) {
+		if(t < 0) t += 1;
+		if(t > 1) t -= 1;
+		if(t < 1/6) return p + (q - p) * 6 * t;
+		if(t < 1/2) return q;
+		if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+
+		return p;
+	}
+	/* ---------------------------------- */
+	
+	function randint(s, e) {
+		return Math.floor(Math.random() * (e + 1 - s) + s);
+	}
+	
+	$('#random-h').click(function() {
+		$('#hue').val(randint(0, 360)).change();
+	});
+	
+	$('#random-s').click(function() {
+		$('#sat').val(randint(1, 100)).change();
+	});
+	
+	$('#random-l').click(function() {
+		$('#bri').val(randint(0, 100)).change();
+	});
+	
+	$('#random-all').click(function() {
+		$('#random-h').click();
+		$('#random-s').click();
+		$('#random-l').click();
+	});
+
+	$('#hue, #sat, #bri').on('input change', function() {
+		$('#picked-color').css('background-color', 'hsl(' + $('#hue').val() + ', ' + $('#sat').val() + '%, ' + $('#bri').val() + '%)');
+		$('#picked-color-h').css('background-color', 'hsl(' + $('#hue').val() + ', 100%, 50%)');
+		$('#picked-color-s').css('background-color', 'hsl(240, ' + $('#sat').val() + '%, 50%)');
+		$('#picked-color-l').css('background-color', 'hsl(240, 100%, ' + $('#bri').val() + '%)');
+	
+		$('#h').val(Math.floor(Number($('#hue').val()) * (240 / 360)));
+		$('#s').val(Math.floor(Number($('#sat').val()) * (240 / 100)));
+		$('#l').val(Math.floor(Number($('#bri').val()) * (240 / 100)));
+		
+		var rgb = hslToRgb(Number($('#hue').val()), Number($('#sat').val()), Number($('#bri').val()));
+		
+		$('#r').val(rgb[0]);
+		$('#g').val(rgb[1]);
+		$('#b').val(rgb[2]);
+		
+		var a, b, c;
+		
+		$('#html').val((((a = rgb[0].toString(16)) < 10 ? '0' + a : a) + ((b = rgb[1].toString(16)) < 10 ? '0' + b : b) + ((c = rgb[2].toString(16)) < 10 ? '0' + c : c)).toUpperCase());
+	});
+	
+	$('#hue').on('input change', function() {
+		$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $(this).val() + ', ' + $('#sat').val() + '%, 50%), #fff)');
+		$('#sat').prev().css('background-image', 'linear-gradient(to right, #888, hsl(' + $(this).val() + ', 100%, 50%))');
+	});
+	
+	$('#sat').on('input change', function() {
+		$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $('#hue').val() + ', ' + $(this).val() + '%, 50%), #fff)');
+	});
+	
+	$('#picked-color').click(function() {
+		$('#saved-colors div').prepend($('<table style="display: table-cell;"><tr><td style="text-align: center;"><span class=color-frame style="background-color: ' + $(this).css('background-color') + '; padding: 6px;">__</span></td></tr><tr><td style="font-size: 9pt;">#' + $('#html').val() + '</td></tr></table>'));
+	});
+	
+	$('#hue').change();
 });

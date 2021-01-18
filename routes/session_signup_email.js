@@ -47,7 +47,7 @@ wiki.get('/member/signup_email', async function signupEmailScreen(req, res) {
 		return;
 	}
 	
-	if(config.getString('disable_email', '0') == '1') {
+	if(config.getString('disable_email', '1') == '1') {
 		return res.redirect('/member/signup_key?key=pass');
 	}
 	

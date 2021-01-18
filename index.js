@@ -1267,6 +1267,11 @@ function compatMode2(req) {
 }
 
 function getSkin(req) {
+	const skinOverride = req.query['override-skin'];
+	if(getSkins().includes(skinOverride)) {
+		return skinOverride;
+	}
+	
 	const retval = (islogin(req)
 		? (getUserset(ip_check(req), 'skin', 
 				(
@@ -1377,10 +1382,12 @@ async function getScheme(req) {
 				const _dc = await readFile('./skins/' + getSkin(req) + '/dfltcolr.scl');
 				
 				mycolor = _dc;
+				if(req.query['override-skin']) return req.query['override-color'] || _dc;
+				
 				if(islogin(req)) {
 					mycolor = getUserset(ip_check(req), 'color', _dc);
 				} else if(cmc = req.cookie['timecosmos']) {
-					mycolor = cmc;
+					mycolor = cmc || _dc;
 				}
 			}
 		} catch(e) {

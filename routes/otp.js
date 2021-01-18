@@ -19,7 +19,7 @@ wiki.get('/member/activate_otp', async(req, res) => {
 				</div>
 
 				<div class=form-group>
-					<label>스캔 가능한 2차원 막대 코드: </label><br />
+					<label>스캔 가능한 2차원 막대 코드(정상 작동 안 함): </label><br />
 					<img src='${img}' />
 				</div>
 
@@ -47,7 +47,7 @@ wiki.post('/member/activate_otp', async(req, res) => {
 	if(speakeasy.totp.verify({
 		secret: req.session['otpkey'],
 		encoding: 'base32',
-    token: (req.body['token'] || 123456).toString()
+    token: (req.body['token'] || 111111).toString()
 	})) {
 		curs.execute("insert into otpkeys (username, key) values (?, ?)", [ip_check(req), req.session['otpkey']]);
 		return res.redirect('/member/mypage');
