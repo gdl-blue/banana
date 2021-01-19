@@ -161,9 +161,6 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								<div class=form-group>
 									<label><input type=checkbox name=enable_apiv1 ${config.getString('enable_apiv1', '1') == '1' ? 'checked' : ''}> API 버전1 사용</label><br>
 									<label><input type=checkbox name=enable_apiv2 ${config.getString('enable_apiv2', '1') == '1' ? 'checked' : ''}> API 버전2 사용</label><br>
-									
-									<!-- v3은 계정 전용 특수 API로 비활성화하면 일부 기능 사용 못함, v5(미구현)은 호환용 특수 API -->
-									<label><input type=checkbox name=enable_apiv3 checked disabled> API 버전3 사용</label><br>
 								</div>
 								
 								<div class=form-group>
@@ -228,7 +225,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								</div>
 								
 								<div class=form-group>
-									<label>ACL 방식 설정: <sub>(이 설정 변경은 모든 문서의 ACL을 초기화합니다.)</sub></label><br>
+									<label>ACL 인터페이스 설정: <sub>(이 설정 변경은 모든 문서의 ACL을 초기화합니다.)</sub></label><br>
 									<!-- <label><input type=radio name=acl_type value=user-based ${config.getString('acl_type', 'action-based') == 'user-based' ? 'checked' : ''} ${getPlugins('acl').includes('user-based') ? '' : 'disabled'}> 사용자 중심 - 사용자별로 문서에 대해 할 수 있는 작업을 지정합니다. ${getPlugins('acl').includes('user-based') ? '' : '(user-based 플러그인이 설치되지 않아서 제공되지 않습니다.)'}</label><br> -->
 									<label><input type=radio name=acl_type value=action-based ${config.getString('acl_type', 'action-based') == 'action-based' ? 'checked' : ''}> 작업 중심 - 문서에 대한 작업을 어떤 사용자가 할 수 있는지 지정합니다.</label><br>
 									<!-- <label><input type=radio name=acl_type value=basic ${config.getString('acl_type', 'action-based') == 'basic' ? 'checked' : ''} ${getPlugins('acl').includes('basic') ? '' : 'disabled'}> 간단 모드 - 처음 사용자가 쉽게 다룰 수 있으며, 미디어위키, 오픈나무, 클래식 the seed 등의 위키엔진에서 널리 사용됩니다. ${getPlugins('acl').includes('basic') ? '' : '(basic 플러그인이 설치되지 않아서 제공되지 않습니다.)'}</label><br> -->
@@ -236,7 +233,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 									<!-- <label><input type=radio name=acl_type value=none ${config.getString('acl_type', 'action-based') == 'none' ? 'checked' : ''}> 없음 - ACL을 지정할 수 없게 합니다. 모든 문서에 모든 사용자가 기여할 수 있습니다. 예외적으로 사용자 문서는 본인 및 관리자만이 편집할 수 있습니다. 차단된 사용자는 제외됩니다.</label> -->
 									
 									<br />
-									<p>웹에서 다른 방식의 ACL을 다운로드할 수 있습니다.
+									<p>웹에서 다른 ACL 인터페이스를 다운로드할 수 있습니다.
 								</div>
 								
 								<div class=form-group>
@@ -259,7 +256,7 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								</p>
 							
 								<label>개인정보처리방침:</label>
-								<textarea name=privacy class=form-control rows=17>${config.getString('privacy', '')}</textarea>
+								<textarea name=privacy class=form-control rows=16>${config.getString('privacy', '')}</textarea>
 							</div>
 							
 							<div class=tab-page id=email>
@@ -285,17 +282,17 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								<div class=form-group>
 									<label>내 전자우편 암호:</label>
 									<input type=password name=email_pass class=form-control value="">
-									<strong><font color=red>[경고!] 비밀번호는 데이타베이스에 저장됩니다. 비밀번호를 설정한 경우 데이타베이스를 타인에게 배포하지 않아야 합니다. 혹은 완전히 다른 비밀번호를 사용하는 구글 부계정을 사용하세요.</font></strong>
+									<strong><font color=red>[경고!] 비밀번호는 데이타베이스에 저장됩니다. 비밀번호를 설정한 경우 데이타베이스를 타인에게 절대로 배포하지 않아야 합니다.</font></strong>
 								</div>
 								
 								<div class=form-group>
 									<label>가입 인증 우편 내용:</label>
-									<textarea rows=15 name=registeration_verification class=form-control>${config.getString('registeration_verification', '안녕하십니까!\n$WIKINAME 가입 인증 메일입니다.\n\n저희 위키에 가입하시려면 다음 키를 사용하시면 됩니다^^\n<strong>$ADDRESS</strong>\n\n가입하시고, 즐거운 위키 편집 되시기 바랍니다~')}</textarea>
+									<textarea rows=15 name=registeration_verification class=form-control>${config.getString('registeration_verification', '안녕하십니까!\n$WIKINAME 가입 인증 메일입니다.\n\n위키에 가입하시려면 다음 키를 사용하시면 됩니다.\n<strong>$ADDRESS</strong>')}</textarea>
 								</div>
 								
 								<div class=form-group>
 									<label>비밀번호 찾기 인증 우편 내용:</label>
-									<textarea rows=15 name=password_recovery class=form-control>${config.getString('password_recovery', '안녕하십니까!\n혹시 $WIKINAME에서 아이디나 비밀번호를 잊어버리셨나요?\n\n사용자 이름은 $USERNAME이며, 비밀번호를 재설정하려면 다음 링크를 누르시면 됩니다~\n<a href="$ADDRESS">[재설정]</a>\n\n계정을 복구하시고 즐거운 하루 되세요~^^')}</textarea>
+									<textarea rows=15 name=password_recovery class=form-control>${config.getString('password_recovery', '안녕하십니까!\n혹시 $WIKINAME에서 아이디나 비밀번호를 잊어버리셨나요?\n\n사용자 이름은 $USERNAME이며, 비밀번호를 재설정하려면 다음 링크를 누르시면 됩니다.\n<a href="$ADDRESS">[재설정]</a>')}</textarea>
 								</div>
 							</div>
 							

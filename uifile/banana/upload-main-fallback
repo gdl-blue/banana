@@ -1,0 +1,55 @@
+<form method=post enctype="multipart/form-data">
+	<div class=form-group>
+		<label>화일 선택: </label><br>
+		<input class=form-control type=file name=file>
+	</div>
+
+	<div class=form-group>
+		<label>사용할 화일 이름: </label><br>
+		<input class=form-control type=text name=document>
+	</div>
+
+	<div class=form-group>
+		<label>출처: </label><br>
+		<textarea name=prop1 class=form-control rows=3></textarea>
+	</div>
+
+	<div class=form-group>
+		<label>저작자: </label><br>
+		<textarea name=prop2 class=form-control rows=3></textarea>
+	</div>
+
+	<div class=form-group>
+		<label>만든 이: </label><br>
+		<textarea name=prop3 class=form-control rows=3></textarea>
+	</div>
+
+	<div class=form-group>
+		<label>날짜: </label><br>
+		<textarea name=prop4 class=form-control rows=3></textarea>
+	</div>
+
+	<div class=form-group>
+		<label>메모: </label><br>
+		<textarea name=prop5 class=form-control rows=3></textarea>
+	</div>
+
+	<div class=form-group>
+		<label>분류: <span style="color: gray; float: right;">분류를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
+		<select name=category id=categorySelect class="form-control input-examples" size=8 placeholder="직접 입력">
+			$CATEGORY_OPTIONS
+		</select>
+	</div>
+
+	<div class=form-group>
+		<label>저작권: <span style="color: gray; float: right;">라이선스를 추가하려면 자바스크립트가 지원되어야 합니다.</span></label><br>
+		<select name=license id=licenseSelect class="form-control input-examples" size=8 placeholder="직접 입력">
+			$LICENSE_OPTIONS
+			<option>제한적 이용</option>
+		</select>
+	</div>
+
+	<div class=btns>
+		<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
+	</div>
+</form>

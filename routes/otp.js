@@ -42,12 +42,12 @@ wiki.post('/member/activate_otp', async(req, res) => {
 	if(!islogin(req)) return res.redirect('/member/login?redirect=%2Fmember%2Factivate_otp');
 	if(!req.session['otpkey']) return res.send(await showError(req, 'invalid'));
 	if(!req.body['token']) return res.send(await showError(req, 'invalid_request_body'));
-  if((await curs.execute("select key from otpkeys where username = ?", [ip_check(req)])).length) return res.send(await showError(req, 'already_activated'));
+	if((await curs.execute("select key from otpkeys where username = ?", [ip_check(req)])).length) return res.send(await showError(req, 'already_activated'));
 	
 	if(speakeasy.totp.verify({
 		secret: req.session['otpkey'],
 		encoding: 'base32',
-    token: (req.body['token'] || 111111).toString()
+		token: (req.body['token'] || 111111).toString()
 	})) {
 		curs.execute("insert into otpkeys (username, key) values (?, ?)", [ip_check(req), req.session['otpkey']]);
 		return res.redirect('/member/mypage');

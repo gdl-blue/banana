@@ -3,7 +3,7 @@ wiki.get('/member/tweak_ui', async(req, res) => {
 	
 	var popt = '';
 	for(preset of (await readdir('./uifile', 'dir'))) {
-		popt += `<option value="${preset}">${((parseINI(await readFile('./uifile/' + preset + '/config.ini', 1))['uifile'] || {})['displayname']) || preset}</option>`;
+		popt += `<option value="${preset}">${((parseINI(await readFile('./uifile/' + preset + '/config.ini', 1))['preset'] || {})['displayname']) || preset}</option>`;
 	}
 	
 	const content = `
@@ -29,28 +29,30 @@ wiki.get('/member/tweak_ui', async(req, res) => {
 		</select>
 		
 		<div class=tab-content>
-			<div class=tab-pane>
+			<div class=tab-pane id=upload>
 				<div class=form-group>
 					<label>페이지 제목: </label><br />
-					<input type=text name=upload-title class=form-control value="파일 올리기" />
+					<input type=text name=upload-title class=form-control value="${html.escape(await rawui(req, 'upload-title'))}" />
 				</div>
 				
 				<div class=form-group>
 					<label>메인 UI: </label><br />
-					<textarea type=text name=upload-main class=form-control pre rows=20>
-					</textarea>
+					<textarea type=text name=upload-main class=form-control pre rows=15>${html.escape(await rawui(req, 'upload-main'))}</textarea>
+				</div>
+				
+				<div class=form-group>
+					<label>메인 UI(자바 스크립트 없음): </label><br />
+					<textarea type=text name=upload-main-fallback class=form-control pre rows=15>${html.escape(await rawui(req, 'upload-main-fallback'))}</textarea>
 				</div>
 				
 				<div class=form-group>
 					<label>라이선스 옵션 HTML: </label><br />
-					<textarea type=text name=upload-license class=form-control pre>
-					</textarea>
+					<textarea type=text name=upload-license class=form-control pre>${html.escape(await rawui(req, 'upload-license'))}</textarea>
 				</div>
 				
 				<div class=form-group>
 					<label>분류 옵션 HTML: </label><br />
-					<textarea type=text name=upload-category class=form-control pre>
-					</textarea>
+					<textarea type=text name=upload-category class=form-control pre>${html.escape(await rawui(req, 'upload-category'))}</textarea>
 				</div>
 			</div>
 		</div>

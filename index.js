@@ -539,7 +539,7 @@ swig.setFilter('encode_doc', function filter_encodeDocURL(input) {
 });
 
 swig.setFilter('avatar_url', function filter_avatarURL(input) {
-    return '//secure.gravatar.com/avatar/' + md5((input || { email: '' })['email']) + '?d=retro';
+    return '//secure.gravatar.com/avatar/' + md5(((input || { email: '' })['email']) || '') + '?d=retro';
 });
 
 swig.setFilter('md5', function filter_md5(input, length = null) {
@@ -602,14 +602,16 @@ try {
                 skin: await readline("기본 스킨 이름: ")
             };
         }
-        
+		
+        /*
         print('차단 목록을 캐시하도록 설정하면 처리 속도가 빨라집니다. 캐싱은 차단한 사용자가 약 1,000만명이면 약 10초, 1억명은 약 1~2분, 10억명은 약 10분 소요되며, 캐싱은 엔진 시작 시 한 번만 합니다. 캐시하지 않을 경우 차단한 사용자가 많으면 위키 접속 속도가 전술한 시간만큼 느려집니다.\n');
         var inp;
         do {
             inp = (await readline('차단된 사용자 목록을 캐시하시겠습니까?[Y/N]: ')).toUpperCase();
         } while(!(['Y', 'N'].includes(inp)));
         hostconfig['cache_ban_list'] = (inp == 'Y' ? true : false);
-        
+        */
+		
         hostconfig['initialized'] = true;
         
         const defskin = hostconfig['skin'];
@@ -2197,7 +2199,29 @@ function readdir(pth, typ = 'dir') {
 	});
 }
 
-function ui(html, vars) {
+/*
+function getui(req) {
+	if(!islogin(req)) return config.getString('ui_preset', 'banana');
+	
+	getUserset(ip_check(req), '', '');
+}
+*/
+
+async function rawui(req, uiname) {
+	const defprs = config.getString('ui_preset', 'banana');
+	
+	var html; if(!islogin(req)) html = await readFile('./uifile/' + defprs + '/' + uiname, 1);
+	else html = getUserset(ip_check(req), 'ui_' + uiname, (await readFile('./uifile/' + defprs + '/' + uiname, 1)));
+	
+	return html;
+}
+
+async function ui(req, uiname, vars) {
+	const defprs = config.getString('ui_preset', 'banana');
+	
+	var html; if(!islogin(req)) html = await readFile('./uifile/' + defprs + '/' + uiname, 1);
+	else html = getUserset(ip_check(req), 'ui_' + uiname, (await readFile('./uifile/' + defprs + '/' + uiname, 1)));
+	
 	for(key in vars) {
 		html = html.replaceAll('$' + key.toUpperCase(), vars[key]);
 	}
@@ -2208,7 +2232,6 @@ function ui(html, vars) {
 function cacheSkinList() {
     skinList = [];
     
-    // 밑의 fileExplorer 함수에 출처 적음.
     for(dir of fs.readdirSync('./skins', { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
         var skincfg;
         try {

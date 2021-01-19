@@ -486,7 +486,7 @@ $(function() {
     $('.tab-page#plugins button#enablePluginBtn').click(function() {
         $.ajax({
             type: "POST",
-            url: '/api/v3/plugins/enable',
+            url: '/plugins/enable',
             data: {
                 'name': $('.tab-page#plugins select#pluginList[size]').val()
             },
@@ -511,7 +511,7 @@ $(function() {
     $('.tab-page#plugins button#disablePluginBtn').click(function() {
         $.ajax({
             type: "POST",
-            url: '/api/v3/plugins/disable',
+            url: '/plugins/disable',
             data: {
                 'name': $('.tab-page#plugins select#pluginList[size]').val()
             },
@@ -703,8 +703,8 @@ $(function() {
     });
 	
 	$('.select-page').change(function() {
-		$(this).next().find('> tab-pane').hide();
-		$(this).next().find('> tab-pane' + $(this).attr('href')).show();
+		$(this).next().find('> tab-pane').removeClass('active');
+		$(this).next().find('> tab-pane#' + $(this).val()).addClass('active');
 	});
 	
 	$('.tab-content').each(function() {

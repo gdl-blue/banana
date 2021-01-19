@@ -1,4 +1,4 @@
-wiki.post(/\/api\/v3\/plugins\/enable/, async function API_enablePlugin_v3(req, res) {
+wiki.post(/\/plugins\/enable/, async function API_enablePlugin_v3(req, res) {
 	try {
 		const name = req.body['name'];
 		const picfg = require('./plugins/' + name + '/config.json');
@@ -17,7 +17,7 @@ wiki.post(/\/api\/v3\/plugins\/enable/, async function API_enablePlugin_v3(req, 
 	}
 });
 
-wiki.post(/\/api\/v3\/plugins\/disable/, async function API_disablePlugin_v3(req, res) {
+wiki.post(/\/plugins\/disable/, async function API_disablePlugin_v3(req, res) {
 	try {
 		const test = 6;
 		

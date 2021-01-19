@@ -2,6 +2,9 @@ node_modules/
 skins/buma/
 skins/royale/
 skins/Material/
+skins/namuvector/
+skins/vector/
+skins/liberty/
 images/
 !images/dummyfile.txt
 wikidata.db

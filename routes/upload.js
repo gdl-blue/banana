@@ -81,7 +81,8 @@ wiki.get('/Upload', async function fileUploadPage(req, res) {
 				<div class=btns>
 					<button type=submit class="btn btn-primary" style="width: 100px;">올리기</button>
 				</div>
-			</form>`;
+			</form>
+		`;
 	} else {
 		content = `
 			<form method=post enctype="multipart/form-data">
