@@ -626,15 +626,15 @@ $(function() {
     $('.rolling-selector').each(function() {
 		if(compatMode2) return;
 		
-        var selector = $(this);
-        var selectorID = selector.attr('id');
-        var leftBtn = selector.find('button#toLeftBtn');
-        var rightBtn = selector.find('button#toRightBtn');
-        var datalist = selector.find('options');
-        var indicator = selector.find('label');
+        var selector    = $(this);
+        var selectorID  = selector.attr('id');
+        var leftBtn     = selector.find('button#toLeftBtn');
+        var rightBtn    = selector.find('button#toRightBtn');
+        var datalist    = selector.find('options');
+        var indicator   = selector.find('label');
         var firstOption = datalist.find('> option:first-child').text();
-        var lastOption = datalist.find('> option:last-child').text();
-        var valueInput = selector.find('input.value-input');
+        var lastOption  = datalist.find('> option:last-child').text();
+        var valueInput  = selector.find('input.value-input');
 
         selector.show();
 		
@@ -649,19 +649,21 @@ $(function() {
 					$.ajax({
 						url: '/skins/' + indicator.text() + '/colors.scl',
 						success: function(ret) {
+							function setColorList(dc) {
+								var opt = '';
+								var spl = ret.split(';');
+								for(_clrset in spl) {
+									var clrset = spl[_clrset];
+									opt += '<option value="' + clrset.split(',')[0] + '" ' + (clrset.split(',')[0] == dc ? 'selected' : '') + '>' + clrset.split(',')[1] + '</option>';
+								}
+								$('#schemeSelect').html(opt);
+							}
+							
 							$.ajax({
 								url: '/skins/' + indicator.text() + '/dfltcolr.scl',
-								success: function(dc) {
-									var opt = '';
-									var spl = ret.split(';');
-									for(_clrset in spl) {
-										var clrset = spl[_clrset];
-										opt += '<option value="' + clrset.split(',')[0] + '" ' + (clrset.split(',')[0] == dc ? 'selected' : '') + '>' + clrset.split(',')[1] + '</option>';
-									}
-									$('#schemeSelect').html(opt);
-								},
+								success: setColorList,
 								error: function() {
-									$('#schemeSelect').html('<option value=default selected>기본값</option>');
+									setColorList('default');
 								}
 							});
 						},
