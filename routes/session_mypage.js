@@ -228,8 +228,9 @@ wiki.get('/member/mypage', async function memberSettings(req, res) {
 								</div>
 								
 								<div class=form-group>
-									<a href=/member/withdraw>[계정 탈퇴]</a> 
+									<a href=/member/withdraw>[계정 지우기]</a> 
 									<a href=/member/activate_otp>[OTP 등록]</a> 
+									<a href=/member/tweak_ui>[사용자 지정 UI]</a> 
 								</div>
 							</div>
 							

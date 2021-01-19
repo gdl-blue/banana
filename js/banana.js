@@ -702,6 +702,17 @@ $(function() {
         });
     });
 	
+	$('.select-page').change(function() {
+		$(this).next().find('> tab-pane').hide();
+		$(this).next().find('> tab-pane' + $(this).attr('href')).show();
+	});
+	
+	$('.tab-content').each(function() {
+		if(!($(this).find('> .tab-pane.active').length)) {
+			$(this).find('> .tab-pane:first-child').addClass('active');
+		}
+	});
+	
 	$('#schemeSelect').change(function() {
 		if(compatMode2) return;
 		
