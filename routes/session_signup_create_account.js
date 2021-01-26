@@ -99,7 +99,7 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 	const captcha = generateCaptcha(req, 1);
 	
 	if(id.match(/(?:[^A-Za-z0-9_ㄱ-힣?!&lt;&gt;※#★☆♣♠♤☎☏♨ -])/)) {  // 터보위키와 동일한 문자허용 방식임
-		res.send(await showError(req, 'invalid_request_body'));
+		res.send(await showError(req, 'invalid_value'));
 		
 		return;
 	}

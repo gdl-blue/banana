@@ -332,7 +332,7 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 wiki.post('/admin/unban_user', async function unban(req, res) {
 	const username = req.body['username'];
 	const usertype = req.body['usertype'];
-	const blocktyp = req.body['usertype'] || '일반';
+	const blocktyp = req.body['block-type'] || '일반';
 	
 	if(!getperm(req, 'ban_users', ip_check(req))) {
 		res.send(await showError(req, 'insufficient_privileges'));

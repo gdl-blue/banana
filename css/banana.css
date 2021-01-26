@@ -935,6 +935,15 @@ ul.mc-list li.mc-light {
   margin: 5px;
 }
 
+bdg {
+	border: 1px outset gray;
+	background-color: rgba(0, 0, 0, 0.1);
+	border-radius: 10px;
+	font-size: 9pt;
+	padding: 3px 6px 3px 6px;
+	margin: 0 0 0 15px;
+}
+
 @media ( max-width: 759px ) {
 	.multicol {
 		column-count: 1;

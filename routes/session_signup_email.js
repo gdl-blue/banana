@@ -137,7 +137,7 @@ async function emailConfirmation(req, res) {
 		</form>
 		
 		<p style="font-weight: bold; color: red;">
-			[디버그] 가입 열쇳말: ${key}
+			[디버그] 가입 키: ${key}
 		</p>
 	`, {}));
 }

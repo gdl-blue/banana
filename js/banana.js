@@ -48,10 +48,10 @@ function isVisible(elmt) {
     }
 
     return (
-        top < (window.pageYOffset + window.innerHeight) &&
-        left < (window.pageXOffset + window.innerWidth) &&
-        (top + height) > window.pageYOffset &&
-        (left + width) > window.pageXOffset
+        top < (pageYOffset + innerHeight) &&
+        left < (pageXOffset + innerWidth) &&
+        (top + height) > pageYOffset &&
+        (left + width) > pageXOffset
     );
 }
 
@@ -156,7 +156,7 @@ function formatDatetime() {
     });
 }
 
-window.transition = function(oldDiv, newDiv) {
+function transition(oldDiv, newDiv) {
     newDiv.fadeTo(1, 0, nevermind);
     oldDiv.css('transition', 'all 0.45s');
     newDiv.css('transition', 'all 0.45s');
@@ -170,9 +170,9 @@ window.transition = function(oldDiv, newDiv) {
         newDiv.fadeTo(50, 1, nevermind);
         newDiv.css('transform', 'scale(1)');
     });
-};
+}
 
-window.transitionReverse = function(oldDiv, newDiv) {
+function transitionReverse(oldDiv, newDiv) {
     oldDiv.fadeTo(1, 0, nevermind);
     oldDiv.css('transition', 'all 0.45s');
     newDiv.css('transition', 'all 0.45s');
@@ -186,11 +186,11 @@ window.transitionReverse = function(oldDiv, newDiv) {
         oldDiv.fadeTo(50, 1, nevermind);
         oldDiv.css('transform', 'scale(1)');
     });
-};
+}
 
 var valueChange = 'propertychange change keyup paste input';
 
-window.alertBalloon = function(title, content, delay, noMsgbox, type) {
+function alertBalloon(title, content, delay, noMsgbox, type) {
     delay = delay || 3000;
     noMsgbox = noMsgbox || 0;
     type = type || 'normal';
@@ -234,7 +234,8 @@ window.alertBalloon = function(title, content, delay, noMsgbox, type) {
             'border-radius': '8px',
             'border': '1px solid #000',
             'width': 'calc(100% - 50px)',
-            'box-shadow': '5px 5px 0 rgb(64, 64, 64)'
+            'box-shadow': '5px 5px 0 rgb(64, 64, 64)',
+			'bottom': '0px',
         }).prependTo('body');
 
         var width = balloon.width();
@@ -260,9 +261,9 @@ window.alertBalloon = function(title, content, delay, noMsgbox, type) {
 
         return balloon;
     }
-};
+}
 
-window.confirmBalloon = function(title, content, callbackOK, callbackCancel, y, n) {
+function confirmBalloon(title, content, callbackOK, callbackCancel, y, n) {
     y = y || '확인';
     n = n || '취소';
 
@@ -293,7 +294,7 @@ window.confirmBalloon = function(title, content, callbackOK, callbackCancel, y, 
             });
         });
     }
-};
+}
 
 function setCookie(name, val) {
     var d = new Date();
@@ -726,7 +727,7 @@ $(function() {
 
             $('table#perm-list tbody tr#perm-' + val).remove();
             tarea.val(tarea.val().replace(val + ',', ''));
-            alertBalloon('[성공]', '권한을 회수했읍니다. 저장하려면 하단의 적용 단추를 누르십시오.', 2000, 1, 'blue');
+            alertBalloon('[성공]', '권한을 회수했습니다. 저장하려면 하단의 적용 단추를 누르십시오.', 2000, 1, 'blue');
         });
     }
 
@@ -737,11 +738,11 @@ $(function() {
         var tarea = $('form#grant-form').find('textarea#perm-tlist');
 
         if(tarea.val().includes(val + ',')) {
-            alertBalloon('[오류]', '권한이 이미 있읍니다.');
+            alertBalloon('[오류]', '권한이 이미 있습니다.');
         } else {
             $('table#perm-list tbody').append('<tr id="perm-' + val + '"><td>' + alias + '</td><td>' + val + '</td><td><input type="hidden" id="permissionInput" value="' + val + '" /><button type="button" class="btn btn-danger btn-sm delete-permission-btn">회수</button></td></tr>');
             tarea.val(tarea.val() + val + ',');
-            alertBalloon('[성공]', '권한을 추가했읍니다. 저장하려면 하단의 적용 단추를 누르십시오.', 2000, 1, 'blue');
+            alertBalloon('[성공]', '권한을 추가했습니다. 저장하려면 하단의 적용 단추를 누르십시오.', 2000, 1, 'blue');
         }
 
         bdb();
@@ -943,7 +944,14 @@ $(function() {
                 var submitBtn = $('form#new-thread-form').find('button[type="submit"]');
                 submitBtn.attr('disabled', '');
                 submitBtn.html('대기 중...');
-
+				
+				if(!($('textarea[name="text"]').val())) {
+					submitBtn.removeAttr('disabled');
+                    submitBtn.html('<span class=light></span><span class=light2></span>전송!');
+					alertBalloon('[알립니다]', '댓글의 내용이 없습니다.', 2000);
+					return false;
+				}
+				
                 function postcmt() {
                     $.ajax({
                         type: "POST",
@@ -955,7 +963,7 @@ $(function() {
                             submitBtn.removeAttr('disabled');
                             submitBtn.html('<span class=light></span><span class=light2></span>전송!');
                             $('textarea[name="text"]').val('');
-                            alertBalloon('[성공]', '댓글을 달았습니다.', 2000, 1, 'blue');
+							alertBalloon('[성공]', '댓글을 달았습니다.', 2000, 1, 'blue');
                         },
                         error: function(d) {
                             submitBtn.removeAttr('disabled');

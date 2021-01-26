@@ -1989,6 +1989,7 @@ async function getacl(req, title, action) {
             if(action == 'delete') action = 'edit';
             if(action == 'move') action = 'edit';
             if(action == 'diff') action = 'read';
+            if(action == 'view_old_revision') action = 'read';
         
             var fullacllst = [];
             
@@ -2845,11 +2846,10 @@ async function getThreadData(req, tnum, tid = '-1', theseed) {
             `
         ) : (
             `
-                ${generateTime(toDate(rs['time']), "b")}에
-                ${ip_pas(req, rs['username'], rs['ismember'], rs['isadmin'])}가 남긴 댓글 ${hbtn}
+                ${ip_pas(req, rs['username'], rs['ismember'], rs['isadmin'])} (${generateTime(toDate(rs['time']), "b")}) ${hbtn}
                 <span style="float: right;">
-                    ${rs['ismember'] == 'author' && (getperm(req, 'admin', rs.username)) ? '[관리자]' : ''}
-                    ${await ban_check(req, rs['ismember'], rs.username) ? '&nbsp;[차단된 사용자]' : ''}
+                    ${rs['ismember'] == 'author' && (getperm(req, 'admin', rs.username)) ? '<bdg>관리자</bdg>' : ''}
+                    ${await ban_check(req, rs['ismember'], rs.username) ? '<bdg>[차단된 사용자]</bdg>' : ''}
                 </span>
             `
         );

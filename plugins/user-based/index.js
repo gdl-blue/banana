@@ -1,22 +1,9 @@
 // 필수 코드 시작 //
-const render = require('./../../index.js').render;
-const conn = require('./../../index.js').conn;
-const curs = require('./../../index.js').curs;
-const ip_check = require('./../../index.js').ip_check;
-const ip_pas = require('./../../index.js').ip_pas;
-const html = require('./../../index.js').html;
-const ban_check = require('./../../index.js').ban_check;
-const config = require('./../../index.js').config;
-const getperm = require('./../../index.js').getperm;
-const showError = require('./../../index.js').showError;
-const toDate = require('./../../index.js').toDate;
-const generateTime = require('./../../index.js').generateTime;
-const timeFormat = require('./../../index.js').timeFormat;
-const islogin = require('./../../index.js').islogin;
-const stringInFormat = require('./../../index.js').stringInFormat;
-const timeout = require('./../../index.js').timeout;
-const generateCaptcha = require('./../../index.js').generateCaptcha;
-const validateCaptcha = require('./../../index.js').validateCaptcha;
+const {
+	render, conn, curs, ip_check, ip_pas, html, ban_check, config, getperm, 
+	showError, getTime, toDate, generateTime, timeFormat, islogin, stringInFormat, 
+	timeout, generateCaptcha, validateCaptcha, alertBalloon
+} = require('./../../index.js');
 // 필수 코드 종료 //
 
 module.exports = {
@@ -83,13 +70,13 @@ module.exports = {
 				
 				content += '</ul>';
 			} else {
-				const dispname = ['읽기', '편집', '토론', '편집 요청'];
-				const aclname  = ['read', 'edit', 'discuss', 'edit_request'];
+				const dispname = ['읽기', '편집', '토론', '편집 요청', '되돌림', '이전 판 읽기', '삭제', '이동', '비교'];
+				const aclname  = ['read', 'edit', 'discuss', 'edit_request', 'revert', 'view_old_revision', 'delete', 'move', 'diff'];
 				
 				content = `
 					<form method=post>
 						<div class=form-group>
-							<table>
+							<table class=table>
 								<colgroup>
 									<col>
 									<col style="width: 75px;">

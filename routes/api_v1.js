@@ -284,3 +284,8 @@ wiki.get(/\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) {
 	
 	return res.json(ret);
 });
+
+wiki.get(/\/api\/v1\/(.*)/, (req, res) => res.json({
+	state: 'not_found',
+	description: 'API를 찾을 수 없습니다.'
+}));
