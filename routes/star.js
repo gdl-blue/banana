@@ -1,4 +1,4 @@
-wiki.get(/\/member\/star\/(.*)/, async (req, res) => {
+wiki.get(/^\/member\/star\/(.*)/, async (req, res) => {
 	const title = req.params[0];
 	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/star/' + title));
 	
@@ -20,7 +20,7 @@ wiki.get(/\/member\/star\/(.*)/, async (req, res) => {
 	res.redirect('/w/' + encodeURIComponent(title));
 });
 
-wiki.get(/\/member\/unstar\/(.*)/, async (req, res) => {
+wiki.get(/^\/member\/unstar\/(.*)/, async (req, res) => {
 	const title = req.params[0];
 	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/star/' + title));
 	

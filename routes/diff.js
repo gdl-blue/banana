@@ -1,4 +1,4 @@
-wiki.get(/\/diff\/(.*)/, async (req, res) => {
+wiki.get(/^\/diff\/(.*)/, async (req, res) => {
 	const title  = req.params[0];
 	const rev    = req.query ['rev'];
 	const oldrev = req.query ['oldrev'];
@@ -34,14 +34,14 @@ wiki.get(/\/diff\/(.*)/, async (req, res) => {
 		<form method=get>
 			<div class=form-inline>
 				<div class=form-group style="float: left; width: 49%;">
-					<label class=control-label>신판:</label><br />
+					<label class=control-label>신판: </label><br />
 					<div>
 						<input type=number name=rev class=form-control value="${rev}" />
 					</div>
 				</div>
 				
 				<div class=form-group style="float: right; width: 49%;">
-					<label class=control-label>구판:</label><br />
+					<label class=control-label>구판: </label><br />
 					<div>
 						<input type=number name=oldrev class=form-control value="${oldrev}" />
 					</div>

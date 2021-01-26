@@ -1,4 +1,4 @@
-wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document/, async function documentContribution(req, res) {
+wiki.get(/^\/contribution\/(ip|author)\/(.*)\/document$/, async function documentContribution(req, res) {
 	if(config.getString('disable_contribution_list', '0') == '1') {
 		res.send(await showError(req, 'disabled_feature'));
 		return;

@@ -1,4 +1,4 @@
-wiki.get(/\/api\/v3\/w\/(.*)/, async function API_viewDocument_v3(req, res) {
+wiki.get(/^\/api\/v3\/w\/(.*)/, async function API_viewDocument_v3(req, res) {
 	const title = req.params[0];
 	const rev = req.query['rev'];
 	
@@ -62,7 +62,7 @@ wiki.get(/\/api\/v3\/w\/(.*)/, async function API_viewDocument_v3(req, res) {
 	});
 });
 
-wiki.get(/\/api\/v3\/raw\/(.*)/, async function API_viewRaw_v3(req, res) {
+wiki.get(/^\/api\/v3\/raw\/(.*)/, async function API_viewRaw_v3(req, res) {
 	const title = req.params[0];
 	const rev = req.query['rev'];
 	
@@ -122,7 +122,7 @@ wiki.get(/\/api\/v3\/raw\/(.*)/, async function API_viewRaw_v3(req, res) {
 	});
 });
 
-wiki.get(/\/api\/v3\/users\/(.*)/, async function API_userInfo_v3(req, res) {
+wiki.get(/^\/api\/v3\/users\/(.*)/, async function API_userInfo_v3(req, res) {
 	const username = req.params[0];
 	
 	await curs.execute("select username from users where username = ?", [username]);
@@ -155,7 +155,7 @@ wiki.get(/\/api\/v3\/users\/(.*)/, async function API_userInfo_v3(req, res) {
 	res.json(ret);
 });
 
-wiki.get(/\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res) {
+wiki.get(/^\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res) {
 	const title = req.params[0];
 	
 	const start = req.query['start'] || 1;
@@ -166,7 +166,7 @@ wiki.get(/\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res)
 			title: title,
 			state: 'invalid_parameters',
 			history: null,
-			description: 'URL에 시작 리비전과 끝 리비전을 start 및 end 키워드로 명시하십시오.'
+			message: 'URL에 시작 리비전과 끝 리비전을 start 및 end 키워드로 명시하십시오.'
 		});
 		return;
 	}
@@ -176,7 +176,7 @@ wiki.get(/\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res)
 			title: title,
 			state: 'invalid_parameters',
 			history: null,
-			description: '시작 리비전은 끝 리비전보다 클 수 없습니다.'
+			message: '시작 리비전은 끝 리비전보다 클 수 없습니다.'
 		});
 		return;
 	}
@@ -186,7 +186,7 @@ wiki.get(/\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res)
 			title: title,
 			state: 'invalid_parameters',
 			history: null,
-			description: '시작 리비전과 끝 리비전의 차이는 2,000 이하이여야 합니다.'
+			message: '시작 리비전과 끝 리비전의 차이는 2,000 이하이여야 합니다.'
 		});
 		return;
 	}
@@ -227,7 +227,7 @@ wiki.get(/\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res)
 	});
 });
 
-wiki.get(/\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) {
+wiki.get(/^\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) {
 	const tnum = req.params[0];
 	
 	const start = req.query['start'] || 1;
@@ -238,7 +238,7 @@ wiki.get(/\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) {
 			thread_id: tnum,
 			state: 'invalid_parameters',
 			history: null,
-			description: 'URL에 시작 레스번호와 끝 레스번호를 start 및 end 키워드로 명시하십시오.'
+			message: 'URL에 시작 레스번호와 끝 레스번호를 start 및 end 키워드로 명시하십시오.'
 		});
 		return;
 	}
@@ -248,7 +248,7 @@ wiki.get(/\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) {
 			thread_id: tnum,
 			state: 'invalid_parameters',
 			history: null,
-			description: '시작 번호는 끝 번호보다 클 수 없습니다.'
+			message: '시작 번호는 끝 번호보다 클 수 없습니다.'
 		});
 		return;
 	}
@@ -258,7 +258,7 @@ wiki.get(/\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) {
 			thread_id: tnum,
 			state: 'invalid_parameters',
 			history: null,
-			description: '시작 레스번호와 끝 레스번호의 차이는 2,000 이하이여야 합니다.'
+			message: '시작 레스번호와 끝 레스번호의 차이는 2,000 이하이여야 합니다.'
 		});
 		return;
 	}
@@ -271,7 +271,7 @@ wiki.get(/\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) {
 		res.status(400).json({
 			thread_id: tnum,
 			state: 'notfound',
-			description: '토론을 찾을 수 없습니다.'
+			message: '토론을 찾을 수 없습니다.'
 		});
 	}
 	
@@ -333,7 +333,7 @@ wiki.get(/\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) {
 	});
 });
 
-wiki.post(/\/api\/v3\/login/, async function API_botLogin_v3(req, res) {
+wiki.post(/^\/api\/v3\/login$/, async function API_botLogin_v3(req, res) {
 	await curs.execute("select username from bots where token = ?", [req.body['token']]);
 	if(curs.fetchall().length) {
 		res.session.username = curs.fetchall()[0]['username'];
@@ -347,16 +347,17 @@ wiki.post(/\/api\/v3\/login/, async function API_botLogin_v3(req, res) {
 	}
 });
 
-wiki.get(/\/api\/v3\/block_history/, async(req, res) => {
+wiki.get(/^\/api\/v3\/block_history$/, async(req, res) => {
 	var dbdata;
 	var { limit } = req.query;
 	if(limit === undefined || isNaN(limit)) limit = 100;
+	limit = Number(limit);
 	
 	if(limit > 1000 || limit < 0) {
 		// (설마 누가 0을 보내겠어...)
-		return ret.json({
+		return res.json({
 			state: 'invalid_parameters',
-			description: 'limit의 값은 0 이상 1,000 이하이여야 합니다.'
+			message: 'limit의 값은 0 이상 1,000 이하이여야 합니다. (기본값은 100입니다)'
 		});
 	}
 	
@@ -404,7 +405,65 @@ wiki.get(/\/api\/v3\/block_history/, async(req, res) => {
 	res.json(ret);
 });
 
-wiki.get(/\/api\/v3\/(.*)/, (req, res) => res.json({
+wiki.get(/^\/api\/v3\/contribution\/(ip|author)\/(.*)\/document/, async(req, res) => {
+	if(config.getString('disable_contribution_list', '0') == '1') {
+		return res.status(403).json({
+			state: 'disabled_feature',
+			message: '관리자가 이 기능을 비활성화시켰습니다.'
+		});
+	}
+	
+	const ismember = req.params[0];
+	const username = req.params[1];
+	const limit    = Number(req.query['limit']) || 2400;
+	if(limit > 2400 || limit < 0) {
+		return res.status(400).json({
+			state: 'invalid_parameters',
+			message: 'limit의 값은 1 이상 2400 이하이어야 합니다.'
+		});
+	}
+	
+	if(ismember == 'ip' && config.getString('ip2md5', '0') == '1') {
+		return res.status(403).json({
+			state: 'disabled_feature',
+			message: '관리자가 IP 사용자에 대해서 기여 목록을 조회할 수 없도록 설정했습니다.'
+		});
+	}
+	
+	var flag = '';
+	
+	switch(req.query['logtype']) {
+		case 'create':
+			flag = " and (advance = '(새 문서)' or advance = '<i>(새 문서)</i>' or advance = '(문서 생성)')";
+		break; case 'revert':
+			flag = " and (advance = '(%되돌림)' or advance = '<i>(%되돌림)</i>')";
+	}
+	
+	var dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+				where ismember = ? and username = ? " + flag + " and ((title like '사용자:%') or (subwikiid = ? and not title like '사용자:%')) order by cast(time as integer) desc limit ?", [
+					ismember, username, subwiki(req), limit
+				]);
+				
+	var ret = [];
+	
+	for(row of dbdata) {
+		const { log, advance, time, title, rev, changes, iserq, erqnum } = row;
+		ret.push({
+			log, advance, time: Number(time), title, type: '', 
+			rev, changes, edit_request: (iserq == '1' ? erqnum : null),
+		});
+	}
+	
+	res.json({
+		contributor: username,
+		type: ismember,
+		logtype: req.query['logtype'] || 'all',
+		edits: ret,
+	});
+});
+
+// 이건 꼭 맨 밑에...
+wiki.get(/^\/api\/v3\/(.*)/, (req, res) => res.json({
 	state: 'not_found',
-	description: 'API를 찾을 수 없습니다.'
+	message: '해당 API를 찾을 수 없습니다. (현재 사용 중인 API 버전은 3입니다)'
 }));

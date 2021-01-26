@@ -1,4 +1,4 @@
-wiki.get(/\/complete\/(.*)/, (req, res) => {
+wiki.get(/^\/complete\/(.*)/, (req, res) => {
 	// 초성검색은 나중에
 	const query = req.params[0];
 	curs.execute("select title from documents where title like ? || '%' limit 10", [query])
@@ -16,7 +16,7 @@ wiki.get(/\/complete\/(.*)/, (req, res) => {
 	});
 });
 
-wiki.get(/\/go\/(.*)/, (req, res) => {
+wiki.get(/^\/go\/(.*)/, (req, res) => {
 	const query = req.params[0];
 	curs.execute("select title from documents where title = ? COLLATE NOCASE", [query])
 	.then(data => {
@@ -29,7 +29,7 @@ wiki.get(/\/go\/(.*)/, (req, res) => {
 	});
 });
 
-wiki.get(/\/search\/(.*)/, async (req, res) => {
+wiki.get(/^\/search\/(.*)/, async (req, res) => {
 	const startTime = getTime();
 	
 	const query = req.params[0];

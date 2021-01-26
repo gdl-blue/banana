@@ -1,5 +1,5 @@
-wiki.get(/\/backlink\/(.*)/, (req, res) => res.redirect('/xref/' + encodeURIComponent(req.params[0])));
-wiki.get(/\/xref\/(.*)/, async (req, res) => {
+wiki.get(/^\/backlink\/(.*)/, (req, res) => res.redirect('/xref/' + encodeURIComponent(req.params[0])));
+wiki.get(/^\/xref\/(.*)/, async (req, res) => {
 	const title = req.params[0];
 	const flag  = req.query['flag'];
 	const _type = (

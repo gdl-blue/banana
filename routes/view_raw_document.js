@@ -1,4 +1,4 @@
-wiki.get(/\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
+wiki.get(/^\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
 	const title = req.params[0];
 	const rev = req.query['rev'];
 	

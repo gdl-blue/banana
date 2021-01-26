@@ -1,4 +1,4 @@
-wiki.get(/\/api\/v2\/w\/(.*)/, async function API_viewDocument_v2(req, res) {
+wiki.get(/^\/api\/v2\/w\/(.*)/, async function API_viewDocument_v2(req, res) {
 	const title = req.params[0];
 	const rev = req.query['rev'];
 	
@@ -69,7 +69,7 @@ wiki.get(/\/api\/v2\/w\/(.*)/, async function API_viewDocument_v2(req, res) {
 	});
 });
 
-wiki.get(/\/api\/v2\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
+wiki.get(/^\/api\/v2\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
 	const title = req.params[0];
 	const rev = req.query['rev'];
 	
@@ -128,7 +128,7 @@ wiki.get(/\/api\/v2\/raw\/(.*)/, async function API_viewRaw_v2(req, res) {
 	});
 });
 
-wiki.get(/\/api\/v2\/users\/(.*)/, async function API_userInfo_v2(req, res) {
+wiki.get(/^\/api\/v2\/users\/(.*)/, async function API_userInfo_v2(req, res) {
 	const username = req.params[0];
 	
 	await curs.execute("select username from users where username = ?", [username]);
@@ -163,7 +163,7 @@ wiki.get(/\/api\/v2\/users\/(.*)/, async function API_userInfo_v2(req, res) {
 	res.json(ret);
 });
 
-wiki.get(/\/api\/v2\/history\/(.*)/, async function API_viewHistory_v2(req, res) {
+wiki.get(/^\/api\/v2\/history\/(.*)/, async function API_viewHistory_v2(req, res) {
 	const title = req.params[0];
 	
 	const start = req.query['start'];
@@ -231,7 +231,7 @@ wiki.get(/\/api\/v2\/history\/(.*)/, async function API_viewHistory_v2(req, res)
 	});
 });
 
-wiki.get(/\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) {
+wiki.get(/^\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) {
 	const tnum = req.params[0];
 	
 	const start = req.query['start'];
@@ -348,7 +348,7 @@ wiki.post(/\/api\/v2\/login/, async function API_botLogin_v2(req, res) {
 	}
 });
 
-wiki.get(/\/api\/v2\/(.*)/, (req, res) => res.json({
+wiki.get(/^\/api\/v2\/(.*)/, (req, res) => res.json({
 	state: 'not_found',
-	description: 'API를 찾을 수 없습니다.'
+	description: '해당 API를 찾을 수 없습니다. (현재 사용 중인 API 버전은 2입니다)'
 }));

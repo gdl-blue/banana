@@ -1,4 +1,4 @@
-wiki.get(/\/delete\/(.*)/, async(req, res) => {
+wiki.get(/^\/delete\/(.*)/, async(req, res) => {
 	const title = req.params[0];
 	
 	if(!await getacl(req, title, 'read')) {

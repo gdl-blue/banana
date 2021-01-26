@@ -2954,7 +2954,7 @@ wiki.get('/random', (req, res) => {
     .catch(e => res.redirect('/'));
 });
 
-wiki.get(/\/images\/(.*)/, async function sendImage(req, res) {
+wiki.get(/^\/images\/(.*)/, async function sendImage(req, res) {
     // if(req.params[0].match(/[.]/g).length > 1 || encodeURIComponent(req.params[0]).toUpperCase().includes('%2f'))
     
     try {
@@ -2965,11 +2965,11 @@ wiki.get(/\/images\/(.*)/, async function sendImage(req, res) {
 });
 
 // js-namumark 호환
-wiki.get(/\/wiki\/(.*)/, async function redirectL(req, res) {
+wiki.get(/^\/wiki\/(.*)/, async function redirectL(req, res) {
     res.redirect('/w/' + encodeURIComponent(req.params[0]));
 });
 
-wiki.get(/\/file\/(.*)/, async function redirectM(req, res) {
+wiki.get(/^\/file\/(.*)/, async function redirectM(req, res) {
     try {
         const fullname  = req.params[0];
         const filename  = path.parse(fullname)['name'];
