@@ -140,8 +140,8 @@ wiki.get(/^\/api\/v3\/members\/(.*)/, async function API_userInfo_v3(req, res) {
 		state: 'ok'
 	};
 	
-	await curs.execute("select time from history where rev = '1' and title = ?", ['사용자:' + username]);
-	ret['join_timestamp'] = curs.fetchall()[0]['time'];
+	var dbdata = await curs.execute("select time from history where rev = '1' and title = ?", ['사용자:' + username]);
+	ret['joined_timestamp'] = Number(dbdata[0]['time']);
 	
 	await curs.execute("select username from history where username = ?", [username]);
 	ret['contribution_count'] = curs.fetchall().length;

@@ -1,4 +1,4 @@
-wiki.get('/RecentChanges', async function recentChanges(req, res) {
+wiki.get('/RecentChanges', async(req, res) => {
 	if(config.getString('disable_recentchanges', '0') == '1') {
 		res.send(await showError(req, 'disabled_feature'));
 		return;
@@ -10,97 +10,97 @@ wiki.get('/RecentChanges', async function recentChanges(req, res) {
 	switch(flag) {
 		case 'create':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where (advance like '(문서 생성)' or advance like '<i>(새 문서)</i>') order by cast(time as integer) desc limit 100");
+						where (edittype = 'create' or advance like '(문서 생성)' or advance like '<i>(새 문서)</i>') order by cast(time as integer) desc limit 100");
 		break;case 'delete':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where (advance like '(삭제)' or advance like '<i>(삭제)</i>') order by cast(time as integer) desc limit 100");
+						where (edittype = 'create' advance like '(삭제)' or advance like '<i>(삭제)</i>') order by cast(time as integer) desc limit 100");
 		break;case 'move':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where (advance like '(%제목 변경)' or advance like '<i>(%이동)</i>') order by cast(time as integer) desc limit 100");
+						where (edittype = 'create' advance like '(%제목 변경)' or advance like '<i>(%이동)</i>') order by cast(time as integer) desc limit 100");
 		break;case 'revert':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where (advance like '(%복원)' or advance like '<i>(%로 되돌림)</i>') order by cast(time as integer) desc limit 100");
+						where (edittype = 'create' advance like '(%복원)' or advance like '<i>(%로 되돌림)</i>') order by cast(time as integer) desc limit 100");
 		break;case 'modify':
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
-						where not title like '사용자:%' and advance = '' order by cast(time as integer) desc limit 100");
+						where not title like '사용자:%' and (advance = '' or edittype = 'modify') order by cast(time as integer) desc limit 100");
 		break;default:
 			await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
 						where not title like '사용자:%' order by cast(time as integer) desc limit 100");
 	}
 	
 	var content = `
-    <div class=control-panel>
-      <div class=settings-section>
-        <table>
-          <tr>
-            <td style="vertical-align: top;">
-              <h4 style="margin: 0; color: white;">실시간 갱신</h4>
+		<div class=control-panel>
+		  <div class=settings-section>
+			<table>
+			  <tr>
+				<td style="vertical-align: top;">
+				  <h4 style="margin: 0; color: white;">실시간 갱신</h4>
 
-              <table>
-                <tr>
-                  <td colspan=2>
-                    <label>갱신 주기 (초):</label><br />
-                    <input type=text id=intervalInput value=3 />
-                  </td>
-                </tr>
+				  <table>
+					<tr>
+					  <td colspan=2>
+						<label>갱신 주기 (초):</label><br />
+						<input type=text id=intervalInput value=3 />
+					  </td>
+					</tr>
 
-                <tr>
-                  <td>
-                    <button id=refreshNow>지금 갱신</button>
-                  </td>
+					<tr>
+					  <td>
+						<button id=refreshNow>지금 갱신</button>
+					  </td>
 
-                  <td>
-                    <label style="margin: 0 0 0 5px;">
-                      <input type=checkbox id=refreshing />
-                      <span class=checkbox></span>
-                      자동 갱신
-                    </label>
-                  </td>
-                </tr>
-              </table>
-            </td>
+					  <td>
+						<label style="margin: 0 0 0 5px;">
+						  <input type=checkbox id=refreshing />
+						  <span class=checkbox></span>
+						  자동 갱신
+						</label>
+					  </td>
+					</tr>
+				  </table>
+				</td>
 
-            <td style="vertical-align: top;">
-              <h4 style="margin: 0; color: white;">필터 [미구현]</h4>
+				<td style="vertical-align: top;">
+				  <h4 style="margin: 0; color: white;">필터 [미구현]</h4>
 
-              <form method=get>
-                <table>
-                  <colgroup>
-                    <col style="width: 150px;">
-                    <col>
-                  </colgroup>
+				  <form method=get>
+					<table>
+					  <colgroup>
+						<col style="width: 150px;">
+						<col>
+					  </colgroup>
 
-                  <tr style="width: auto;">
-                    <td style="padding: 0;">
-                      <select style="width: 100%;" name=target>
-                        <option value=username>사용자</option>
-                        <option value=date hidden>날짜</option>
-                        <option value=beforedate hidden>날짜 이전</option>
-                        <option value=afterdate hidden>날짜 이후</option>
-                        <option value=count>글자 변경점</option>
-                        <option value=biggercount>변경점 초과</option>
-                        <option value=smallercount>변경점 미만</option>
-                        <option value=editrequest>편집요청</option>
-                        <option value=log>요약</option>
-                        <option value=logmatch>요약 완전일치</option>
-                      </select>
-                    </td>
+					  <tr style="width: auto;">
+						<td style="padding: 0;">
+						  <select style="width: 100%;" name=target>
+							<option value=username>사용자</option>
+							<option value=date hidden>날짜</option>
+							<option value=beforedate hidden>날짜 이전</option>
+							<option value=afterdate hidden>날짜 이후</option>
+							<option value=count>글자 변경점</option>
+							<option value=biggercount>변경점 초과</option>
+							<option value=smallercount>변경점 미만</option>
+							<option value=editrequest>편집요청</option>
+							<option value=log>요약</option>
+							<option value=logmatch>요약 완전일치</option>
+						  </select>
+						</td>
 
-                    <td>
-                      <input style="width: 100%;" type=text name=query />
-                    </td>
-                  </tr>
-                </table>
+						<td>
+						  <input style="width: 100%;" type=text name=query />
+						</td>
+					  </tr>
+					</table>
 
-                <div>
-                  <button type=submit style="float: right;">이동</button>
-                </div>
-              </form>
-            </td>
-          </tr>
-        </table>
-      </div>
-    </div>
+					<div>
+					  <button type=submit style="float: right;">이동</button>
+					</div>
+				  </form>
+				</td>
+			  </tr>
+			</table>
+		  </div>
+		</div>
 
 		<ol class="breadcrumb link-nav">
 			<li><a href="?logtype=all">[전체 내역]</a></li>

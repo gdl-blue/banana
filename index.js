@@ -620,7 +620,7 @@ try {
         
         const tables = {
             'documents': ['title', 'content', 'views', 'subwikiid'],
-            'history': ['title', 'content', 'rev', 'time', 'username', 'changes', 'log', 'iserq', 'erqnum', 'advance', 'ismember', 'subwikiid'],
+            'history': ['title', 'content', 'rev', 'time', 'username', 'changes', 'log', 'iserq', 'erqnum', 'advance', 'edittype', 'ismember', 'subwikiid', 'target_rev', 'acl_message'],
             'namespaces': ['namespace', 'locked', 'norecent', 'file', 'subwikiid'],
             'users': ['username', 'password', 'id', 'tribe'],
             'user_settings': ['username', 'key', 'value'],
