@@ -144,7 +144,7 @@ wiki.get('/member/starred_documents/categories', async (req, res) => {
 wiki.post('/member/starred_documents/categories', async (req, res) => {
 	if(!islogin(req)) return res.redirect('/member/login?redirect=' + encodeURIComponent('/member/starred_documents'));
 	
-	if(req.body['category'].replace(/^\s{0,}/, '').replace(/\s{0,}$/, '') == '분류되지 않은 문서') {
+	if(req.body['category'].replace(/^\s{0,}/, '').replace(/\s{0,}$/, '').replace(/\s{2,}/g, ' ') == '분류되지 않은 문서') {
 		return res.send(await showError(req, 'invalid_category_name'));
 	}
 	
@@ -184,7 +184,7 @@ wiki.get('/member/starred_documents/categorize', async (req, res) => {
 		<form method=post class=settings-section>
 			<div class=form-group>
 				<label>분류 이름:</label><br>
-				<select size=10 class=form-control id=categorySelect name=category>
+				<select class=form-control id=categorySelect name=category>
 					${options}
 				</select>
 			</div>

@@ -902,11 +902,13 @@ $(function() {
         });
     };
 
-    if(
-        !(typeof historyInit == 'function' && typeof discussPollCancel == 'function' &&
-            typeof discussPollStart == 'function' && typeof recaptchaInit == 'function' &&
-            typeof recaptchaExecute == 'function' && typeof recaptchaOnLoad == 'function')
+    if (
+        typeof historyInit == 'function' && typeof discussPollCancel == 'function' &&
+		typeof discussPollStart == 'function' && typeof recaptchaInit == 'function' &&
+		typeof recaptchaExecute == 'function' && typeof recaptchaOnLoad == 'function'
     ) {
+		console.log('theseed.js이 감지되었습니다.');
+	} else {
         function fetchComments(tnum) {
             setVisibleState();
 
@@ -938,7 +940,7 @@ $(function() {
             }
         }
 
-        window.discussPollStart = function(tnum) {
+        function discussPollStart(tnum) {
             $('form#new-thread-form').submit(function() {
                 var frm = $(this);
                 var submitBtn = $('form#new-thread-form').find('button[type="submit"]');
@@ -1097,13 +1099,12 @@ $(function() {
                 $.ajax({
                     type: "POST",
                     url: '/notify/thread/' + tnum,
-                    data: {},
                     dataType: 'json',
                     success: function(data) {
                         var tid = atoi(data['comment_id']);
                         var rescount = $('#res-container div.res-wrapper').length;
 
-                        for(var i = rescount + 1; i <= tid; i++, rescount++) {
+                        for(var i=rescount+1; i<=tid; i++, rescount++) {
                             $('div.res-wrapper[data-id="' + itoa(rescount) + '"]').after($(
                                 '<div class="res-wrapper res-loading" data-id="' + itoa(i) + '" data-locked=false data-visible=false>' +
                                 '<div class="res res-type-normal">' +
@@ -1123,10 +1124,12 @@ $(function() {
                 });
 
                 fetchComments(tnum);
-            }, 2000);
+            }, 1000);
 
             setVisibleState();
-        };
+        }
+		
+		window.discussPollStart = discussPollStart;
     }
 })();
 

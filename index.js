@@ -1616,7 +1616,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
         <script src="/js/jquery-ui${req.cookies['bioking'] ? '' : '.min'}.js"></script>
         <script type="text/javascript" src="/js/banana.js"></script>
         <script type="text/javascript" src="/js/dateformatter.js"></script>
-        <link rel="stylesheet" href="/css/banana.css" />
+        <link rel="stylesheet" href="/css/wiki.css" />
         <link rel="stylesheet" href="/css/diffview.css" />
         <script src="/js/diffview.js"></script>
         <script src="/js/difflib.js"></script>

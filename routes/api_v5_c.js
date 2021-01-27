@@ -5,5 +5,5 @@ wiki.get(/^\/api\/(.*)/, (req, res, next) => {
 
 wiki.get(/^\/api\/v5\/(.*)/, (req, res) => res.json({
 	state: 'not_supported',
-	description: '타 위키 엔진 호환용 API는 아직 지원하지 않습니다.'
+	description: '타 위키 엔진 호환용 API는 아직 지원하지 않습니다. 일반 API는 \'/api/v버전/주소\' 형식입니다.'
 }));

@@ -2,7 +2,7 @@ wiki.get(/^\/api\/v(\d+)\/(.*)/, (req, res, next) => {
 	const ver = Number(req.params[0]) || 0;
 	var validVersions = [1, 2, 3, 4, 5];
 	if(validVersions.includes(ver)) {
-		if(config.getString('enable_apiv' + (ver || 0), '1') == '1') {
+		if(config.getString('enable_apiv' + (Number(ver) || 0), '1') == '1') {
 			return next();
 		} else {
 			return res.json({

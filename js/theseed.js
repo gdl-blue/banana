@@ -1,1 +1,1 @@
-/* Dummy file due to compatibility */
+/* 호환용 더미 화일 */

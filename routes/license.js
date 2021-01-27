@@ -12,7 +12,7 @@ wiki.get('/License', async function(req, res) {
 			${versionInfo.codename} (버전 ${versionInfo.major}.${versionInfo.minor}.${versionInfo.build}.${versionInfo.revision})
 			<small>${(p = versionInfo.revision) > 0 ? ('(수정 ' + p + ')') : ''}</small>
 		</h2>
-		<p>자세한 내용은 <a href="https://github.com/turbo-whistler/banana">여기</a>를 참조하십시오.
+		<p>자세한 내용은 <a href="https://github.com/gdl-888/banana">여기</a>를 참조하십시오.
 		
 		${sl}
 	`));

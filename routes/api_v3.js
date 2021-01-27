@@ -122,7 +122,7 @@ wiki.get(/^\/api\/v3\/raw\/(.*)/, async function API_viewRaw_v3(req, res) {
 	});
 });
 
-wiki.get(/^\/api\/v3\/users\/(.*)/, async function API_userInfo_v3(req, res) {
+wiki.get(/^\/api\/v3\/members\/(.*)/, async function API_userInfo_v3(req, res) {
 	const username = req.params[0];
 	
 	await curs.execute("select username from users where username = ?", [username]);
@@ -146,7 +146,7 @@ wiki.get(/^\/api\/v3\/users\/(.*)/, async function API_userInfo_v3(req, res) {
 	await curs.execute("select username from history where username = ?", [username]);
 	ret['contribution_count'] = curs.fetchall().length;
 	ret['permissions'] = [];
-	ret['suspended'] = await isBanned(req, 'author', username);
+	ret['suspended'] = (await isBanned(req, 'author', username)) ? true : false;
 	
 	for(var perm of perms) {
 		if(getperm(req, perm, username)) ret['permissions'].push(perm);
@@ -198,7 +198,7 @@ wiki.get(/^\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res
 	
 	var cnt = 0;
 	
-	const first = rows[0].rev, last = rows[rows.length - 1].rev;
+	const first = atoi(rows[0].rev), last = atoi(rows[rows.length - 1].rev);
 	
 	for(var row of rows) {
 		ret[row['rev']] = {
@@ -299,19 +299,19 @@ wiki.get(/^\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) 
 			timestamp: rs['time'],
 			username: rs['username'],
 			content: rs['hidden'] == '1' || rs['hidden'] == 'O' ? (
-								getperm(req, 'hide_thread_comment', ip_check(req))
-								? markdown(rs['content'], 1)
-								: ''
-							  ) : (
-								markdown(rs['content'], 1)
-							),
-			raw: rs['hidden'] == '1' ? (
-								getperm(req, 'hide_thread_comment', ip_check(req))
-								? rs['content']
-								: ''
-							  ) : (
-								rs['content']
-							),
+				getperm(req, 'hide_thread_comment', ip_check(req))
+				? markdown(rs['content'], 1)
+				: ''
+			  ) : (
+				markdown(rs['content'], 1)
+			),
+			raw_content: rs['hidden'] == '1' ? (
+				getperm(req, 'hide_thread_comment', ip_check(req))
+				? rs['content']
+				: ''
+			  ) : (
+				rs['content']
+			),
 			first_author: rs['username'] == fstusr ? true : false,
 			admin: rs['isadmin'] == '1' ? true : false
 		};
@@ -328,8 +328,8 @@ wiki.get(/^\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) 
 		res: ret,
 		startres: start,
 		endres: end,
-		first: reses[0].id,
-		last: reses[reses.length - 1].id,
+		first: atoi(reses[0].id),
+		last: atoi(reses[reses.length - 1].id),
 	});
 });
 
@@ -405,7 +405,7 @@ wiki.get(/^\/api\/v3\/block_history$/, async(req, res) => {
 	res.json(ret);
 });
 
-wiki.get(/^\/api\/v3\/contribution\/(ip|author)\/(.*)\/document/, async(req, res) => {
+wiki.get(/^\/api\/v3\/contribution\/(ip|author)\/(.*)\/document$/, async(req, res) => {
 	if(config.getString('disable_contribution_list', '0') == '1') {
 		return res.status(403).json({
 			state: 'disabled_feature',
@@ -458,6 +458,54 @@ wiki.get(/^\/api\/v3\/contribution\/(ip|author)\/(.*)\/document/, async(req, res
 		contributor: username,
 		type: ismember,
 		logtype: req.query['logtype'] || 'all',
+		edits: ret,
+	});
+});
+
+wiki.get(/^\/api\/v3\/recent_changes$/, async(req, res) => {
+	if(config.getString('disable_recentchanges', '0') == '1') {
+		res.send(await showError(req, 'disabled_feature'));
+		return;
+	}
+	
+	var flag = req.query['logtype'];
+	if(!flag) flag = 'all';
+	
+	var dbdata;
+	
+	switch(flag) {
+		case 'create':
+			dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where (advance like '(문서 생성)' or advance like '<i>(새 문서)</i>') order by cast(time as integer) desc limit 100");
+		break;case 'delete':
+			dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where (advance like '(삭제)' or advance like '<i>(삭제)</i>') order by cast(time as integer) desc limit 100");
+		break;case 'move':
+			dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where (advance like '(%제목 변경)' or advance like '<i>(%이동)</i>') order by cast(time as integer) desc limit 100");
+		break;case 'revert':
+			dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where (advance like '(%복원)' or advance like '<i>(%로 되돌림)</i>') order by cast(time as integer) desc limit 100");
+		break;case 'modify':
+			dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where not title like '사용자:%' and advance = '' order by cast(time as integer) desc limit 100");
+		break;default:
+			dbdata = await curs.execute("select title, rev, time, changes, log, iserq, erqnum, advance, ismember, username from history \
+						where not title like '사용자:%' order by cast(time as integer) desc limit 100");
+	}
+	
+	var ret = [];
+	
+	for(row of dbdata) {
+		const { log, advance, time, title, rev, changes, iserq, erqnum, username, ismember } = row;
+		ret.push({
+			log, advance, time: Number(time), title, type: '', contributor: username,
+			rev, changes, edit_request: (iserq == '1' ? erqnum : null), contributor_type: ismember
+		});
+	}
+	
+	res.json({
+		logtype: flag,
 		edits: ret,
 	});
 });
