@@ -2467,10 +2467,6 @@ wiki.get('/css/:filepath', async function dropCSS(req, res) {
     if(filepath.includes('../') || filepath.includes('....')) {
         return res.send(await showError(req, 'malicious_activity_detected'));
     }
-  
-  if(filepath.toLowerCase() == 'wiki.css') {
-    return res.redirect('/css/banana.css');
-  }
     
     res.sendFile(filepath, { root: "./css" });
 });
