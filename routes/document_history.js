@@ -104,12 +104,12 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 						</select>
 					</td>
 					
-					<td style="padding: 0 0 0 20px;">
-						<input class="form-control" name=query />
+					<td style="padding: 0 0 0 10px;">
+						<input class=form-control name=query />
 					</td>
 					
-					<td style="padding: 0 0 0 20px;">
-						<button type=submit class="btn btn-info">이동</button>
+					<td style="padding: 0 0 0 10px;">
+						<button type=submit class="btn btn-primary">이동</button>
 					</td>
 				</tr>
 			</table>
