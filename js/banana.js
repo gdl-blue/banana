@@ -749,6 +749,101 @@ $(function() {
     });
 
     bdb();
+	
+	$('button#showColorPicker').click(function() {
+		try { createWindow('색 선택기', '<table><tr><td rowspan=3 style="vertical-align: top; padding: 18px 8px 0 0; text-align: center;"><span class=color-frame id=picked-color style="background-color: red; cursor: cell;" title="고른 색">__</span><br/><br/><span class=color-frame id=picked-color-h style="background-color: red; padding: 4px; margin-bottom: 10px;" title="색상">__</span><br/><span class=color-frame id=picked-color-s style="background-color: blue; padding: 4px; margin-bottom: 10px;" title="채도">__</span><br/><span class=color-frame id=picked-color-l style="background-color: blue; padding: 4px; margin-bottom: 10px;" title="명도">__</span><br/></td><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, red, yellow, yellow, #0f0, #0ff, blue, purple, hotpink, red);"></div><input type=range max=360 min=0 value=0 id=hue style="width: 100%; margin: 0;"/><span style="float: left; width:15%">빨강</span><span style="float: left; width:20%">노랑</span><span style="float: left; width:20%">초록</span><span style="float: left; width:20%">파랑</span><span style="float: left; width:15%">보라</span><span style="float: right;">분홍</span></td><td style="vertical-align: middle;"><button id=random-h title="무작위 생성">*</button></td></tr><tr><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, #888, red);"></div><input type=range max=100 min=1 value=100 id=sat style="width: 100%; margin: 0;"/><span style="float: left; width:25%">무색</span><span style="float: left; width:25%">25%</span><span style="float: left; width:20%">50%</span><span style="float: left; width:15%">75%</span><span style="float: right">선명</span></td><td style="vertical-align: middle;"><button id=random-s title="무작위 생성">*</button></td></tr><tr><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, #000, red, #fff);"></div><input type=range max=100 min=0 value=50 id=bri style="width: 100%; margin: 0;"/><span style="float: left; width:25%">검정</span><span style="float: left; width:25%">어둡게</span><span style="float: left; width:20%">보통</span><span style="float: left; width:15%">밝게</span><span style="float: right">흰색</span></td><td style="vertical-align: middle;"><button id=random-l title="무작위 생성">*</button></td></tr><tr><td colspan=3>R<input type=number readonly id=r style="width: 60px;"/>G<input type=number readonly id=g style="width: 60px;"/>B<input type=number readonly id=b style="width: 60px;"/>H<input type=number readonly id=h style="width: 60px;"/>S<input type=number readonly id=s style="width: 60px;"/>L<input type=number readonly id=l style="width: 60px;"/>#<input type=text readonly id=html style="width: 70px;"/><button id=random-all title="무작위 생성">*</button></td></tr><tr><td colspan=3 id=saved-colors style="max-width: 0px;"><div style="overflow: auto;"></div></td></tr></table>', '608px') } catch(e) { }
+		
+		/*
+		 * micro-js / hsl-to-rgb ( https://github.com/micro-js/hsl-to-rgb )
+		 * Committer: ashaffer
+		 * License: MIT
+		 */
+		function hslToRgb(h, s, l) {
+			/* for CSS */
+			s /= 100, l /= 100;
+		
+			if(s == 0) return [l, l, l];
+			h /= 360;
+
+			var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+			var p = 2 * l - q;
+
+			return [
+				Math.round(hueToRgb(p, q, h + 1/3) * 255),
+				Math.round(hueToRgb(p, q, h) * 255),
+				Math.round(hueToRgb(p, q, h - 1/3) * 255)
+			];
+		}
+
+		function hueToRgb(p, q, t) {
+			if(t < 0) t += 1;
+			if(t > 1) t -= 1;
+			if(t < 1/6) return p + (q - p) * 6 * t;
+			if(t < 1/2) return q;
+			if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+
+			return p;
+		}
+		/* ---------------------------------- */
+		
+		function randint(s, e) {
+			return Math.floor(Math.random() * (e + 1 - s) + s);
+		}
+		
+		$('#random-h').click(function() {
+			$('#hue').val(randint(0, 360)).change();
+		});
+		
+		$('#random-s').click(function() {
+			$('#sat').val(randint(1, 100)).change();
+		});
+		
+		$('#random-l').click(function() {
+			$('#bri').val(randint(0, 100)).change();
+		});
+		
+		$('#random-all').click(function() {
+			$('#random-h').click();
+			$('#random-s').click();
+			$('#random-l').click();
+		});
+
+		$('#hue, #sat, #bri').on('input change', function() {
+			$('#picked-color').css('background-color', 'hsl(' + $('#hue').val() + ', ' + $('#sat').val() + '%, ' + $('#bri').val() + '%)');
+			$('#picked-color-h').css('background-color', 'hsl(' + $('#hue').val() + ', 100%, 50%)');
+			$('#picked-color-s').css('background-color', 'hsl(240, ' + $('#sat').val() + '%, 50%)');
+			$('#picked-color-l').css('background-color', 'hsl(240, 100%, ' + $('#bri').val() + '%)');
+		
+			$('#h').val(Math.floor(Number($('#hue').val()) * (240 / 360)));
+			$('#s').val(Math.floor(Number($('#sat').val()) * (240 / 100)));
+			$('#l').val(Math.floor(Number($('#bri').val()) * (240 / 100)));
+			
+			var rgb = hslToRgb(Number($('#hue').val()), Number($('#sat').val()), Number($('#bri').val()));
+			
+			$('#r').val(rgb[0]);
+			$('#g').val(rgb[1]);
+			$('#b').val(rgb[2]);
+			
+			var a, b, c;
+			
+			$('#html').val((((a = rgb[0].toString(16)) < 10 ? '0' + a : a) + ((b = rgb[1].toString(16)) < 10 ? '0' + b : b) + ((c = rgb[2].toString(16)) < 10 ? '0' + c : c)).toUpperCase());
+		});
+		
+		$('#hue').on('input change', function() {
+			$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $(this).val() + ', ' + $('#sat').val() + '%, 50%), #fff)');
+			$('#sat').prev().css('background-image', 'linear-gradient(to right, #888, hsl(' + $(this).val() + ', 100%, 50%))');
+		});
+		
+		$('#sat').on('input change', function() {
+			$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $('#hue').val() + ', ' + $(this).val() + '%, 50%), #fff)');
+		});
+		
+		$('#picked-color').click(function() {
+			$('#saved-colors div').prepend($('<table style="display: table-cell;"><tr><td style="text-align: center;"><span class=color-frame style="background-color: ' + $(this).css('background-color') + '; padding: 6px;">__</span></td></tr><tr><td style="font-size: 9pt;">#' + $('#html').val() + '</td></tr></table>'));
+		});
+		
+		$('#hue').change();
+	});
 
     $('ul.nav li.nav-item a.nav-link').click(function() {
         var tab = $(this);
@@ -1338,95 +1433,165 @@ $(function() {
     $('.mc-light').on('mouseout', sa);
 });
 
-$(function() {
-	/*
-	 * micro-js / hsl-to-rgb ( https://github.com/micro-js/hsl-to-rgb )
-	 * Committer: ashaffer
-	 * License: MIT
-	 */
-	function hslToRgb(h, s, l) {
-		/* for CSS */
-		s /= 100, l /= 100;
-	
-		if(s == 0) return [l, l, l];
-		h /= 360;
-
-		var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-		var p = 2 * l - q;
-
-		return [
-			Math.round(hueToRgb(p, q, h + 1/3) * 255),
-			Math.round(hueToRgb(p, q, h) * 255),
-			Math.round(hueToRgb(p, q, h - 1/3) * 255)
-		];
+(function() {
+	function saveSetting(name, val) {
+		var d = new Date; 
+		d.setDate(d.getDate() + 180);
+		document.cookie = escape(name) + '=' + escape(val) + ';';
 	}
 
-	function hueToRgb(p, q, t) {
-		if(t < 0) t += 1;
-		if(t > 1) t -= 1;
-		if(t < 1/6) return p + (q - p) * 6 * t;
-		if(t < 1/2) return q;
-		if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+	function getSetting(name, def) {
+		var ret;
+		if(!document.cookie) {
+			saveSetting(name, def);
+			return def;
+		}
 
-		return p;
+		const c = document.cookie.split(escape(name) + '=');
+		if(c.length < 2) {
+			saveSetting(name, def);
+			return def;
+		}
+
+		return unescape(c[1].split(';')[0]);
 	}
-	/* ---------------------------------- */
 	
-	function randint(s, e) {
-		return Math.floor(Math.random() * (e + 1 - s) + s);
-	}
-	
-	$('#random-h').click(function() {
-		$('#hue').val(randint(0, 360)).change();
-	});
-	
-	$('#random-s').click(function() {
-		$('#sat').val(randint(1, 100)).change();
-	});
-	
-	$('#random-l').click(function() {
-		$('#bri').val(randint(0, 100)).change();
-	});
-	
-	$('#random-all').click(function() {
-		$('#random-h').click();
-		$('#random-s').click();
-		$('#random-l').click();
+	$(function() {
+		var ss = document.querySelectorAll('.scheme-stylesheet');
+		
+		for(var eli=0; eli<ss.length; eli++) {
+			var el = ss[eli];
+			if(!(el.getAttribute('id').startsWith(getSetting('scheme', 'bluemetal')))) el.remove();
+		}
 	});
 
-	$('#hue, #sat, #bri').on('input change', function() {
-		$('#picked-color').css('background-color', 'hsl(' + $('#hue').val() + ', ' + $('#sat').val() + '%, ' + $('#bri').val() + '%)');
-		$('#picked-color-h').css('background-color', 'hsl(' + $('#hue').val() + ', 100%, 50%)');
-		$('#picked-color-s').css('background-color', 'hsl(240, ' + $('#sat').val() + '%, 50%)');
-		$('#picked-color-l').css('background-color', 'hsl(240, 100%, ' + $('#bri').val() + '%)');
+	/* window.saveSetting = saveSetting, window.getSetting = getSetting; */
 	
-		$('#h').val(Math.floor(Number($('#hue').val()) * (240 / 360)));
-		$('#s').val(Math.floor(Number($('#sat').val()) * (240 / 100)));
-		$('#l').val(Math.floor(Number($('#bri').val()) * (240 / 100)));
+	$(function () {
+		var windowCount = 0;
+	
+		if($(window).width() >= 1080) $("grp.for-mobile").remove();
+
+		const html = {
+			escape: function(content) {
+				content = content.replace(/["]/gi, '&quot;');
+				content = content.replace(/[&]/gi, '&amp;');
+				content = content.replace(/[<]/gi, '&lt;');
+				content = content.replace(/[>]/gi, '&gt;');
+	
+				return content;
+			}
+		};
+
+		window.memoCount = 0;
+
+		const getid = function(id) { return document.getElementById(id) }
+		const qall = function(q) { return document.querySelectorAll(q) }
+
+		var px, py, ox, oy;
+
+		function setDraggable() {
+			$('div.window').draggable({ handle: '.titlebar' });
+
+			$('div.window').children('.titlebar').on('mousedown', function(e) {
+				$(this).parent().appendTo($(this).parent().parent());
+			});
+
+			$('div.window:not(#toolsWindow)').resizable({
+				minWidth:  '160px',
+				minHeight: '60px'
+			});
+			
+			$('div.window .close-btn').click(function() {
+				win = $(this);
+			
+				function closeAction() {
+					$('.window#windowManager .window-content').children('li[data-winid="' + win.parent().attr('id') + '"]').remove();
+					win.parent().remove();
+					$('a[data-setaswindow="1"]').removeAttr('data-setaswindow');
+				}
+				
+				if(getSetting('noAnimations') == '1') 
+					closeAction();
+				else 
+					win.parent().slideToggle('fast', closeAction);
+			});
 		
-		var rgb = hslToRgb(Number($('#hue').val()), Number($('#sat').val()), Number($('#bri').val()));
+			$('.window#windowManager .window-content li').click(function() {
+				const win = $('.window#' + $(this).attr('data-winid'));
+				win.appendTo(win.parent());
+			});
 		
-		$('#r').val(rgb[0]);
-		$('#g').val(rgb[1]);
-		$('#b').val(rgb[2]);
-		
-		var a, b, c;
-		
-		$('#html').val((((a = rgb[0].toString(16)) < 10 ? '0' + a : a) + ((b = rgb[1].toString(16)) < 10 ? '0' + b : b) + ((c = rgb[2].toString(16)) < 10 ? '0' + c : c)).toUpperCase());
+			$('.window#windowManager .window-content li a.close-link').click(function() {
+				$('.window#' + $(this).parent().attr('data-winid')).children('a.close-btn').click();
+			});
+		}
+
+		$('div.window .fold-btn').click(function() {
+			$(this).next().slideToggle('fast');
+		});
+
+		setDraggable();
+
+		function createWindow(title, content, width, height, top, left, closeable) {
+			if(typeof(closeable) == 'undefined') closeable = 1;
+			const newWindow = $('<div class=window id="' + String(++windowCount) + '">' +
+					'<div class=titlebar><div class=title>' + html.escape(title) + '</div></div>' +
+					'<a ' + (!closeable ? 'style="display: none;"' : '') + ' title="닫기" class=close-btn>' + "<img src='data:image/png;base64,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' />" + '</a>' +
+					'<div class=window-content style="' + (getSetting('noAnimations') == '1' ? '' : 'display: none;') + '">' + content + '</div>' +
+			  '</div>');
+			newWindow.css({
+				'width': width ? width : '480px',
+				'height': height ? height : '360px',
+				'top': top ? top : Number($('.window:last-child').css('top').replace(/px$/, '')) + 30 + 'px',
+				'left': left ? left : Number($('.window:last-child').css('left').replace(/px$/, '')) + 30 + 'px'
+			}).appendTo('grp.for-pc#windows');
+			
+			$('<li data-winid="' + String(windowCount) + '">' + html.escape(title) + (closeable ? ' <a class=close-link>×</a>' : '') + '</li>').appendTo($(".window#windowManager .window-content"));
+
+			setDraggable();
+			
+			if(getSetting('noAnimations') != '1') newWindow.children('.window-content').slideToggle('fast');
+
+			return newWindow;
+		}
+
+		window.createWindow = createWindow;
+
+		$('a#skinSettingsLink').click(function() {
+			const settingsWindow = createWindow('설정', 
+				'<div class=form-group>' +
+					'<div>' +
+						'<h2>창</h2>' + 
+						'<label><input type=checkbox id=winManagerOnTop onclick="if($(this).is(\':checked\')) saveSetting(\'winManagerOnTop\', \'1\'); else saveSetting(\'winManagerOnTop\', \'0\'); setSettings();"> 창 전환기를 항상 위에 표시</label><br>' + 
+						'<label><input type=checkbox id=noAnimations onclick="if($(this).is(\':checked\')) saveSetting(\'noAnimations\', \'1\'); else saveSetting(\'noAnimations\', \'0\'); setSettings();"> 애니메이션 끄기</label><br>' + 
+					'</div>' +
+					
+					'<div>' +
+						'<h2>모양</h2>' +
+						'<label>스킨 [*]:</label><br>' +
+						'<select class=form-control id=schemeSelect onchange="saveSetting(\'scheme\', this.value);">' +
+							'<option value=glossy ' + (getSetting('scheme') == 'glossy' ? 'selected' : '') + '>푸른하늘 </option>' +
+							'<option value=bluemetal ' + (getSetting('scheme') == 'bluemetal' ? 'selected' : '') + '>금속</option>' +
+							'<option value=flat ' + (getSetting('scheme') == 'flat' ? 'selected' : '') + '>심플</option>' +
+						'</select>' +
+					'</div>' +
+					 
+					'<p>[*] 새로고침해야 적용됩니다.</p>' +
+				'</div>', '420px', '350px');
+
+			if(getSetting('noLinkAsWindow') == '1') $("#noLinkAsWindow").attr('checked', '');
+			if(getSetting('winManagerOnTop') == '1') $("#winManagerOnTop").attr('checked', '');
+			if(getSetting('noAnimations') == '1') $("#noAnimations").attr('checked', '');
+		});
+
+		function setSettings() {
+			if(getSetting('winManagerOnTop') == '1') $("#windowManager").css('z-index', '11');
+			else $("#windowManager").css('z-index', '9');
+		}
+
+		setSettings();
+
+		window.setSettings = setSettings;
 	});
-	
-	$('#hue').on('input change', function() {
-		$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $(this).val() + ', ' + $('#sat').val() + '%, 50%), #fff)');
-		$('#sat').prev().css('background-image', 'linear-gradient(to right, #888, hsl(' + $(this).val() + ', 100%, 50%))');
-	});
-	
-	$('#sat').on('input change', function() {
-		$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $('#hue').val() + ', ' + $(this).val() + '%, 50%), #fff)');
-	});
-	
-	$('#picked-color').click(function() {
-		$('#saved-colors div').prepend($('<table style="display: table-cell;"><tr><td style="text-align: center;"><span class=color-frame style="background-color: ' + $(this).css('background-color') + '; padding: 6px;">__</span></td></tr><tr><td style="font-size: 9pt;">#' + $('#html').val() + '</td></tr></table>'));
-	});
-	
-	$('#hue').change();
-});
+})();

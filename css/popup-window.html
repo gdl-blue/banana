@@ -1,0 +1,248 @@
+<style>
+	#windowManager:only-child {
+		display: none;
+	}
+</style>
+
+<style id=flatStyle class=scheme-stylesheet>
+	.pull-right {
+       float: right;
+	}
+	
+	div.window {
+		z-index: 9;
+		position: fixed;
+		min-width: 200px;
+	}
+
+	div.window .titlebar {
+		text-align: center;
+		
+		cursor: move;
+		
+		padding: 4px 30px 4px 30px;
+		border: 2px solid gray;
+		background: #fff;
+		 position: relative;
+		
+		border-width: 4px 4px 0px 4px;
+		
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+	
+	div.window:last-child .titlebar {
+		background: gray;
+		
+		font-weight: bold;
+		
+		color: white;
+	}
+
+	div.window .titlebar .title {
+		font-size: 12pt;
+		color: white;
+	}
+	
+	div.window .window-content {
+		padding: 12px;
+		border: 2px solid gray;
+		border-top: none;
+		background: #fff;
+		height: calc(100% - 55px);
+		overflow: auto;
+		border-width: 0px 4px 4px 4px;
+	}
+	
+	div.window:last-child .window-content {
+		border-color: gray;
+	}
+	
+	div.window:last-child .titlebar {
+		border-color: gray;
+	}
+	
+	div.window .close-btn, div.wiki-window .fold-btn {
+		margin: -27px 0 0 6px;
+		position: absolute;
+		cursor: pointer;
+		width: 24px;
+	}
+	
+	div.window .fold-btn {
+		margin: -27px 0 0 29px;
+	}
+</style>
+
+<style id=bluemetalStyle class=scheme-stylesheet>
+	.pull-right {
+		float: right;
+	}
+
+	div.window {
+		z-index: 9;
+		position: fixed;
+		min-width: 200px;
+		border: 1.2px solid black;
+		border-radius: 10px 10px 0 0;
+		background: rgb(240, 240, 240);
+	}
+
+	div.window .titlebar {
+		text-align: center;
+		
+		cursor: move;
+		
+		border-radius: 10px 10px 0 0;
+		padding: 3px 30px 3px 30px;
+		background-image: linear-gradient(to bottom, rgb(135, 135, 135) 0%, rgb(250, 250, 250) 51%, rgb(197, 197, 197) 50%, rgb(240, 240, 240) 100%);
+		position: relative;
+		
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		color: white;
+	}
+
+	div.window:last-child .titlebar {
+		background-image: linear-gradient(to bottom, rgb(121, 137, 150) 0%, rgb(221, 230, 239) 51%, rgb(157, 173, 189) 50%, rgb(240, 240, 240) 100%);
+		
+		font-weight: bold;
+		text-shadow: 1px 1px 0px black;
+		
+		color: white;
+	}
+
+	div.window .titlebar .title {
+		border-radius: 55px;
+		box-shadow: 3px 3px 3px gray inset;
+		padding: 3px;
+		background: gray;
+		border: 2px inset gray;
+		font-size: 12pt;
+		color: white;
+	}
+	
+	div.window:last-child .titlebar .title {
+		background: #50b3e9;
+	}
+
+	div.window .titlebar .title::before {
+		border-radius: 20px 20px 15px 10px;
+		height: 9px;
+		content: "";
+		background-image: linear-gradient(to bottom, rgba(255, 255, 255, 8), rgba(255, 255, 255, .4));
+		position: absolute;
+		width: calc(100% - 70px);
+		margin: -4px 0 0 0;
+		left: 35px;
+		top: 10px;
+	}
+
+	div.window .window-content {
+		padding: 12px;
+		border: 2px solid black;
+		background: rgb(242, 241, 246);
+		height: calc(100% - 63px);
+		overflow: auto;
+		margin: 0 3px 3px 3px;
+		border-width: 1px;
+		border-radius: 0 0 1px 1px;
+	}
+
+	div.window .close-btn, div.window .fold-btn {
+		margin: -27px 0 0 6px;
+		position: absolute;
+		cursor: pointer;
+		width: 24px;
+	}
+
+	div.window .fold-btn {
+		margin: -27px 0 0 29px;
+	}
+</style>
+
+<style id=glossyStyle class=scheme-stylesheet>
+	.pull-right {
+		float: right;
+	}
+
+	div.window {
+		z-index: 9;
+		position: fixed;
+		min-width: 200px;
+	}
+
+	div.window .titlebar {
+		text-align: center;
+		
+		cursor: move;
+		
+		border-radius: 10px 10px 0 0;
+		padding: 4px 30px 4px 30px;
+		border: 2px solid rgb(180, 199, 216);
+		background-image: linear-gradient(to bottom, rgb(140, 187, 234), rgb(209, 232, 255), aliceblue);
+		position: relative;
+		
+		border-width: 4px 4px 0px 4px;
+		
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+	}
+
+	div.window:last-child .titlebar {
+		background-image: linear-gradient(to bottom, rgb(100, 169, 238), rgb(133, 192, 251), aliceblue);
+		
+		font-weight: bold;
+		text-shadow: 1px 1px 0px black;
+		
+		color: white;
+	}
+
+	div.window .titlebar::before {
+		border-radius: 20px 20px 15px 10px;
+		height: 10px;
+		content: "";
+		background-image: linear-gradient(to bottom, rgba(255, 255, 255, 8), rgba(255, 255, 255, .4));
+		position: absolute;
+		width: calc(100% - 3.5px);
+		margin: -4px 0 0 0;
+		left: 1px;
+	}
+
+	div.window .titlebar .title {
+		font-size: 12pt;
+		color: white;
+	}
+
+	div.window .window-content {
+		padding: 12px;
+		border: 2px solid rgb(180, 199, 216);
+		border-top: none;
+		background: linear-gradient(aliceblue, #f7fcff);
+		height: calc(100% - 55px);
+		overflow: auto;
+		border-width: 0px 4px 4px 4px;
+	}
+
+	div.window:last-child .window-content {
+		border-color: rgb(123, 158, 188);
+	}
+
+	div.window:last-child .titlebar {
+		border-color: rgb(123, 158, 188);
+	}
+
+	div.window .close-btn, div.window .fold-btn {
+		margin: -27px 0 0 6px;
+		position: absolute;
+		cursor: pointer;
+		width: 24px;
+	}
+
+	div.window .fold-btn {
+		margin: -27px 0 0 29px;
+	}
+</style>

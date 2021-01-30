@@ -91,7 +91,7 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 						<h4 class=wiki-heading>통신</h4>
 						<div class=wiki-heading-content>
 							<div class=form-group>
-								<label><input type=checkbox name=space-bonefish ${req.cookies['space-bonefish'] ? 'checked' : ''} /> 오류에 관계없이 200 코드 반환</label><br>
+								<label><input type=checkbox name=space-bonefish ${req.cookies['space-bonefish'] ? 'checked' : ''} /> 오류에 관계없이 200 코드 반환</label><br />
 							</div>
 						</div>
 					</div>
@@ -100,7 +100,34 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 						<h4 class=wiki-heading>스크립트</h4>
 						<div class=wiki-heading-content>
 							<div class=form-group>
-								<label><input type=checkbox name=bioking ${req.cookies['bioking'] ? 'checked' : ''} /> jQuery를 불러올 때 압축되지 않은 버전 불러오기</label><br>
+								<label><input type=checkbox name=bioking ${req.cookies['bioking'] ? 'checked' : ''} /> jQuery를 불러올 때 압축되지 않은 버전 불러오기</label><br />
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+			
+			<div class=form-group id=debugGroup>
+				<h2 class=wiki-heading>팝업창 설정</h2>
+				<div class=wiki-heading-content>
+					<div class=form-group>
+						<h4 class=wiki-heading>창 동작</h4>
+						<div class=wiki-heading-content>
+							<div class=form-group>
+								<label><input type=checkbox value=1 name=winManagerOnTop ${req.cookies['winManagerOnTop'] == '1' ? 'checked' : ''} /> 창 전환기를 항상 위에 표시</label><br />
+							</div>
+						</div>
+					</div>
+					
+					<div class=form-group>
+						<h4 class=wiki-heading>창 스킨</h4>
+						<div class=wiki-heading-content>
+							<div class=form-group>
+								<select name=scheme class=form-control id=schemeSelect>
+									<option value=bluemetal ` + (req.cookies['scheme'] == 'bluemetal' ? 'selected' : '') + `>금속</option>
+									<option value=glossy ` + (req.cookies['scheme'] == 'glossy' ? 'selected' : '') + `>푸른 하늘</option>
+									<option value=flat ` + (req.cookies['scheme'] == 'flat' ? 'selected' : '') + `>심플</option>
+								</select>
 							</div>
 						</div>
 					</div>
@@ -202,7 +229,7 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 });
 
 wiki.post('/Customize', async function saveSettings(req, res) {
-	for(setting of ['ddochi', 'no-discuss-script', 'no-upload-script', 'always-hide-hidden-res', 'hide-strikethrough', 'unbold', 'unitalic', 'space-bonefish', 'bioking']) {
+	for(setting of ['ddochi', 'no-discuss-script', 'no-upload-script', 'always-hide-hidden-res', 'hide-strikethrough', 'unbold', 'unitalic', 'space-bonefish', 'bioking', 'scheme', 'noAnimations', 'winManagerOnTop']) {
 		const val = req.body[setting];
 		if(!val) {
 			res.clearCookie(setting);

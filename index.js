@@ -1465,6 +1465,17 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
         viewName: viewname,
         error: (varlist.skinInfo ? varlist.skinInfo.error : undefined) || undefined
     };
+	
+	content += `
+		<grp id=windows class=for-pc>
+			<div class=window id=windowManager style="width: 200px; height: 270px; left: 10px; top: 50px;">
+				<div class=titlebar><div class=title>창 전환기</div></div>
+				<div class=window-content>
+				</div>
+			</div>
+		</grp>\
+		${await readFile('./css/popup-window.html')}
+	`;
     
     const nunjucks = new (require('nunjucks')).Environment();
 

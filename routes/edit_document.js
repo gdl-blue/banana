@@ -148,6 +148,12 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
                 data-start="[["
                 data-end="]]"
               >링크</button>
+
+              <button 
+                type=button
+                class="btn btn-secondary btn-sm"
+				id=showColorPicker
+              >색 선택기</button>
             </div>
 						
 						<ul class="nav nav-tabs" style="height: 38px;">
