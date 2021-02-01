@@ -751,7 +751,7 @@ $(function() {
     bdb();
 	
 	$('button#showColorPicker').click(function() {
-		try { createWindow('색 선택기', '<table><tr><td rowspan=3 style="vertical-align: top; padding: 18px 8px 0 0; text-align: center;"><span class=color-frame id=picked-color style="background-color: red; cursor: cell;" title="고른 색">__</span><br/><br/><span class=color-frame id=picked-color-h style="background-color: red; padding: 4px; margin-bottom: 10px;" title="색상">__</span><br/><span class=color-frame id=picked-color-s style="background-color: blue; padding: 4px; margin-bottom: 10px;" title="채도">__</span><br/><span class=color-frame id=picked-color-l style="background-color: blue; padding: 4px; margin-bottom: 10px;" title="명도">__</span><br/></td><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, red, yellow, yellow, #0f0, #0ff, blue, purple, hotpink, red);"></div><input type=range max=360 min=0 value=0 id=hue style="width: 100%; margin: 0;"/><span style="float: left; width:15%">빨강</span><span style="float: left; width:20%">노랑</span><span style="float: left; width:20%">초록</span><span style="float: left; width:20%">파랑</span><span style="float: left; width:15%">보라</span><span style="float: right;">분홍</span></td><td style="vertical-align: middle;"><button id=random-h title="무작위 생성">*</button></td></tr><tr><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, #888, red);"></div><input type=range max=100 min=1 value=100 id=sat style="width: 100%; margin: 0;"/><span style="float: left; width:25%">무색</span><span style="float: left; width:25%">25%</span><span style="float: left; width:20%">50%</span><span style="float: left; width:15%">75%</span><span style="float: right">선명</span></td><td style="vertical-align: middle;"><button id=random-s title="무작위 생성">*</button></td></tr><tr><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, #000, red, #fff);"></div><input type=range max=100 min=0 value=50 id=bri style="width: 100%; margin: 0;"/><span style="float: left; width:25%">검정</span><span style="float: left; width:25%">어둡게</span><span style="float: left; width:20%">보통</span><span style="float: left; width:15%">밝게</span><span style="float: right">흰색</span></td><td style="vertical-align: middle;"><button id=random-l title="무작위 생성">*</button></td></tr><tr><td colspan=3>R<input type=number readonly id=r style="width: 60px;"/>G<input type=number readonly id=g style="width: 60px;"/>B<input type=number readonly id=b style="width: 60px;"/>H<input type=number readonly id=h style="width: 60px;"/>S<input type=number readonly id=s style="width: 60px;"/>L<input type=number readonly id=l style="width: 60px;"/>#<input type=text readonly id=html style="width: 70px;"/><button id=random-all title="무작위 생성">*</button></td></tr><tr><td colspan=3 id=saved-colors style="max-width: 0px;"><div style="overflow: auto;"></div></td></tr></table>', '608px') } catch(e) { }
+		var colorSelector = $(createWindow('색 선택기', '<table><tr><td rowspan=3 style="vertical-align: top; padding: 18px 8px 0 0; text-align: center;"><span class=color-frame id=picked-color style="background-color: red; cursor: cell;" title="고른 색">__</span><br/><br/><span class=color-frame id=picked-color-h style="background-color: red; padding: 4px; margin-bottom: 10px;" title="색상">__</span><br/><span class=color-frame id=picked-color-s style="background-color: blue; padding: 4px; margin-bottom: 10px;" title="채도">__</span><br/><span class=color-frame id=picked-color-l style="background-color: blue; padding: 4px; margin-bottom: 10px;" title="명도">__</span><br/></td><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, red, yellow, yellow, #0f0, #0ff, blue, purple, hotpink, red);"></div><input type=range max=360 min=0 value=0 id=hue style="width: 100%; margin: 0;"/><span style="float: left; width:15%">빨강</span><span style="float: left; width:20%">노랑</span><span style="float: left; width:20%">초록</span><span style="float: left; width:20%">파랑</span><span style="float: left; width:15%">보라</span><span style="float: right;">분홍</span></td><td style="vertical-align: middle;"><button id=random-h title="무작위 생성">*</button></td></tr><tr><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, #888, red);"></div><input type=range max=100 min=1 value=100 id=sat style="width: 100%; margin: 0;"/><span style="float: left; width:25%">무색</span><span style="float: left; width:25%">25%</span><span style="float: left; width:20%">50%</span><span style="float: left; width:15%">75%</span><span style="float: right">선명</span></td><td style="vertical-align: middle;"><button id=random-s title="무작위 생성">*</button></td></tr><tr><td style="padding: 0 0 20px 0;"><div class=color-gradient style="height: 10px; width: 100%; background-image: linear-gradient(to right, #000, red, #fff);"></div><input type=range max=100 min=0 value=50 id=bri style="width: 100%; margin: 0;"/><span style="float: left; width:25%">검정</span><span style="float: left; width:25%">어둡게</span><span style="float: left; width:20%">보통</span><span style="float: left; width:15%">밝게</span><span style="float: right">흰색</span></td><td style="vertical-align: middle;"><button id=random-l title="무작위 생성">*</button></td></tr><tr><td colspan=3>R<input type=number readonly id=r style="width: 60px;"/>G<input type=number readonly id=g style="width: 60px;"/>B<input type=number readonly id=b style="width: 60px;"/>H<input type=number readonly id=h style="width: 60px;"/>S<input type=number readonly id=s style="width: 60px;"/>L<input type=number readonly id=l style="width: 60px;"/>#<input type=text readonly id=html style="width: 70px;"/><button id=random-all title="무작위 생성">*</button></td></tr><tr><td colspan=3 id=saved-colors style="max-width: 0px;"><div style="overflow: auto;"></div></td></tr></table>', '608px'));
 		
 		/*
 		 * micro-js / hsl-to-rgb ( https://github.com/micro-js/hsl-to-rgb )
@@ -784,65 +784,64 @@ $(function() {
 
 			return p;
 		}
-		/* ---------------------------------- */
 		
 		function randint(s, e) {
 			return Math.floor(Math.random() * (e + 1 - s) + s);
 		}
 		
-		$('#random-h').click(function() {
-			$('#hue').val(randint(0, 360)).change();
+		colorSelector.find('#random-h').click(function() {
+			colorSelector.find('#hue').val(randint(0, 360)).change();
 		});
 		
-		$('#random-s').click(function() {
-			$('#sat').val(randint(1, 100)).change();
+		colorSelector.find('#random-s').click(function() {
+			colorSelector.find('#sat').val(randint(1, 100)).change();
 		});
 		
-		$('#random-l').click(function() {
-			$('#bri').val(randint(0, 100)).change();
+		colorSelector.find('#random-l').click(function() {
+			colorSelector.find('#bri').val(randint(0, 100)).change();
 		});
 		
-		$('#random-all').click(function() {
-			$('#random-h').click();
-			$('#random-s').click();
-			$('#random-l').click();
+		colorSelector.find('#random-all').click(function() {
+			colorSelector.find('#random-h').click();
+			colorSelector.find('#random-s').click();
+			colorSelector.find('#random-l').click();
 		});
 
-		$('#hue, #sat, #bri').on('input change', function() {
-			$('#picked-color').css('background-color', 'hsl(' + $('#hue').val() + ', ' + $('#sat').val() + '%, ' + $('#bri').val() + '%)');
-			$('#picked-color-h').css('background-color', 'hsl(' + $('#hue').val() + ', 100%, 50%)');
-			$('#picked-color-s').css('background-color', 'hsl(240, ' + $('#sat').val() + '%, 50%)');
-			$('#picked-color-l').css('background-color', 'hsl(240, 100%, ' + $('#bri').val() + '%)');
+		colorSelector.find('#hue, #sat, #bri').on('input change', function() {
+			colorSelector.find('#picked-color').css('background-color', 'hsl(' + colorSelector.find('#hue').val() + ', ' + colorSelector.find('#sat').val() + '%, ' + colorSelector.find('#bri').val() + '%)');
+			colorSelector.find('#picked-color-h').css('background-color', 'hsl(' + colorSelector.find('#hue').val() + ', 100%, 50%)');
+			colorSelector.find('#picked-color-s').css('background-color', 'hsl(240, ' + colorSelector.find('#sat').val() + '%, 50%)');
+			colorSelector.find('#picked-color-l').css('background-color', 'hsl(240, 100%, ' + colorSelector.find('#bri').val() + '%)');
 		
-			$('#h').val(Math.floor(Number($('#hue').val()) * (240 / 360)));
-			$('#s').val(Math.floor(Number($('#sat').val()) * (240 / 100)));
-			$('#l').val(Math.floor(Number($('#bri').val()) * (240 / 100)));
+			colorSelector.find('#h').val(Math.floor(Number(colorSelector.find('#hue').val()) * (240 / 360)));
+			colorSelector.find('#s').val(Math.floor(Number(colorSelector.find('#sat').val()) * (240 / 100)));
+			colorSelector.find('#l').val(Math.floor(Number(colorSelector.find('#bri').val()) * (240 / 100)));
 			
-			var rgb = hslToRgb(Number($('#hue').val()), Number($('#sat').val()), Number($('#bri').val()));
+			var rgb = hslToRgb(Number(colorSelector.find('#hue').val()), Number(colorSelector.find('#sat').val()), Number(colorSelector.find('#bri').val()));
 			
-			$('#r').val(rgb[0]);
-			$('#g').val(rgb[1]);
-			$('#b').val(rgb[2]);
+			colorSelector.find('#r').val(rgb[0]);
+			colorSelector.find('#g').val(rgb[1]);
+			colorSelector.find('#b').val(rgb[2]);
 			
 			var a, b, c;
 			
-			$('#html').val((((a = rgb[0].toString(16)) < 10 ? '0' + a : a) + ((b = rgb[1].toString(16)) < 10 ? '0' + b : b) + ((c = rgb[2].toString(16)) < 10 ? '0' + c : c)).toUpperCase());
+			colorSelector.find('#html').val((((a = rgb[0].toString(16)) < 10 ? '0' + a : a) + ((b = rgb[1].toString(16)) < 10 ? '0' + b : b) + ((c = rgb[2].toString(16)) < 10 ? '0' + c : c)).toUpperCase());
 		});
 		
-		$('#hue').on('input change', function() {
-			$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $(this).val() + ', ' + $('#sat').val() + '%, 50%), #fff)');
-			$('#sat').prev().css('background-image', 'linear-gradient(to right, #888, hsl(' + $(this).val() + ', 100%, 50%))');
+		colorSelector.find('#hue').on('input change', function() {
+			colorSelector.find('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $(this).val() + ', ' + colorSelector.find('#sat').val() + '%, 50%), #fff)');
+			colorSelector.find('#sat').prev().css('background-image', 'linear-gradient(to right, #888, hsl(' + $(this).val() + ', 100%, 50%))');
 		});
 		
-		$('#sat').on('input change', function() {
-			$('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + $('#hue').val() + ', ' + $(this).val() + '%, 50%), #fff)');
+		colorSelector.find('#sat').on('input change', function() {
+			colorSelector.find('#bri').prev().css('background-image', 'linear-gradient(to right, #000, hsl(' + colorSelector.find('#hue').val() + ', ' + $(this).val() + '%, 50%), #fff)');
 		});
 		
-		$('#picked-color').click(function() {
-			$('#saved-colors div').prepend($('<table style="display: table-cell;"><tr><td style="text-align: center;"><span class=color-frame style="background-color: ' + $(this).css('background-color') + '; padding: 6px;">__</span></td></tr><tr><td style="font-size: 9pt;">#' + $('#html').val() + '</td></tr></table>'));
+		colorSelector.find('#picked-color').click(function() {
+			colorSelector.find('#saved-colors div').prepend($('<table style="display: table-cell;"><tr><td style="text-align: center;"><span class=color-frame style="background-color: ' + $(this).css('background-color') + '; padding: 6px;">__</span></td></tr><tr><td style="font-size: 9pt;">#' + colorSelector.find('#html').val() + '</td></tr></table>'));
 		});
 		
-		$('#hue').change();
+		colorSelector.find('#hue').change();
 	});
 
     $('ul.nav li.nav-item a.nav-link').click(function() {

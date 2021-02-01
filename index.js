@@ -2346,6 +2346,17 @@ router.get(/\/subwiki\/([A-Za-z0-9_]+)\/(.*)/, async(req, res, next) => {
     res.redirect('/' + req.params[1]);
 });
 
+if(!hostconfig['blockip']) hostconfig['blockip'] = [];
+
+var jsnRatelimit = {};
+var jsnRLBlock = {};
+
+if(hostconfig.enable_ratelimit) {
+	setInterval(function() {
+		jsnRatelimit = {};
+	}, hostconfig.ratelimit_interval || 200);
+}
+
 router.all('*', async (req, res, next) => {
     if(await ban_check(req, _, _, 1) || (hostconfig['blockip'] && hostconfig['blockip'].includes(ip_check(req, 1)))) {
         // 응답을 해주지 않는다
@@ -2480,6 +2491,29 @@ wiki.get('/css/:filepath', async function dropCSS(req, res) {
     }
     
     res.sendFile(filepath, { root: "./css" });
+});
+
+router.all('*', (req, res, next) => {
+	if(hostconfig.enable_ratelimit) {
+		if(jsnRLBlock[ip_check(req, 1)]) return;
+		
+		if(!jsnRatelimit[ip_check(req, 1)]) {
+			jsnRatelimit[ip_check(req, 1)] = 1;
+		} else {
+			if(jsnRatelimit[ip_check(req, 1)] > (hostconfig.ratelimit || 3)) {
+				jsnRLBlock[ip_check(req, 1)] = 1;
+				setTimeout(function() {
+					delete(jsnRLBlock[ip_check(req, 1)]);
+				}, (hostconfig.ratelimit_reset || 3600000));
+				
+				return;
+			} else {
+				jsnRatelimit[ip_check(req, 1)]++;
+			}
+		}
+	}
+	
+	next();
 });
 
 /*
