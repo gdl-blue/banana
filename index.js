@@ -1364,6 +1364,9 @@ function subwiki(req) {
 }
 
 function getperm(req, perm, username, noupdating = false) {
+	if((hostconfig.global_user_perms || []).includes(perm)) return true;
+	if(islogin(req) && (hostconfig.global_member_perms || []).includes(perm)) return true;
+	
     try {
         return fpermlist[subwiki(req)][username].includes(noupdating ? perm : updateTheseedPerm(perm))
     } catch(e) {
