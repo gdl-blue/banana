@@ -267,9 +267,9 @@ wiki.post('/admin/grant', async function grantPermissions(req, res) {
 		return res.send(await showError(req, 'nothing_changed'));
 	}
 	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note) \
-				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-					'author', 'grant', ip_check(req), username, '', getTime(), expiration, '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')'
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note, blocker_type) \
+				values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+					'author', 'grant', ip_check(req), username, '', getTime(), expiration, '0', '0', logstring + '(' + (req.body['note'] ? req.body['note'] : '') + ')', (islogin(req) ? 'author' : 'ip')
 				]);
 	
 	res.redirect('/admin/grant?username=' + encodeURIComponent(username));

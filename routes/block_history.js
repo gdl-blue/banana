@@ -34,13 +34,13 @@ wiki.get('/BlockHistory', async function(req, res) {
 	var dbdata;
 	
 	if(req.query['from']) {
-		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['from']]);
+		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note, blocker_type from blockhistory where startingdate <= ? order by cast(startingdate as integer) desc limit 100", [req.query['from']]);
 	}
 	else if(req.query['until']) {
-		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory where startingdate >= ? order by cast(startingdate as integer) desc limit 100", [req.query['until']]);
+		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note, blocker_type from blockhistory where startingdate >= ? order by cast(startingdate as integer) desc limit 100", [req.query['until']]);
 	}
 	else {
-		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order by cast(startingdate as integer) desc limit 100");
+		dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note, blocker_type from blockhistory order by cast(startingdate as integer) desc limit 100");
 	}
 	
 	var content = `
@@ -117,7 +117,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 						)
 					)
 				}</td>
-				<td>${ip_pas(req, row.blocker, 'author')}</td>
+				<td>${ip_pas(req, row.blocker, row['blocker_type'])}</td>
 				<td>${html.escape(row.username)}</td>
 				<td>${
 					row.endingdate == '0' ? (

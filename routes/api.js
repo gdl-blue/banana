@@ -1,3 +1,14 @@
+wiki.post(/^\/api\/v(\d+)\/(.*)/, (req, res, next) => {
+	if(config.getString('enable_apipost', '1') != '1') {
+		return res.json({
+			state: 'api_post_disabled',
+			message: 'API에서 POST 요청을 할 수 없게 설정했습니다.'
+		});
+	}
+	
+	next();
+});
+
 wiki.get(/^\/api\/v(\d+)\/(.*)/, (req, res, next) => {
 	const ver = Number(req.params[0]) || 0;
 	var validVersions = [1, 2, 3, 4, 5];

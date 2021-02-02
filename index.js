@@ -567,6 +567,7 @@ var permlist    = {};
 var fpermlist   = {};
 var botlist     = {};
 var subwikilist = [];
+var tokens      = {};
 
 var firstrun = 0;
 var hostconfig;
@@ -590,6 +591,7 @@ try {
                 timeout(3500);
                 process.exit();
             }
+			
             print("바나나에 오신것을 환영합니다.");
             print("버전 " + versionInfo.major + "." + versionInfo.minor + "." + versionInfo.revision + " - 개정 " + versionInfo.patch + " [" + versionInfo.channelDesc + "]");
             
@@ -638,7 +640,7 @@ try {
             'account_creation': ['key', 'email', 'time'],
             'files': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category'],
             'filehistory': ['filename', 'prop1', 'prop2', 'prop3', 'prop4', 'prop5', 'license', 'category', 'username', 'rev'],
-            'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al', 'blockview', 'fake', 'note', 'subwikiid', 'section'],
+            'blockhistory': ['ismember', 'type', 'blocker', 'username', 'durationstring', 'startingdate', 'endingdate', 'al', 'blockview', 'fake', 'note', 'subwikiid', 'section', 'blocker_type'],
             'banned_users': ['username', 'blocker', 'startingdate', 'endingdate', 'ismember', 'al', 'isip', 'blockview', 'fake', 'note', 'subwikiid', 'section'],
             'filelicenses': ['license', 'creator'],
             'filecategories': ['category', 'creator'],
@@ -657,10 +659,9 @@ try {
             'old_edit_requests': ['name', 'num', 'send', 'leng', 'data', 'user', 'state', 'time', 'closer', 'pan', 'why', 'ap'],
             'subwikis': ['name', 'id', 'creator', 'created_timestamp', 'archived'],
             'subwiki_config': ['key', 'value', 'subwikiid'],
-      'user_block_types': ['name', 'subwikiid'],
-      'otpkeys': ['username', 'key'],
-            
-            // 마지막에 쉼표 들으가도 됨
+			'user_block_types': ['name', 'subwikiid'],
+			'otpkeys': ['username', 'key'],
+			'bots': ['username', 'owner', 'token'],
         };
         
         for(var table in tables) {
@@ -1033,7 +1034,12 @@ async function JSnamumark(title, content, initializeBacklinks = 0, req = null) {
 JSnamumark('', '안녕!').catch(e => 12345678);
 
 function islogin(req) {
-    if(req.cookies.gildong && req.cookies.icestar) {
+	const token = req.headers['x-token'] || req.headers['X-token'] || req.headers['X-Token'] || req.headers['X-TOKEN'];
+	if(token && tokens[token]) {
+		return true;
+	}
+	
+	if(req.cookies.gildong && req.cookies.icestar) {
         
     }
     
@@ -1115,9 +1121,13 @@ function ip2v4(rawIP) {
 }
 
 function getUsername(req, forceIP = 0) {
+	const token = req.headers['x-token'] || req.headers['X-token'] || req.headers['X-Token'] || req.headers['X-TOKEN'];
+	
     if(!forceIP && req.session.username) {
         return req.session.username;
-    } else {
+    } else if(!forceIP && token && tokens[token]) {
+		return tokens[token].username;
+	} else {
         var retval = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
         
         if(retval.replace(/^[:][:]ffff[:]\d{1,3}[.]\d{1,3}[.]\d{1,3}[.]\d{1,3}$/, '') == '')
@@ -1462,6 +1472,8 @@ async function getScheme(req) {
     return mycolor;
 }
 
+const nunjucks = require('nunjucks');
+
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
     const skinInfo = {
         title: title + subtitle,
@@ -1480,7 +1492,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		${await readFile('./css/popup-window.html')}
 	`;
     
-    const nunjucks = new (require('nunjucks')).Environment();
+    const nunjucks = new nunjucks.Environment;
 
     if(config.getString('enable_opennamu_skins', '1') != '0') {
         // 호환용
@@ -1520,6 +1532,9 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
     
     const perms = {
         has(perm) {
+			if((hostconfig.global_user_perms || []).includes(perm)) return true;
+			if(islogin(req) && (hostconfig.global_member_perms || []).includes(perm)) return true;
+	
             try {
                 return fpermlist[subwiki(req)][ip_check(req)].includes(updateTheseedPerm(perm));
             } catch(e) {
@@ -3286,6 +3301,11 @@ if(firstrun) {
                 }
             }).catch(console.error);
         }, 3000);
+		
+		await curs.execute("select username, owner, token from bots");
+		for(bot of (curs.fetchall() || [])) {
+			with(bot) tokens[token] = { username, token };
+		}
         
         const lcb = () => {
             clearInterval(tcvTimers['_starting']);

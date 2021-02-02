@@ -321,9 +321,9 @@ wiki.post('/admin/ban_users', async function banUser(req, res) {
 						username, ip_check(req), startTime, expiration, usertype, al, blockview, fake == 'on' ? '1' : '0', note, blocktype
 					]);
 	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note, section) \
-					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl_add' : 'suspend', ip_check(req), username, '', startTime, expiration, al, fake == 'on' ? '1' : '0', note, blocktype
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note, section, blocker_type) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl_add' : 'suspend', ip_check(req), username, '', startTime, expiration, al, fake == 'on' ? '1' : '0', note, blocktype, (islogin(req) ? 'author' : 'ip')
 					]);
 	
 	res.redirect('/admin/ban_users');
@@ -351,9 +351,9 @@ wiki.post('/admin/unban_user', async function unban(req, res) {
 	
 	curs.execute("delete from banned_users where username = ? and ismember = ? and section = ?", [username, usertype, blocktyp]);
 	
-	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note, section) \
-					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
-						usertype, usertype == 'ip' ? 'ipacl_remove' : 'unsuspend', ip_check(req), username, '', getTime(), '-1', '0', '0', '(차단 해제)', blocktyp
+	curs.execute("insert into blockhistory (ismember, type, blocker, username, durationstring, startingdate, endingdate, al, fake, note, section, blocker_type) \
+					values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", [
+						usertype, usertype == 'ip' ? 'ipacl_remove' : 'unsuspend', ip_check(req), username, '', getTime(), '-1', '0', '0', '(차단 해제)', blocktyp, (islogin(req) ? 'author' : 'ip')
 					]);
 					
 	res.redirect('/admin/ban_users');

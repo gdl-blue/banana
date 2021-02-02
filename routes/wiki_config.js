@@ -386,7 +386,6 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 								<label><input type=checkbox name=enable_captcha ${config.getString('enable_captcha', '1') == '1' ? 'checked' : ''}> 보안문자 사용</label><br>
 								<label><input type=checkbox name=ip2md5 ${config.getString('ip2md5', '0') == '1' ? 'checked' : ''}> IP 주소를 표시하지 않고 MD5로 암호화한 후 앞의 6자리 표시</label><br>
 								<label><input type=checkbox name=ip2v4 ${config.getString('ip2v4', '0') == '1' ? 'checked' : ''}> IPv6을 IPv4처럼 보이게 하기<a title="충돌 위험이 있습니다. 가급적이면 사용하지 않는 것이 좋습니다.">[!]</a></label><br>
-								<label><input type=checkbox name=denial ${config.getString('denial', '0') == '1' ? 'checked' : ''}> 서비스 거부 공격(빠른 반복 새로고침 등) 의심 시 1시간 동안 해당 IP에서 오는 요청을 처리해주지 않음</label><br>
 								<label><input type=checkbox name=no_login_history ${config.getString('no_login_history', '0') == '1' ? 'checked' : ''}> 로그인 내역을 기록하지 않음</label><br>
 								<label style="margin-left: 40px;"><input type=checkbox name=clear_login_history> 설정 저장 후 모든 사용자의 로그인 내역 삭제</label><br>
 							</div>
