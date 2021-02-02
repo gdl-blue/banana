@@ -149,7 +149,7 @@ wiki.get(/^\/api\/v3\/members\/(.*)/, async function API_userInfo_v3(req, res) {
 	ret['suspended'] = (await isBanned(req, 'author', username)) ? true : false;
 	
 	for(var perm of perms) {
-		if(getperm(req, perm, username)) ret['permissions'].push(perm);
+		if(getperm(req, perm, username, _, 1)) ret['permissions'].push(perm);
 	}
 	
 	res.json(ret);
@@ -187,7 +187,7 @@ wiki.get(/^\/api\/v3\/me$/, async(req, res) => {
 	ret['suspended'] = (await isBanned(req, 'author', username)) ? true : false;
 	
 	for(var perm of perms) {
-		if(getperm(req, perm, username)) ret['permissions'].push(perm);
+		if(getperm(req, perm, username, _, 1)) ret['permissions'].push(perm);
 	}
 	
 	res.json(ret);

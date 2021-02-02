@@ -44,14 +44,14 @@ wiki.get('/admin/grant', async function grantPanel(req, res) {
 		if(!getperm(req, 'developer', ip_check(req), 1) && permso.includes(prm)) continue;
 		
 		chkbxs += `
-			<label title="${html.escape(prm)}"><input type=checkbox ${getperm(req, prm, username, 1) ? 'checked' : ''} name=permission value="${prm}" /> ${permnames[prm] ? permnames[prm] : prm}</label><br />
+			<label title="${html.escape(prm)}"><input type=checkbox ${getperm(req, prm, username, 1, 1) ? 'checked' : ''} name=permission value="${prm}" /> ${permnames[prm] ? permnames[prm] : prm}</label><br />
 		`;
 		
 		opts += `
 			<option value="${prm}">${permnames[prm] ? permnames[prm] : prm}</option>
 		`;
 		
-		if(getperm(req, prm, username, 1)) {
+		if(getperm(req, prm, username, 1, 1)) {
 			trows += `
 				<tr id="perm-${prm}">
 					<td>${permnames[prm] ? permnames[prm] : prm}</td>
@@ -243,6 +243,10 @@ wiki.post('/admin/grant', async function grantPermissions(req, res) {
 	//                                                                    ↓↓  필요없지만 혹시 몰라서 해둠  ↓↓
 	const prmval = req.body['permission'].toString().replace(/\s/, '').replace(/^\[/, '').replace(/\]$/, '').replace(/[,]$/, '').split(',');
 	
+	var sb = 0;
+	var dbdata = await curs.execute("select username from bots where username = ?", [username]);
+	if(dbdata.length) sb = 1;
+	
 	for(prmi of perms) {
 		if(!prmi) continue;
 		
@@ -250,12 +254,13 @@ wiki.post('/admin/grant', async function grantPermissions(req, res) {
 		
 		if(!getperm(req, 'developer', ip_check(req), 1) && permso.includes(prm)) continue;
 		
-		if(getperm(req, prm, username, 1) && !prmval.includes(prm)) {
+		if(getperm(req, prm, username, 1, 1) && !prmval.includes(prm)) {
+			if(sb && prm == 'bot') continue;
 			logstring += '-' + prm + ' ';
 			if(fpermlist[subwiki(req)][username]) fpermlist[subwiki(req)][username].splice(find(fpermlist[subwiki(req)][username], item => item == prm), 1);
 			curs.execute("delete from perms where perm = ? and username = ?", [prm, username]);
 		}
-		else if(!getperm(req, prm, username, 1) && prmval.includes(prm)) {
+		else if(!getperm(req, prm, username, 1, 1) && prmval.includes(prm)) {
 			logstring += '+' + prm + ' ';
 			if(!fpermlist[subwiki(req)][username]) fpermlist[subwiki(req)][username] = [prm];
 			else fpermlist[subwiki(req)][username].push(prm);

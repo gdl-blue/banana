@@ -1387,9 +1387,11 @@ function subwiki(req) {
     return (req.session['subwikiid'] || '').toLowerCase();
 }
 
-function getperm(req, perm, username, noupdating = false) {
-	if((hostconfig.global_user_perms || []).includes(perm)) return true;
-	if(islogin(req) && (hostconfig.global_member_perms || []).includes(perm)) return true;
+function getperm(req, perm, username, noupdating = false, noglobal = 0) {
+	if(!noglobal) {
+		if((hostconfig.global_user_perms || []).includes(perm)) return true;
+		if(islogin(req) && (hostconfig.global_member_perms || []).includes(perm)) return true;
+	}
 	
     try {
         return fpermlist[subwiki(req)][username].includes(noupdating ? perm : updateTheseedPerm(perm))
