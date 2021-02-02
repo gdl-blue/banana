@@ -44,8 +44,6 @@ wiki.get('/BlockHistory', async function(req, res) {
 	}
 	
 	var content = `
-		${alertBalloon('[알림!]', '2020년 8월 20일 이전 차단 내역은 <a href="/LegacyBlockHistory">이곳</a>에서 조회할 수 있습니다.', 'info')}
-	
 		<table class="table table-hover">
 			<colgroup>
 				<col style="width: 200px;">
@@ -117,7 +115,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 						)
 					)
 				}</td>
-				<td>${ip_pas(req, row.blocker, row['blocker_type'])}</td>
+				<td>${ip_pas(req, row.blocker, (row['blocker_type'] || 'author'))}</td>
 				<td>${html.escape(row.username)}</td>
 				<td>${
 					row.endingdate == '0' ? (

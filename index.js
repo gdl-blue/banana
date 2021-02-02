@@ -292,6 +292,8 @@ var permsc = ['suspend_account', 'ipacl', 'hide_thread_comment', 'login_history'
 // 소유자만 부여 가능
 var permso = ['developer', 'manage_subwikis'];
 
+var permse = ['bot', 'fake_admin', 'subwiki_developer'];
+
 // 하위 위키 적용 불가
 var permsg = ['developer', 'login_history', 'view_login_history'];
     
@@ -1154,7 +1156,7 @@ const nodemailer = require('nodemailer');
 
 const ip_check = getUsername;
 
-async function isBanned(req, ismember = 'ip', username = '', checkBlockview = false) {
+async function isBanned(req, ismember = 'ip', username = '', checkBlockview = false, fetchReason = 0) {
     if(checkBlockview) return false;
     
     if(username == '') {
@@ -1185,12 +1187,16 @@ async function isBanned(req, ismember = 'ip', username = '', checkBlockview = fa
     
     if(alb) return 0;
     
-    var dbdata = await curs.execute("select username from banned_users where username = ? and ismember = 'author'", [username]);
-    if(dbdata.length) return 1;
+    var dbdata = await curs.execute("select username, note from banned_users where username = ? and ismember = 'author'", [username]);
+    if(dbdata.length) return fetchReason ? (dbdata[0].note) : 1;
     return 0;
 }
 
 const ban_check = isBanned;
+
+function blockNote(a, b, c, d) {
+	return ban_check(a, b, c, d, 1);
+}
 
 const config = {
     getString(str, def = '') {
@@ -1773,7 +1779,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
                     'someone@example.com', // 전자우편 주소; 아직 이메일 추가기능도 미구현.,
                     islogin(req) ? ip_check(req) : '사용자',  // 사용자 이름
                     islogin(req) ? (getperm(req, 'admin', ip_check(req)) ? 1 : 0) : 0,
-                    isBanned(req, islogin(req) ? 'author' : 'ip', ip_check(req)),
+                    (await isBanned(req, islogin(req) ? 'author' : 'ip', ip_check(req))) ? true : false,
                     0,
                     prmret,
                     ip_check(req),
@@ -1925,7 +1931,8 @@ function fetchError(req, code, tag = null) {
         'rev_not_found': '지정한 리비젼을 찾을 수 없습니다.',
         'nothing_changed': '바뀐 내용이 없습니다.',
         'invalid': '요청이 유효하지 않습니다.',
-    'uncreated_feature': '해당 기능이 정의되어있지 않습니다.'
+		'invalid_login': '해당 계정으로 로그인할 수 없습니다.',
+		'uncreated_feature': '해당 기능이 정의되어있지 않습니다.',
     };
     
     var cr = 0;
@@ -2108,7 +2115,7 @@ async function getacl(req, title, action) {
                     break;case 'member':
                         condition = islogin(req);
                     break;case 'blocked_ip':
-                        condition = await isBanned(req, 'ip', ip_check(req, 1));
+                        condition = (await isBanned(req, 'ip', ip_check(req, 1))) ? true : false;
                     break;case 'blocked_member':
                         condition = islogin(req) && await isBanned(req, 'author', ip_check(req));
                     break;case 'admin':

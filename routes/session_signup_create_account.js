@@ -132,6 +132,7 @@ wiki.post('/member/signup_key', async function createAccount(req, res) {
 	await curs.execute("select username from users");
 	if(!curs.fetchall().length) {
 		for(perm of perms) {
+			if(permse.includes(perm)) continue;
 			await curs.execute(`insert into perms (username, perm) values (?, ?)`, [id, perm]);
 			if(typeof(fpermlist[''][id]) == 'undefined')
 				fpermlist[''][id] = [perm];

@@ -82,9 +82,9 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			
 			if(title.startsWith("사용자:") && await ban_check(req, 'author', title.replace(/^사용자[:]/, ''))) {
 				content = `
-					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: crimson gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'darkred\';" onmouseout="this.style.borderTopColor=\'crimson\';">
+					<div style="border-width: 1px; border-style: solid; border-color: black; padding: 10px; margin-bottom: 10px; border-radius: 10px; background-image: linear-gradient(to right, rgb(242, 137, 158), rgb(239, 188, 198)); transition: all 0.2s ease 0s;" onmouseover="this.style.boxShadow = '0px 0px 6px crimson';" onmouseout="this.style.boxShadow = 'none';">
 						<span style="font-size: 14pt;">차단된 사용자입니다. 관리자에게 문의하십시오.</span><br />
-						사유 내용
+						사유: ${await blockNote(req, 'author', title.replace(/^사용자[:]/, ''))}
 					</div>
 				` + content;
 			}
