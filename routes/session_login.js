@@ -68,7 +68,7 @@ wiki.post('/member/login', async function authUser(req, res) {
 	
 	await curs.execute("select username, password from users where username = ? and password = ''", [id]);
 	if(curs.fetchall().length) {
-		res.send(await showError(req, 'invalid'));
+		res.send(await showError(req, 'invalid_login'));
 		return;
 	}
 	

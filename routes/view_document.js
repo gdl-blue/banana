@@ -91,7 +91,7 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			
 			if(title.startsWith("사용자:") && (getperm(req, 'admin', title.replace(/^사용자[:]/, '')) || getperm(req, 'bot', title.replace(/^사용자[:]/, '')) || getperm(req, 'fake_admin', title.replace(/^사용자[:]/, '')))) {
 				content = `
-					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'${getperm(req, 'admin', title.replace(/^사용자[:]/, '')) ? 'red' : 'blue'}\';" onmouseout="this.style.borderTopColor=\'orange\';">
+					<div style="border-width: 5px 1px 1px; border-style: solid; border-color: orange gray gray; padding: 10px; margin-bottom: 10px;" onmouseover="this.style.borderTopColor=\'${getperm(req, 'fake_admin', title.replace(/^사용자[:]/, '')) ? 'blue' : 'red'}\';" onmouseout="this.style.borderTopColor=\'orange\';">
 						<span style="font-size: 14pt;">이 사용자는 특수 권한을 가지고 있습니다.</span>
 					</div>
 				` + content;

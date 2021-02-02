@@ -190,7 +190,7 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 							<input type=text class=form-control id=logInput name=log />
 						</div>
 
-            <input type=checkbox checked id=agreeCheckbox description="theseed.js를 사용 중일 때 저장이 되지 않는 문제 수정용" style="display: none;" />
+            <input type=checkbox checked id=agreeCheckbox value=Y description="theseed.js를 사용 중일 때 저장이 되지 않는 문제 수정용" style="display: none;" />
 						
 						<div class=form-group>
 							${captcha}

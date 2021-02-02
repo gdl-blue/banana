@@ -522,6 +522,8 @@ function generateTime(time, fmt = timeFormat, iso = null) {
     return `<time datetime="${d}T${t}.000Z" data-format="${fmt}">${time}</time>`;
 }
 
+const clientStatus = {};
+
 const url_pas = encodeURIComponent;
 
 const md5 = require('md5');
@@ -731,6 +733,12 @@ wiki.use(bodyParser.urlencoded({
 wiki.use(express.static('public'));
 
 wiki.use(cookieParser());
+
+wiki.use(require('method-override')(req => {
+	if(req.body && req.body['_method']) {
+		return req.body['_method'];
+	}
+}));
   
 const FileStore = require('session-file-store')(session);
   
@@ -946,7 +954,6 @@ async function JSnamumark(title, content, initializeBacklinks = 0, req = null) {
             );
             
             // https://stackoverflow.com/questions/1801160/can-i-use-jquery-with-node-js
-            const jsdom = require("jsdom");
             const { JSDOM } = jsdom;
             const { window } = new JSDOM();
             const { document } = (new JSDOM(htmlc)).window;
@@ -1472,10 +1479,16 @@ async function getScheme(req) {
     return mycolor;
 }
 
-const nunjucks = require('nunjucks');
+const Nunjucks = require('nunjucks');
+const jsdom = require('jsdom');
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
-    const skinInfo = {
+	content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+	
+	// 메쏘드 오버라이드!
+	content = content.replace(/<form(((?![>]).|\n)*)\smethod=(["]patch["]|patch|["]put["]|put|["]delete["]|delete)((\s(((?![>]).|\n)*))|)>/gim, '<form$1 method=post$5><input type=hidden name=_method value=$3 />');
+	
+	const skinInfo = {
         title: title + subtitle,
         viewName: viewname,
         error: (varlist.skinInfo ? varlist.skinInfo.error : undefined) || undefined
@@ -1492,7 +1505,7 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 		${await readFile('./css/popup-window.html')}
 	`;
     
-    const nunjucks = new nunjucks.Environment;
+    const nunjucks = new Nunjucks.Environment;
 
     if(config.getString('enable_opennamu_skins', '1') != '0') {
         // 호환용
@@ -2200,7 +2213,6 @@ const html = {
 };
   
 function jQuery(html) {
-    const jsdom = require('jsdon');
     const { JSDOM } = jsdom;
     const { window } = new JSDOM();
     const { document } = (new JSDOM(html || '')).window;

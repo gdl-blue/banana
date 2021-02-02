@@ -155,6 +155,44 @@ wiki.get(/^\/api\/v3\/members\/(.*)/, async function API_userInfo_v3(req, res) {
 	res.json(ret);
 });
 
+wiki.get(/^\/api\/v3\/me$/, async(req, res) => {
+	if(!islogin(req)) return res.status(401).json({
+		state: 'no_session',
+		message: '세션이 없습니다. 헤더에 쿠키나 X-Token(봇의 토큰값)을 전송하십시오.',
+	});
+	
+	const username = ip_check(req);
+	
+	await curs.execute("select username from users where username = ?", [username]);
+	
+	if(!curs.fetchall().length) {
+		res.status(404).json({
+			username: username,
+			state: 'invalid_user',
+		});
+		return;
+	}
+	
+	var ret = {
+		username: username,
+		state: 'ok',
+	};
+	
+	var dbdata = await curs.execute("select time from history where rev = '1' and title = ?", ['사용자:' + username]);
+	ret['joined_timestamp'] = Number(dbdata[0]['time']);
+	
+	await curs.execute("select username from history where username = ?", [username]);
+	ret['contribution_count'] = curs.fetchall().length;
+	ret['permissions'] = [];
+	ret['suspended'] = (await isBanned(req, 'author', username)) ? true : false;
+	
+	for(var perm of perms) {
+		if(getperm(req, perm, username)) ret['permissions'].push(perm);
+	}
+	
+	res.json(ret);
+});
+
 wiki.get(/^\/api\/v3\/history\/(.*)/, async function API_viewHistory_v3(req, res) {
 	const title = req.params[0];
 	
