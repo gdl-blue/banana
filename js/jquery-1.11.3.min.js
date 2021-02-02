@@ -1,1 +1,1 @@
-/* Dummy file due to compatibility */
+/* Dummy file for compatibility */

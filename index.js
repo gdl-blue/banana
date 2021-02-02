@@ -1387,7 +1387,7 @@ function subwiki(req) {
     return (req.session['subwikiid'] || '').toLowerCase();
 }
 
-function getperm(req, perm, username, noupdating = false, noglobal = 0) {
+function getperm(req, perm, username, noupdating = 0, noglobal = 0) {
 	if(!noglobal) {
 		if((hostconfig.global_user_perms || []).includes(perm)) return true;
 		if(islogin(req) && (hostconfig.global_member_perms || []).includes(perm)) return true;
