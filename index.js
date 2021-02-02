@@ -558,6 +558,7 @@ const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
 const speakeasy = require('speakeasy');
 const QRCode = require('qrcode');
+const jsdom = require('jsdom');
 
 // https://github.com/cemerick/jsdifflib
 const difflib = require('./cemerick-jsdifflib.js');
@@ -1480,7 +1481,6 @@ async function getScheme(req) {
 }
 
 const Nunjucks = require('nunjucks');
-const jsdom = require('jsdom');
 
 async function render(req, title = '', content = '', varlist = {}, subtitle = '', error = false, viewname = '', menu = 0) {
 	content = content.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
