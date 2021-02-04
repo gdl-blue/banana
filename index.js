@@ -444,7 +444,7 @@ conn.commit = function() {};
 conn.sd = [];
 
 const curs = {
-    execute: async function executeSQL(sql = '', params = [], noerror = false) {
+    execute: async function executeSQL(sql = '', params = [], noerror = 0) {
         if(UCase(sql).startsWith("SELECT")) {
             const retval = await conn.query(sql, params);
             conn.sd = retval;
@@ -1156,7 +1156,7 @@ const nodemailer = require('nodemailer');
 
 const ip_check = getUsername;
 
-async function isBanned(req, ismember = 'ip', username = '', checkBlockview = false, fetchReason = 0) {
+async function isBanned(req, ismember = 'ip', username = '', checkBlockview = false, attr = null) {
     if(checkBlockview) return false;
     
     if(username == '') {
@@ -1187,15 +1187,15 @@ async function isBanned(req, ismember = 'ip', username = '', checkBlockview = fa
     
     if(alb) return 0;
     
-    var dbdata = await curs.execute("select username, note from banned_users where username = ? and ismember = 'author'", [username]);
-    if(dbdata.length) return fetchReason ? (dbdata[0].note) : 1;
-    return 0;
+    var dbdata = await curs.execute("select username, note, endingdate from banned_users where username = ? and ismember = 'author'", [username]);
+    if(dbdata.length) return attr ? (dbdata[0][attr]) : 1;
+    return attr ? null : 0;
 }
 
 const ban_check = isBanned;
 
 function blockNote(a, b, c, d) {
-	return ban_check(a, b, c, d, 1);
+	return ban_check(a, b, c, d, 'note');
 }
 
 const config = {
@@ -2313,18 +2313,15 @@ function getSkins() {
 function getPlugins(type = 'feature', excludeDisabled = false) {
     var retval = [];
     
-    // 밑의 fileExplorer 함수에 출처 적음.
-    for(dir of fs.readdirSync('./plugins', { withFileTypes: true }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
+    for(dir of fs.readdirSync('./plugins', { withFileTypes: 1 }).filter(dirent => dirent.isDirectory()).map(dirent => dirent.name)) {
         const cfg = require('./plugins/' + dir + '/config.json');
-        if(cfg['enabled'] != true && excludeDisabled) continue;
+        if(cfg['enabled'] != 1 && excludeDisabled) continue;
         if(type != 'all' && cfg['type'] != type) continue;
         retval.push(dir);
     }
     
     return retval;
 }
-
-function mmmmmmmmmmmmmmn() { return 0; }
 
 for(pi of getPlugins()) {
     const picfg = require('./plugins/' + pi + '/config.json');
@@ -2333,7 +2330,7 @@ for(pi of getPlugins()) {
     print(picod);
     
     for(var u=0; u<picod['urls'].length; u++) {
-        if(picfg['enabled'] != true) continue;
+        if(picfg['enabled'] != 1) continue;
         
         if(picod['codes'][u]['method'].toLowerCase() == 'post') {
             wiki.post(picod['urls'][u], picod['codes'][u]['code']);
@@ -2873,8 +2870,6 @@ wiki.get('/', async function welcome(req, res) {
         datetime: new Date().getTime()
     } }));
 });
-
-function mmmmmmmmmmmmmm() { return 0; }
 
 async function getThreadData(req, tnum, tid = '-1', theseed) {
     var dbdata = await curs.execute("select id from res where tnum = ? and ((subwikiid = ? and not subwikiid = 'global') or subwikiid = 'global')", [tnum, subwiki(req)]);

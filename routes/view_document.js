@@ -81,9 +81,12 @@ wiki.get(/^\/w\/(.*)/, async function viewDocument(req, res) {
 			}
 			
 			if(title.startsWith("사용자:") && await ban_check(req, 'author', title.replace(/^사용자[:]/, ''))) {
+				const ending = Number(await ban_check(req, 'author', title.replace(/^사용자[:]/, ''), 0, 'endingdate'));
+				
 				content = `
-					<div style="border-width: 1px; border-style: solid; border-color: black; padding: 10px; margin-bottom: 10px; border-radius: 10px; background-image: linear-gradient(to right, rgb(242, 137, 158), rgb(239, 188, 198)); transition: all 0.2s ease 0s;" onmouseover="this.style.boxShadow = '0px 0px 6px crimson';" onmouseout="this.style.boxShadow = 'none';">
-						<span style="font-size: 14pt;">차단된 사용자입니다. 관리자에게 문의하십시오.</span><br />
+					<div style="border-width: 1px 1px 1px 5px; border-style: dashed dashed dashed solid; border-color: gray gray gray crimson; padding: 10px; margin-bottom: 10px; border-radius: 6px;" onmouseover="this.style.borderLeftColor=\'darkred\';" onmouseout="this.style.borderLeftColor=\'crimson\';">
+						<span style="font-size: 14pt;">이 사용자는 차단되었습니다.</span><br />
+						만료일: ${ending ? new Date(ending) : (Math.random() < 0.1 ? random.choice(['해가 서쪽에서 뜨는 날까지', '지구가 반대로 돌게 되는 날까지']) : '무기한')}<br />
 						사유: ${await blockNote(req, 'author', title.replace(/^사용자[:]/, ''))}
 					</div>
 				` + content;
