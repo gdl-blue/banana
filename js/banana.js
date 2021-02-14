@@ -235,7 +235,7 @@ function alertBalloon(title, content, delay, noMsgbox, type) {
             'border': '1px solid #000',
             'width': 'calc(100% - 50px)',
             'box-shadow': '5px 5px 0 rgb(64, 64, 64)',
-			'bottom': '0px',
+			/* 'bottom': '0px', */
         }).prependTo('body');
 
         var width = balloon.width();
@@ -1001,7 +1001,7 @@ $(function() {
 		typeof discussPollStart == 'function' && typeof recaptchaInit == 'function' &&
 		typeof recaptchaExecute == 'function' && typeof recaptchaOnLoad == 'function'
     ) {
-		console.log('theseed.js이 감지되었습니다.');
+		console.log('theseed.js 감지');
 	} else {
         function fetchComments(tnum) {
             setVisibleState();
