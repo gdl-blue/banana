@@ -1496,6 +1496,10 @@ async function render(req, title = '', content = '', varlist = {}, subtitle = ''
 	// 메쏘드 오버라이드!
 	content = content.replace(/<form(((?![>]).|\n)*)\smethod=(["]patch["]|patch|["]put["]|put|["]delete["]|delete)((\s(((?![>]).|\n)*))|)>/gim, '<form$1 method=post$5><input type=hidden name=_method value=$3 />');
 	
+	if(req.cookies['enable-ajax'] && (req.query['content-only'] == 1 || req.query['content-only'] == 'true')) {
+		return { title: title + subtitle, content, error, viewname, data: varlist };
+	}
+	
 	const skinInfo = {
         title: title + subtitle,
         viewName: viewname,

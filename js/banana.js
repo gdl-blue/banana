@@ -970,6 +970,48 @@ $(function() {
 			tmpfrm.remove();
         });
     });
+	
+	if(getCookie('enable-ajax')) {
+		function setAJAX() {
+			$('a[href]:not([href="#"]):not([href=""])').click(function() {
+				var href = $(this).attr('href');
+				
+				$('body > div.web-progress-container').remove();
+				var pb = $('<div class=web-progress-container><div class=web-progress style="width: 0%;"></div></div>');
+				$('body').prepend(pb);
+				pb.find('> div.web-progress').css('width', '20%');
+				
+				$.ajax({
+					url: href + (href.includes('?') ? '&' : '?') + 'content-only=1',
+					dataType: 'json',
+					success: function(d) {
+						$('.wiki-article').html(d.content);
+						pb.find('> div.web-progress').css('width', '100%');
+						setTimeout(function() {
+							pb.fadeOut(200, function() { pb.remove() });
+						}, 200);
+						
+						setAJAX(), formatDatetime();
+						
+						( 
+							document.querySelector('h1.title') ||
+							document.querySelector('.title h1') || 
+							document.querySelector('.title') || 
+							document.querySelector('h1')
+						).innerText = document.title = d.title;
+						
+						history.pushState('', '', href);
+					}, error: function(e) {
+						location.href = href;
+					}
+				});
+				
+				return false;
+			});
+		}
+		
+		setAJAX();
+	}
 });
 
 (function() {
