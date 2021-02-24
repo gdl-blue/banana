@@ -22,7 +22,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 			dbdata = await curs.execute("select ismember, type, blocker, username, startingdate, endingdate, note from blockhistory order username = ? by cast(startingdate as integer) desc limit 100", [req.query['query']]);
 		}
 		
-		for(item of dbdata) {
+		for(var item of dbdata) {
 			// 곧 할 예정
 		}
 		
@@ -72,7 +72,7 @@ wiki.get('/BlockHistory', async function(req, res) {
 	
 	var trlist = '';
 	
-	for(row of dbdata) {
+	for(var row of dbdata) {
 		if(req.query['until']) {
 			if(!set) {
 				ld = row.startingdate; set = 1;
@@ -177,7 +177,7 @@ wiki.get('/LegacyBlockHistory', async function(req, res) {
 	
 	ullist = '';
 	
-	for(row of cf) {
+	for(var row of cf) {
 		if(req.query['until']) {
 			if(!set) {
 				ld = row.today; set = 1;

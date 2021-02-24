@@ -68,7 +68,7 @@ wiki.get(/^\/search\/(.*)/, async (req, res) => {
       first = data[0]['title'];
     } catch(e) {}
 		
-		for(item of data) {
+		for(var item of data) {
 			if(!(await getacl(req, item.title, 'read'))) item.content = '[이 문서를 읽을 수 있는 권한이 없습니다.]';
 			
 			content += `

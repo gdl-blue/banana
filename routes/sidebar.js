@@ -3,7 +3,7 @@ wiki.get('/sidebar.json', (req, res) => {
 	curs.execute("select time, title from history order by cast(time as integer) desc limit 1000")
 	.then(async dbdata => {
 		var ret = [], cnt = 0, used = [];
-		for(item of dbdata) {
+		for(var item of dbdata) {
 			if(used.includes(item.title)) continue;
 			used.push(item.title);
 			

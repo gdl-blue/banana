@@ -47,7 +47,7 @@ wiki.get(/^\/contribution\/(ip|author)\/(.*)\/discuss/, async function discussio
 	
 	const dd = dbdata;
 	
-	for(row of dd) {
+	for(var row of dd) {
 		await curs.execute("select topic from threads where deleted = '1' and tnum = ?", [row['tnum']]);
 		if((curs.fetchall().length) && !getperm(req, 'developer', ip_check(req))) {
 			continue;

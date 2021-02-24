@@ -73,7 +73,7 @@ wiki.get(/^\/discuss\/(.*)/, async function threadList(req, res) {
 				await curs.execute("select username from res where tnum = ? and (id = '1') and ((subwikiid = ? and not subwikiid = 'global') or subwikiid = 'global')", [trd['tnum'], subwiki(req)]);
 				const fstusr = curs.fetchall()[0]['username'];
 				
-				for(rs of td) {
+				for(var rs of td) {
 					const crid = Number(rs['id']);
 					if(ltid > 3 && crid != 1 && (crid < ltid - 1)) {
 						if(!ambx) {

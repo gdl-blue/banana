@@ -133,7 +133,7 @@ wiki.get('/RecentChanges', async(req, res) => {
 			<tbody id>
 	`;
 	
-	for(row of (dbdata || [])) {
+	for(var row of (dbdata || [])) {
 		tabledata += `
 				<tr${(row['log'].length > 0 || row['advance'].length > 0 ? ' class=no-line' : '')}>
 					<td>

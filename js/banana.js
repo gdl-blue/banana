@@ -958,7 +958,7 @@ $(function() {
             
             form.find('[name]').each(function() {
                 var input = $(this);
-                html += '<input type="hidden" name="' + input.attr('name') + '" value="' + input.val().replace(/[&]/g, '&amp;').replace(/["]/g, '&quot;') + '" />';
+                html += '<textarea style="display: none;" name="' + input.attr('name') + '">' + input.val().replace(/[&]/g, '&amp;').replace(/["]/g, '&quot;') + '</textarea>';
             });
             
 			html += '<button type="submit" id="jtmpfrmsubmitbtn12345678"></button>';
@@ -973,7 +973,7 @@ $(function() {
 	
 	if(getCookie('enable-ajax')) {
 		function setAJAX() {
-			$('a[href]:not([href="#"]):not([href=""])').click(function() {
+			$('a[href]:not([href^="#"]):not([href=""])').click(function() {
 				var href = $(this).attr('href');
 				
 				$('body > div.web-progress-container').remove();
@@ -993,15 +993,14 @@ $(function() {
 						
 						setAJAX(), formatDatetime();
 						
-						( 
-							document.querySelector('h1.title') ||
-							document.querySelector('.title h1') || 
-							document.querySelector('.title') || 
-							document.querySelector('h1')
-						).innerText = document.title = d.title;
+						( document.querySelector('h1.title') ||
+						  document.querySelector('.title h1') || 
+						  document.querySelector('.title') || 
+						  document.querySelector('h1') ).innerText = document.title = d.title;
 						
 						history.pushState('', '', href);
 					}, error: function(e) {
+						pb.fadeOut(200, function() { pb.remove() });
 						location.href = href;
 					}
 				});

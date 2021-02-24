@@ -326,7 +326,7 @@ wiki.get(/^\/api\/v3\/thread\/(.+)/, async function API_threadData_v3(req, res) 
 	content = '';
 	var ret = {};
 	var cnt = 0;
-	for(rs of reses) {
+	for(var rs of reses) {
 		ret[rs['id']] = {
 			id: rs['id'],
 			hidden: rs['hidden'] == '1' ? true : false,
@@ -413,7 +413,7 @@ wiki.get(/^\/api\/v3\/block_history$/, async(req, res) => {
 	var fd, ld;
 	var ret = [];
 	
-	for(row of dbdata) {
+	for(var row of dbdata) {
 		if(req.query['until']) {
 			if(!set) {
 				ld = row.startingdate; set = 1;
@@ -484,7 +484,7 @@ wiki.get(/^\/api\/v3\/contribution\/(ip|author)\/(.*)\/document$/, async(req, re
 				
 	var ret = [];
 	
-	for(row of dbdata) {
+	for(var row of dbdata) {
 		const { log, advance, time, title, rev, changes, iserq, erqnum } = row;
 		ret.push({
 			log, advance, time: Number(time), title, type: '', 
@@ -534,7 +534,7 @@ wiki.get(/^\/api\/v3\/recent_changes$/, async(req, res) => {
 	
 	var ret = [];
 	
-	for(row of dbdata) {
+	for(var row of dbdata) {
 		const { log, advance, time, title, rev, changes, iserq, erqnum, username, ismember } = row;
 		ret.push({
 			log, advance, time: Number(time), title, type: '', contributor: username,

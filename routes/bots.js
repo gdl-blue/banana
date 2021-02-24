@@ -18,7 +18,7 @@ wiki.get('/member/bots', async(req, res) => {
 	`;
 	
 	var dbdata = await curs.execute("select username, token from bots where owner = ?", [ip_check(req)]);
-	for(bot of dbdata) {
+	for(var bot of dbdata) {
 		with(bot) {
 			var db2 = await curs.execute("select time from history where rev = '1' and title = ?", ['사용자:' + username]);
 			

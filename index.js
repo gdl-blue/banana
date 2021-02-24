@@ -667,6 +667,7 @@ try {
 			'user_block_types': ['name', 'subwikiid'],
 			'otpkeys': ['username', 'key'],
 			'bots': ['username', 'owner', 'token'],
+			'ab_customacl': ['aclid', 'id', 'type', 'condition', 'action', 'expiration', 'subwikiid'],
         };
         
         for(var table in tables) {
@@ -2189,7 +2190,7 @@ async function getacl(req, title, action) {
             
             return false;
         break; default:
-            return (await require('./plugins/' + acltyp + '/index.js')['codes']['getacl'](req, title, action));
+            return (await require('./plugins/' + acltyp + '/index.js').codes.getacl(req, title, action));
     }
     
 }

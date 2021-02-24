@@ -137,7 +137,7 @@ wiki.get(/^\/history\/(.*)/, async function viewHistory(req, res) {
 	
 	var trlist = '';
 	
-	for(row of dbdata) {
+	for(var row of dbdata) {
 		if(!set) { fr = row.rev; set = 1 }
 		lr = row.rev;
 		

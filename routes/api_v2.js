@@ -292,7 +292,7 @@ wiki.get(/^\/api\/v2\/thread\/(.+)/, async function API_threadData_v2(req, res) 
 	content = '';
 	var ret = {};
 	var cnt = 0;
-	for(rs of curs.fetchall()) {
+	for(var rs of curs.fetchall()) {
 		ret[rs['id']] = {
 			id: rs['id'],
 			hidden: rs['hidden'] == '1' ? true : false,

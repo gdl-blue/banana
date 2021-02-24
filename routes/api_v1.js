@@ -254,7 +254,7 @@ wiki.get(/^\/api\/v1\/thread\/(.+)/, async function API_threadData_v1(req, res) 
 		thread_id: tnum
 	};
 	
-	for(rs of dbdata) {
+	for(var rs of dbdata) {
 		ret[rs['id']] = {
 			id: rs['id'],
 			hidden: rs['hidden'] == '1' || rs['hidden'] == 'O' ? true : false,

@@ -7,7 +7,7 @@ banana is a wiki engine that supports many convinient features. (English is not 
 사용자마다 UI의 HTML을 직접 편집하여 자신만의 UI로 이용할 수 있는 기능을 탑재할 예정입니다.
 
 ## 요구 환경
-Windows 7(Node.js 7.6 이상)
+Node.js 12.0 이상 (다만 Node.js 5.x를 지원하게 될 수도 있는데, 그렇게 하다가 최신 버전에서 작동하지 않을 상황이 우려되어 확실하지는 않습니댜)
 
 ## 기능
 굵게 표시한 것을 모두 만들면 베타로 전환.

@@ -42,7 +42,7 @@ wiki.get(/^\/xref\/(.*)/, async (req, res) => {
 	`;
 	
 	const dbdata = await curs.execute("select title from backlink where link = ?", [title]);
-	for(doc of dbdata) {
+	for(var doc of dbdata) {
 		content += `
 			<li>
 				<a href="/w/${encodeURIComponent(doc.title)}">${html.escape(doc.title)}</a>
