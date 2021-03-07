@@ -971,7 +971,7 @@ $(function() {
         });
     });
 	
-	if(getCookie('enable-ajax')) {
+	if(getCookie('enable-ajax') == 'y') {
 		function setAJAX() {
 			$('a[href]:not([href^="#"]):not([href=""])').click(function() {
 				var href = $(this).attr('href');

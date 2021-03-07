@@ -29,7 +29,8 @@ wiki.get('/admin/custom_acl', async(req, res) => {
 			
 			return res.send(await render(req, '사용자 지정 ACL', content));
 		break; default:
-			const fn = (await require('./plugins/' + acltyp + '/index.js').codes.custom;
+			const fn = (await require('./plugins/' + acltyp + '/index.js')).codes.custom;
 			if(!fn) return res.send(await showError(req, 'disabled_feature'));
-            return fn(req, res));
+            return fn(req, res);
+	}
 });
