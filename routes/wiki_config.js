@@ -216,12 +216,12 @@ wiki.get('/admin/config', async function wikiControlPanel(req, res) {
 									<label><input type=checkbox name=disable_recentdiscuss ${config.getString('disable_recentdiscuss', '0') == '1' ? 'checked' : ''}> 최근 토론 열람 금지</label><br>
 									<label><input type=checkbox name=disable_contribution_list ${config.getString('disable_contribution_list', '0') == '1' ? 'checked' : ''}> 기여 목록 열람 금지</label><br>
 									<label><input type=checkbox name=disable_email ${config.getString('disable_email', '0') == '1' ? 'checked' : ''}> 전자우편 등록 금지</label><br>
+									<label><input type=checkbox name=allow_upload ${config.getString('allow_upload', '1') == '1' ? 'checked' : ''}> 파일을 올릴 수 있도록 허용</label><br>
 								</div>
 								
 								<div class=form-group>
-									<div class=form-group>
-										<label><input type=checkbox name=allow_upload ${config.getString('allow_upload', '1') == '1' ? 'checked' : ''}> 파일을 올릴 수 있도록 허용</label><br>
-									</div>
+									<label><input type=checkbox name=enable_contribution_list_count_limit ${config.getString('enable_contribution_list_count_limit', '1') == '1' ? 'checked' : ''} /> [미구현] 기여 목록 열람 시 총 개수를 <input type=number name=contribution_list_count value=2400 />개로 제한</label><br />
+									<label><input type=checkbox name=enable_contribution_list_date_limit ${config.getString('enable_contribution_list_date_limit', '0') == '1' ? 'checked' : ''} /> [미구현] 기여 목록 열람 시 최근 <input type=number name=contribution_list_count value=60 />일의 기여 내역만 불러오기</label>
 								</div>
 								
 								<div class=form-group>
