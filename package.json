@@ -28,7 +28,7 @@
     "nunjucks": "^3.2.2",
     "path": "^0.12.7",
     "proxy-addr": "^2.0.6",
-    "pug": "^3.0.0",
+    "pug": "^3.0.1",
     "qrcode": "^1.4.4",
     "session-file-store": "^1.4.0",
     "sha224": "^1.0.0",
