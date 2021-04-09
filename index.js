@@ -328,8 +328,8 @@ var permnames = {
 
 var _perms = perms;
 
-const print = console.log;
-const prt   = process.stdout.write;
+const print = p => console.log(p);
+const prt   = p => process.stdout.write(p);
 
 function beep(cnt = 1) {
     // for(i=1; i<=cnt; i++)
