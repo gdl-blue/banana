@@ -1,0 +1,220 @@
+<!-- 스택 오버플로우 방식 분류 -->
+
+<meta charset=euc-kr />
+<script src="https://code.jquery.com/jquery-2.1.4.js"></script>
+
+<script>
+	$(function() {
+		$('.for-script').show();
+	
+		var bksp = 0;
+		var lastval = $('#tagInput').val();
+		
+		function bdb() {
+			$('div#tags span.tag a.delete').click(function() {
+				$(this).parent().remove();
+			});
+		}
+		
+		function setEdit() {
+			$('div#tags span.tag').click(function (e) { 
+				if(e.target == this) {
+					$('input#tagInput').val($(this).find('> input').val()).focus();
+					$(this).remove();
+				}
+			});
+		}
+		
+		function insertTag(tag) {
+			const tagspan = $('<span class="tag" title="편집하려면 누르십시오."></span>');
+			tagspan.text(tag).html(tagspan.html() + '<a class="delete" title="분류 해제">×</a>' + '<input name="categories" />').find('> input').attr('value', tag);
+			$('div#tags input#tagInput').before(tagspan);
+			bdb();
+			
+			setEdit();
+		}
+	
+		$('#tagInput').on('keyup', function(e) {
+			switch(e.keyCode || e.charCode) {
+				case 13:
+					if($(this).val().replace(/\s/g, '') == '') break;
+					const tag = $(this).val();
+					if(!tag) break;
+					
+					insertTag(tag);
+					
+					$(this).val('');
+					bdb();
+				break; case 8: case 46:
+					if($(this).val() || lastval) break;
+					
+					const lasttag = $('div#tags span.tag').last().find('> input').val();
+					
+					$('div#tags span.tag').last().remove();
+					$('#tagInput').val(lasttag);
+					bksp = 0;
+			}
+			lastval = $(this).val();
+			
+			$('div#tagSearch').html('');
+			
+			/* 실제로는 AJAX - `/complete/분류:` + 쿼리(URI 인코딩) */
+			const data = [
+				{ title: '동물', count: 3, description: '' },
+				{ title: '전자', count: 435, description: '' },
+				{ title: '탈것', count: 34, description: '' },
+				{ title: '과학', count: 7, description: '' },
+			];
+			const query = $(this).val();
+			
+			for(i in data) {
+				const item = data[i];
+				if(!item.title.toLowerCase().includes(query.toLowerCase()) || !query) continue;
+				
+				const card = $('<div class="card"><span class="title"></span><span class="description"></span></div>');
+				card.find('> .title').text(item.title);
+				card.find('> .description').text('문서 ' + item.count + '개');
+				
+				$('div#tagSearch').append(card);
+			}
+			
+			$('div#tagSearch div.card').click(function() {
+				insertTag($(this).find('> .title').text());
+				$('#tagInput').val('').focus();
+				$(this).parent().html('');
+			});
+		});
+		
+		$('div#tags').click(function(e) { 
+			if(e.target == this) $('input#tagInput').focus();
+		});
+		
+		bdb();
+		setEdit();
+	});
+</script>
+
+<style>
+	body { font-family: '돋움'; }
+
+	.form-control {
+		border: 1px solid #ddd;
+		border-radius: 5px;
+		padding: 8px;
+		cursor: text;
+		overflow-wrap: break-word;
+		width: 100%;
+	}
+	
+	div#tags input#tagInput {
+		border: none;
+		padding: 0;
+		background-color: transparent;
+	}
+	
+	div#tags input#tagInput:focus {
+		border: none;
+		outline: 0;
+	}
+	
+	div#tags span.tag {
+		border-radius: 9px;
+		background-image: linear-gradient(#ff869b, #ffdce2);
+		padding: 4px;
+		margin-right: 5px;
+		color: rgb(128, 0, 64);
+		cursor: pointer;
+		border: 1px solid rgb(128, 0, 64);
+		position: relative;
+	}
+	
+	div#tags span.tag::before {
+		border-radius: 20px 20px 15px 10px;
+		height: 8px;
+		content: "";
+		background-image: linear-gradient(to bottom, rgba(255, 255, 255, 8), rgba(255, 255, 255, .4));
+		position: absolute;
+		width: calc(100% - 3.5px);
+		margin: -2px 0 0 0;
+		left: 1.5px;
+		top: 2px;
+	}
+	
+	div#tags span.tag input {
+		display: none;
+	}
+	
+	div#tags span.tag a.delete {
+		font-weight: bold;
+		margin-left: 5px;
+		cursor: pointer;
+		color: rgb(128, 0, 64);
+	}
+	
+	div#tagSearch {
+		padding: 8px;
+	}
+	
+	div#tagSearch div.card {
+		border-radius: 8px;
+		background-image: radial-gradient(ellipse at 50% 50%, #FFB1BF 0%, #FFD3DB);
+		padding: 8px;
+		margin-right: 5px;
+		color: rgb(128, 0, 64);
+		display: inline-block;
+		border: 1px solid black;
+		margin: 0 20px 0 0;
+		overflow: hidden;
+		position: relative;
+		cursor: pointer;
+	}
+	
+	div#tagSearch div.card:before {
+		content: '';
+		background-image: radial-gradient(ellipse at 50% -70px, rgb(255, 255, 255) 0%, transparent 75%);
+		position: absolute;
+		width: 100%;
+		height: 40px;
+		top: -10px;
+		left: 0;
+	}
+	
+	div#tagSearch div.card:hover:before {
+		background-image: radial-gradient(ellipse at 50% -70px, rgba(255, 255, 255, .9) 0%, transparent 70%);
+	}
+	
+	div#tagSearch div.card:hover:not(:active):after {
+		content: '';
+		background-image: radial-gradient(ellipse at 50% 50%, rgb(255, 255, 255), rgb(255, 255, 255) 30%, transparent 75%);
+		position: absolute;
+		width: 100%;
+		height: 40px;
+		top: 75%;
+		left: 0;
+	}
+	
+	div#tagSearch div.card > .title {
+		font-weight: 700;
+		display: block;
+	}
+	
+	.for-script { display: none }
+</style>
+
+<div class=form-group>
+	<div class=for-script>
+		<label>분류(리턴글쇠로 등록): </label>
+		<div id=tags class=form-control>
+			<input id=tagInput />
+		</div>
+		
+		<div id=tagSearch>
+		
+		</div>
+	</div>
+	
+	<noscript>
+		<label>분류(줄바꿈으로 구분): </label>
+		<textarea class=form-control name=category-fallback rows=6></textarea>
+	</noscript>
+</div>

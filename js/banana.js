@@ -1635,3 +1635,110 @@ $(function() {
 		window.setSettings = setSettings;
 	});
 })();
+
+$(function() {
+	var bksp = 0;
+	var lastval = $('#tagInput').val();
+	
+	function bdb() {
+		$('div#tags span.tag a.delete').click(function() {
+			$(this).parent().remove();
+		});
+	}
+	
+	function setEdit() {
+		$('div#tags span.tag').click(function (e) { 
+			if(e.target == this) {
+				$('input#tagInput').val($(this).find('> input').val()).focus();
+				$(this).remove();
+			}
+		});
+	}
+	
+	function insertTag(tag) {
+		const tagspan = $('<span class="tag" title="편집하려면 누르십시오."></span>');
+		tagspan.text(tag).html(tagspan.html() + '<a class="delete" title="분류 해제">×</a>' + '<input name="categories" />').find('> input').attr('value', tag);
+		$('div#tags input#tagInput').before(tagspan);
+		bdb();
+		
+		setEdit();
+	}
+	
+	var ajaxt = 0;
+
+	$('#tagInput').on('keyup', function(e) {
+		switch(e.keyCode || e.charCode) {
+			case 13:
+				if($(this).val().replace(/\s/g, '') == '') break;
+				const tag = $(this).val();
+				if(!tag) break;
+				
+				insertTag(tag);
+				
+				$(this).val('');
+				bdb();
+			break; case 8: case 46:
+				if($(this).val() || lastval) break;
+				
+				const lasttag = $('div#tags span.tag').last().find('> input').val();
+				
+				$('div#tags span.tag').last().remove();
+				$('#tagInput').val(lasttag);
+				bksp = 0;
+		}
+		lastval = $(this).val();
+		
+		if(ajaxt) return;
+		ajaxt = 1; setTimeout(function() {
+			ajaxt = 0;
+		}, 500);
+		
+		$('div#tagSearch').html('');
+		
+		const data = [
+			{ title: '동물', count: 3, description: '' },
+			{ title: '전자', count: 435, description: '' },
+			{ title: '탈것', count: 34, description: '' },
+			{ title: '과학', count: 7, description: '' },
+		];
+		const query = $(this).val();
+		
+		$.ajax({
+			type: 'GET',
+			url: '/category_search/' + encodeURIComponent(query),
+			dataType: 'json',
+			success: function(data) {
+				for(i in data) {
+					const item = data[i];
+					if(!item.title.toLowerCase().includes(query.toLowerCase()) || !query) continue;
+					
+					const card = $('<div class="card"><span class="category-title"></span><span class="description"></span></div>');
+					card.find('> .category-title').text(item.title);
+					card.find('> .description').text('문서 ' + item.count + '개');
+					
+					$('div#tagSearch').append(card);
+				}
+				
+				$('div#tagSearch div.card').click(function() {
+					insertTag($(this).find('> .category-title').text());
+					$('#tagInput').val('').focus();
+					$(this).parent().html('');
+				});
+			}
+		});
+	});
+	
+	$('div#tags').click(function(e) { 
+		if(e.target == this) $('input#tagInput').focus();
+	});
+	
+	bdb();
+	setEdit();
+	
+	$('input#tagInput').on('keydown', function(e) {
+		if(e.keyCode == 13) {
+			e.preventDefault();
+			return false;
+		}
+	});
+});

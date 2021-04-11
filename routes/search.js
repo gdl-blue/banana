@@ -121,3 +121,15 @@ wiki.get(/^\/search\/(.*)/, async (req, res) => {
 		res.send(await showError(req, 'search_failed'));
 	});
 });
+
+wiki.get(/^\/category_search\/(.*)/, async(req, res) => {
+	const query = req.params[0];
+	var dbdata = await curs.execute("select title from documents where title like '분류:' || '%' || ? || '%' limit 10", [query])
+	
+	var ret = [];
+	for(var item of dbdata) {
+		var dbdata2 = await curs.execute("select title from backlink_category where category = ?", [item.title.replace('분류:', '')]);
+		ret.push({ title: item.title.replace('분류:', ''), count: dbdata2.length, description: '' });
+	}
+	res.json(ret);
+});

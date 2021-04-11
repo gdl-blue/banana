@@ -84,6 +84,22 @@ wiki.get('/Customize', async function memberSettings(req, res) {
 				</div>
 			</div>
 			
+			<div class=form-group id=scriptGroup>
+				<h2 class=wiki-heading>스크립트</h2>
+				<div class=wiki-heading-content>
+					<div class=form-group>
+						<p>일반 문서에서 기여자가 작성한 스크립트를 실행할 지 설정합니다. [미구현]</p>
+						<div class=form-group>
+							<label><input type=radio name=allow-document-script value=always /> 항상 자동으로 실행되도록 허용 (위험)</label><br />
+							<label><input type=radio name=allow-document-script value=confirmed /> 스크립트를 이전에 실행시킨 적이 있는 문서에 한해서 자동으로 실행되도록 허용 (위험)</label><br />
+							<label><input type=radio name=allow-document-script value=confirm checked /> 스크립트가 있으면 실행할 지 그때그때 묻기, 스크립트 코드 보여주기 (권장)</label><br />
+							<label><input type=radio name=allow-document-script value=never /> 스크립트를 실행하지 않지만 스크립트가 있다고 알리기</label><br />
+							<label><input type=radio name=allow-document-script value=ignore /> 스크립트를 실행하지 않음</label><br />
+						</div>
+					</div>
+				</div>
+			</div>
+			
 			<div class=form-group id=debugGroup>
 				<h2 class=wiki-heading>개발 및 디버깅</h2>
 				<div class=wiki-heading-content>

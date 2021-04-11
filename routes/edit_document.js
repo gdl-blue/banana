@@ -184,6 +184,24 @@ wiki.get(/^\/edit\/(.*)/, async function editDocument(req, res) {
 							
 							</div>
 						</div>
+						
+						<div class=form-group>
+							<div class=for-script>
+								<label>분류(엔터로 등록): [미구현, [[분류:xxx]] 사용]</label>
+								<div id=tags class=form-control>
+									<input id=tagInput />
+								</div>
+								
+								<div id=tagSearch>
+								
+								</div>
+							</div>
+							
+							<noscript>
+								<label>분류(줄바꿈으로 구분): </label>
+								<textarea class=form-control name=category-fallback rows=6></textarea>
+							</noscript>
+						</div>
 
 						<div class=form-group>
 							<label>편집 메모:</label>

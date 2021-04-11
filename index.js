@@ -999,7 +999,7 @@ async function JSnamumark(title, content, initializeBacklinks = 0, req = null) {
             
             var ctgr = '';
             
-            for(cate of r['categories']) {
+            for(var cate of r['categories']) {
                 ctgr += `
                     <li class=wiki-link-internal><a class=wiki-internal-link href="/w/${encodeURIComponent('분류:' + cate)}">${html.escape(cate)}</a></li>
                 `;
@@ -1009,7 +1009,7 @@ async function JSnamumark(title, content, initializeBacklinks = 0, req = null) {
                 // 속도 느려질 수 있으니 비동기로
                 curs.execute("delete from backlink_category where title = ? and subwikiid = ?", [title, subwiki(req)])
                 .then(x => {
-                    for(cate of r['categories']) {
+                    for(var cate of r['categories']) {
                         curs.execute("insert into backlink_category (title, category, subwikiid) values (?, ?, ?)", [title, cate, subwiki(req)]);
                     }
                 })
