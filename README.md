@@ -1,5 +1,5 @@
 ## 개요
-바나나는 병아리 엔진 기반의 많은 편리한 기능 탑재를 목표로 하는 나무픽스 호환 엔진입니다.  
+바나나는 [병아리](https://github.com/gdl-888/imitated-seed-v2) 엔진 기반의 많은 편리한 기능 탑재를 목표로 하는 나무픽스 호환 엔진입니다.  
 banana is a wiki engine that supports many convinient features. (English is not supported yet)
 
 버전은 기존 엔진 버전 번호를 이어서 9부터 시작합니다. *(참고로 기존 새위키 엔진은 더 이상 본인도 가지고 있지 않다. 영구 삭제 후 영상 파일로 여러 번 덮어쓰기했습니다.)*
