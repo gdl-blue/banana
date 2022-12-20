@@ -142,4 +142,5 @@ Node.js 12.0 이상 (다만 Node.js 8.x를 지원하게 될 수도 있댜.)
 (C)저작권자 cemerick 2007~2011 [[깃허브]](https://github.com/cemerick/jsdifflib)
 
 ## 기타 라이선스
-GNU 아페로 공중 사용 허가서 버전 3
+GNU 아페로 공중 사용 허가서 버전 3 (https://www.gnu.org/licenses/agpl-3.0.en.html)
+
