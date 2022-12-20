@@ -142,6 +142,4 @@ Node.js 12.0 이상 (다만 Node.js 8.x를 지원하게 될 수도 있댜.)
 (C)저작권자 cemerick 2007~2011 [[깃허브]](https://github.com/cemerick/jsdifflib)
 
 ## 기타 라이선스
-- 아직 라이선스는 미정이나 아파치, MIT, ISC 중 하나가 될 가능성이 높으며, 엔진에 있는 각 기능의 저작권은 그 기능을 만든 사람에게 있다.
-
-- 스킨 호환 관련: [the seed](https://theseed.io/License), [openNAMU](https://github.com/2du/openNAMU#%EB%9D%BC%EC%9D%B4%EC%84%A0%EC%8A%A4)
+GNU 아페로 공중 사용 허가서 버전 3
