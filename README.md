@@ -141,7 +141,10 @@ Node.js 12.0 이상 (다만 Node.js 8.x를 지원하게 될 수도 있댜.)
 ### jsdifflib
 (C)저작권자 cemerick 2007~2011 [[깃허브]](https://github.com/cemerick/jsdifflib)
 
-## 기타 라이선스
+## 라이선스
 GNU 아페로 공중 사용 허가서 버전 3 (https://www.gnu.org/licenses/agpl-3.0.en.html)
+
 다만 내가 이 라이선스를 사용하고 싶어서 사용한 게 아니므로 위반한다고 해서 내가 직접 소송을 걸지는 않겠으나, AGPL 라이선스가 요구되는 프로그램 개발자에 의한 불이익이 있을 수도 있다.
+
+포크판을 만들고 싶은데 AGPL 라이선스를 피하고 싶다면, package.json에서 js-namumark를 삭제하고 imitated-seed 엔진에 있는 나무마크 파서를 가져다 써도 된다. (바나나 엔진 자체도 나중에 언젠간 그렇게 할 것이다.)
 
