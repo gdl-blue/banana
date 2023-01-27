@@ -37,7 +37,7 @@
     "sqlite3": "^4.2.0",
     "swig": "^1.4.2",
     "telnet": "^0.0.1",
-    "ua-parser-js": "^0.7.24",
+    "ua-parser-js": "^0.7.33",
     "uglify-js": "^2.6.0",
     "wait-console-input": "^0.1.7"
   },
